@@ -1,17 +1,21 @@
-import { createBrowserRouter, redirect } from 'react-router'
+import { createBrowserRouter, redirect, type RouteObject } from 'react-router'
 import { RouteError } from './route-error'
 import { AppShell } from './shell/app-shell'
 import { Splash } from './splash'
 
 const page = (load: () => Promise<{ default: React.ComponentType }>) => async () => ({ Component: (await load()).default })
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     path: '/',
     Component: AppShell,
     errorElement: <RouteError />,
     HydrateFallback: Splash,
     children: [
+      {
+        // a page that throws renders its error inside the shell; sidebar and stage rail stay usable
+        errorElement: <RouteError />,
+        children: [
       { index: true, loader: () => redirect('/exceptions') },
       {
         path: 'exceptions',
@@ -28,6 +32,10 @@ export const router = createBrowserRouter([
       { path: 'memory', lazy: page(() => import('@/features/memory/memory-page')) },
       { path: 'capture', lazy: page(() => import('@/features/capture/capture-page')) },
       { path: '*', loader: () => { throw new Response('Not found', { status: 404 }) } },
+        ],
+      },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)

@@ -6,6 +6,7 @@ import { demoQ } from '@/api/queries'
 import { useTheme } from '@/app/theme'
 import { Kbd } from '@/components/ui/kbd'
 import { useLive } from '@/stores/live'
+import { insideDialogOrForm } from '@/lib/hotkeys'
 import { useUi } from '@/stores/ui'
 
 /** Global keys + presenter mode (bigger type for the projector, number keys jump stages). */
@@ -30,12 +31,14 @@ export function useShellShortcuts() {
     if (!presenter || busy || !s || i === at) return
     advance.mutate(s.id)
   }
-  useHotkeys('1', () => jump(0), [presenter, busy, at, stages])
-  useHotkeys('2', () => jump(1), [presenter, busy, at, stages])
-  useHotkeys('3', () => jump(2), [presenter, busy, at, stages])
-  useHotkeys('4', () => jump(3), [presenter, busy, at, stages])
-  useHotkeys('bracketleft', () => jump(at - 1), [presenter, busy, at, stages])
-  useHotkeys('bracketright', () => jump(at + 1), [presenter, busy, at, stages])
+  const guard = { ignoreEventWhen: insideDialogOrForm }
+  const deps = [presenter, busy, at, stages]
+  useHotkeys('1', () => jump(0), guard, deps)
+  useHotkeys('2', () => jump(1), guard, deps)
+  useHotkeys('3', () => jump(2), guard, deps)
+  useHotkeys('4', () => jump(3), guard, deps)
+  useHotkeys('bracketleft', () => jump(at - 1), guard, deps)
+  useHotkeys('bracketright', () => jump(at + 1), guard, deps)
 }
 
 export function PresenterHint() {

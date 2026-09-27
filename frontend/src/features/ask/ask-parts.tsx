@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { Textarea } from '@/components/ui/textarea'
 import { Citations, FootnoteMarker } from '@/features/case-file/citations'
+import { usableCitations } from '@/lib/citations'
 import { answeredIn, type Turn } from './ask-model'
 
 /** "Asking about Shree Balaji Steel Traders Pvt Ltd ×" */
@@ -96,7 +97,7 @@ function Failed({ error, onRetry, busy }: { error: string; onRetry: () => void; 
 }
 
 function Answer({ t }: { t: Turn }) {
-  const cites = t.citations ?? []
+  const cites = usableCitations(t.citations ?? [])
   const text = t.answer?.trim()
   return (
     <div className="space-y-5">

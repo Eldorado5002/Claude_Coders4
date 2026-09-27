@@ -5,6 +5,7 @@ import { Link, useLocation, useParams } from 'react-router'
 import { ApiError } from '@/api/client'
 import { exceptionQ, settingsQ } from '@/api/queries'
 import { EmptyState } from '@/components/precedent'
+import { Safe } from '@/components/precedent/safe'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CaseHeader } from './case-header'
@@ -65,7 +66,9 @@ export default function CaseFilePage() {
       <CaseHeader c={c} />
       <div className="mt-6 grid gap-8 @min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(380px,440px)]">
         <aside className="self-start @min-[1100px]:sticky @min-[1100px]:top-6 @min-[1100px]:order-2">
-          <OpinionPanel key={c.id} c={c} other={other.data} memOn={memOn} />
+          <Safe label="Precedent’s opinion">
+            <OpinionPanel key={c.id} c={c} other={other.data} memOn={memOn} />
+          </Safe>
         </aside>
         <div className="min-w-0 space-y-9 @min-[1100px]:order-1">
           <ThreeWayTable c={c} />

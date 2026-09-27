@@ -14,6 +14,7 @@ type Ui = {
   setClerk: (clerk: string) => void
   togglePresenter: () => void
   seeNarrator: (stage: string) => void
+  resetNarrators: () => void
   setCommandOpen: (open: boolean) => void
   openAsk: (opts?: { vendorId?: string | null; question?: string | null }) => void
   closeAsk: () => void
@@ -33,6 +34,7 @@ export const useUi = create<Ui>()(
       togglePresenter: () => set((s) => ({ presenter: !s.presenter })),
       seeNarrator: (stage) =>
         set((s) => ({ narratorsSeen: s.narratorsSeen.includes(stage) ? s.narratorsSeen : [...s.narratorsSeen, stage] })),
+      resetNarrators: () => set({ narratorsSeen: [] }),
       setCommandOpen: (commandOpen) => set({ commandOpen }),
       openAsk: (opts) =>
         set({ askOpen: true, commandOpen: false, askVendor: opts?.vendorId ?? null, askQuestion: opts?.question ?? null }),

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ByType, ByTypeSkeleton } from './by-type'
 import { Figures, FiguresSkeleton } from './figures'
+import { Safe } from '@/components/precedent/safe'
 import { LearningChart } from './learning-chart'
 import { findReplaySummary, headline } from './learning-view'
 import { Footnotes, NoteRef } from './notes'
@@ -43,18 +44,22 @@ function LearningBody({ m }: { m: Metrics }) {
       <Section title="Learning curves" aside={weeks ? `Replay · ${weeks} weeks · same model` : undefined}>
         <div className="@container pt-2">
           <div className={CHART_GRID}>
-            <LearningChart
-              id="touchless"
-              title="Resolved without a human"
-              description="Share of each week’s exceptions closed with no human action."
-              points={m.touchless_by_week}
-            />
-            <LearningChart
-              id="accuracy"
-              title="Recommendation accuracy"
-              description="Share of recommendations that matched the correct payment outcome."
-              points={m.acceptance_by_week}
-            />
+            <Safe label="This chart">
+              <LearningChart
+                id="touchless"
+                title="Resolved without a human"
+                description="Share of each week’s exceptions closed with no human action."
+                points={m.touchless_by_week}
+              />
+            </Safe>
+            <Safe label="This chart">
+              <LearningChart
+                id="accuracy"
+                title="Recommendation accuracy"
+                description="Share of recommendations that matched the correct payment outcome."
+                points={m.acceptance_by_week}
+              />
+            </Safe>
           </div>
         </div>
       </Section>

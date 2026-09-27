@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Inbox } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import type { StatusFilter } from '@/api/keys'
@@ -14,10 +14,12 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { insideDialogOrForm } from '@/lib/hotkeys'
 import { cn } from '@/lib/utils'
 import { CaseRow } from './case-row'
 import { DocketFilters } from './docket-filters'
 import { docketView, neighbour } from './docket-view'
+import { useFresh } from './use-fresh'
 
 const TABS: { id: StatusFilter; label: string }[] = [
   { id: 'open', label: 'Open' },
@@ -36,26 +38,6 @@ const EMPTY: Record<StatusFilter, { title: string; body: string }> = {
   all: { title: 'No exceptions yet.', body: 'Invoices that fail the 3-way match will appear here.' },
 }
 
-/** Tracks ids that arrived after the first render, so new cases can announce themselves. */
-function useFresh(ids: string[]) {
-  const known = useRef<Set<string> | null>(null)
-  const [fresh, setFresh] = useState<Set<string>>(new Set())
-  useEffect(() => {
-    if (!ids.length) return
-    if (known.current === null) {
-      known.current = new Set(ids)
-      return
-    }
-    const added = ids.filter((id) => !known.current!.has(id))
-    if (!added.length) return
-    for (const id of added) known.current.add(id)
-    setFresh(new Set(added))
-    const t = window.setTimeout(() => setFresh(new Set()), 1600)
-    return () => window.clearTimeout(t)
-  }, [ids])
-  return fresh
-}
-
 export default function DocketPage() {
   const [params, setParams] = useSearchParams()
   const status = (params.get('status') as StatusFilter) || 'open'
@@ -70,7 +52,7 @@ export default function DocketPage() {
   const list = useQuery(exceptionsQ({ status: 'all', vendor_id: vendor, type }))
   const { visible, counts } = useMemo(() => docketView(list.data?.items ?? [], status), [list.data, status])
   const ids = useMemo(() => visible.map((c) => c.id), [visible])
-  const fresh = useFresh(ids)
+  const fresh = useFresh(ids, `${status}|${vendor ?? ''}|${type ?? ''}`)
   const rowRefs = useRef(new Map<string, HTMLAnchorElement>())
 
   const setParam = (k: string, v?: string) => {
@@ -86,8 +68,8 @@ export default function DocketPage() {
     navigate({ pathname: `/exceptions/${next}`, search })
     rowRefs.current.get(next)?.scrollIntoView({ block: 'nearest' })
   }
-  useHotkeys('j', () => go(1), [ids, activeId, search])
-  useHotkeys('k', () => go(-1), [ids, activeId, search])
+  useHotkeys('j', () => go(1), { ignoreEventWhen: insideDialogOrForm }, [ids, activeId, search])
+  useHotkeys('k', () => go(-1), { ignoreEventWhen: insideDialogOrForm }, [ids, activeId, search])
 
   const listPane = (
     <div className="flex h-full min-h-0 flex-col">

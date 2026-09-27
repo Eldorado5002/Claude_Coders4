@@ -11,6 +11,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { useLive } from '@/stores/live'
+import { dotTone } from './live-moments'
 
 /** The before/after switch: Hindsight memory on or off, for the whole app. */
 export function MemorySwitch() {
@@ -48,16 +49,22 @@ export function HealthDot() {
   const sse = useLive((s) => s.sse)
   const up = health.data?.hindsight === 'up'
   const known = !!health.data
+  const tone = dotTone(health.data?.hindsight, sse)
   return (
     <HoverCard openDelay={150}>
       <HoverCardTrigger asChild>
         <button type="button" className="flex items-center gap-1.5 text-xs text-muted-foreground outline-none">
           <span
-            className={cn('size-2 rounded-full', !known ? 'bg-muted-foreground/40' : up ? 'bg-approve' : 'bg-hold')}
+            className={cn(
+              'size-2 rounded-full',
+              tone === 'up' ? 'bg-approve' : tone === 'down' ? 'bg-hold' : 'bg-muted-foreground/40',
+            )}
             aria-hidden
           />
           <span className="hidden xl:inline">Hindsight</span>
-          <span className="sr-only">{known ? (up ? 'Hindsight up' : 'Hindsight down') : 'Checking Hindsight'}</span>
+          <span className="sr-only">
+            {tone === 'offline' ? 'Live updates disconnected' : known ? (up ? 'Hindsight up' : 'Hindsight down') : 'Checking Hindsight'}
+          </span>
         </button>
       </HoverCardTrigger>
       <HoverCardContent align="end" className="w-80 space-y-3 text-sm">

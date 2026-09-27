@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { simTime } from '@/lib/format'
 import { ACTION_META } from '@/lib/labels'
+import { memoryCount, usableCitations } from '@/lib/citations'
+import { enterBelongsToTarget, insideDialogOrForm } from '@/lib/hotkeys'
 import { parseRationale } from '@/lib/parse-rationale'
+import { firstSentence } from '@/lib/text'
 import { Citations, FootnoteMarker, NoPrecedent } from './citations'
 import { LessonCard, ResolutionCard } from './outcome'
 import { ResolveForm, type Preset } from './resolve-form'
 import { ReasoningState, VerdictDiff } from './verdict-parts'
-
-const firstSentence = (s: string) => (s.match(/^.*?[.!?](\s|$)/)?.[0] ?? s).trim()
 
 function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommendation; other?: ExceptionDetail | null; memOn: boolean }) {
   const recommend = useRecommend(c.id)
@@ -24,8 +25,8 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
     c.issues.filter((i) => i.blocking).map((i) => i.message),
   )
   const guard = rec.source === 'guardrail'
-  const cites = rec.citations
-  const memoryCites = cites.filter((x) => x.kind !== 'directive').length
+  const cites = usableCitations(rec.citations)
+  const memoryCites = memoryCount(rec.citations)
 
   return (
     <>
@@ -122,10 +123,16 @@ export function OpinionPanel({ c, other, memOn = true }: { c: ExceptionDetail; o
       reason: rec.source === 'guardrail' ? '' : firstSentence(parseRationale(rec.rationale).body || rec.rationale),
       adjusted: rec.adjusted_amount != null ? String(rec.adjusted_amount) : '',
     })
-  useHotkeys('enter', accept, { enabled: idle && c.status === 'open', preventDefault: true }, [rec, idle])
-  useHotkeys('o', () => setForm({ decision: null, reason: '' }), { enabled: idle, preventDefault: true }, [idle])
-  useHotkeys('h', () => setForm({ decision: 'hold', reason: '' }), { enabled: idle, preventDefault: true }, [idle])
-  useHotkeys('e', () => setForm({ decision: 'escalate', reason: '' }), { enabled: idle, preventDefault: true }, [idle])
+  const letter = { enabled: idle, preventDefault: true, ignoreEventWhen: insideDialogOrForm }
+  useHotkeys(
+    'enter',
+    accept,
+    { enabled: idle && c.status === 'open', preventDefault: true, ignoreEventWhen: enterBelongsToTarget },
+    [rec, idle],
+  )
+  useHotkeys('o', () => setForm({ decision: null, reason: '' }), letter, [idle])
+  useHotkeys('h', () => setForm({ decision: 'hold', reason: '' }), letter, [idle])
+  useHotkeys('e', () => setForm({ decision: 'escalate', reason: '' }), letter, [idle])
 
   return (
     <section aria-label="Precedent’s opinion" className="border border-rule bg-card shadow-[0_1px_0_0_var(--rule)]">
@@ -133,7 +140,7 @@ export function OpinionPanel({ c, other, memOn = true }: { c: ExceptionDetail; o
         <h2 className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
           <AgentMark /> Precedent’s opinion
         </h2>
-        {rec && <SourceChip source={rec.source} count={rec.citations.filter((x) => x.kind !== 'directive').length} />}
+        {rec && <SourceChip source={rec.source} count={memoryCount(rec.citations)} />}
       </header>
 
       {writing ? (

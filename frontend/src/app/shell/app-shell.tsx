@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useServerEvents } from '@/hooks/use-server-events'
 import { AppSidebar } from './app-sidebar'
 import { CommandMenu } from './command-menu'
+import { useLiveMoments } from './live-moments'
 import { MobileTabs } from './mobile-tabs'
 import { PresenterHint, useShellShortcuts } from './presenter'
 import { Banners } from './status'
@@ -13,6 +14,7 @@ import { TopBar } from './top-bar'
 export function AppShell() {
   useServerEvents()
   useShellShortcuts()
+  useLiveMoments()
   return (
     <SidebarProvider>
       <AppSidebar />

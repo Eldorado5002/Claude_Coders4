@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLive } from '@/stores/live'
+import { useUi } from '@/stores/ui'
 import { api, unwrap } from './client'
 import { qk } from './keys'
 import type { DemoStageId, ResolveRequest, Settings } from './types'
@@ -82,6 +83,7 @@ export function useReset() {
     mutationFn: () => unwrap(api.POST('/api/demo/reset')),
     onMutate: () => useLive.setState({ simBusy: true, simTarget: 'day1' }),
     onSuccess: (s) => {
+      useUi.getState().resetNarrators() // a fresh run of the demo gets its narration back
       qc.setQueryData(qk.demo, s)
       void qc.invalidateQueries()
     },

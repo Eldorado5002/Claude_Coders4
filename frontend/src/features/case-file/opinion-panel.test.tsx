@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { ExceptionDetail, Recommendation } from '@/api/types'
 import detailMock from '@mocks/exception-detail.json'
@@ -43,5 +44,28 @@ describe('OpinionPanel', () => {
     )
     expect(screen.getByText(msg)).toBeInTheDocument()
     expect(screen.getByText(/Memory alone would have said/i)).toBeInTheDocument()
+  })
+
+  it('lets Enter on a focused Overrule button overrule, instead of hijacking it to accept', async () => {
+    const user = userEvent.setup()
+    renderApp(<OpinionPanel c={{ ...detail, status: 'open' }} />)
+    screen.getByRole('button', { name: /Overrule/ }).focus()
+    await user.keyboard('{Enter}')
+    const radios = await screen.findAllByRole('radio')
+    expect(radios.every((r) => r.getAttribute('aria-checked') === 'false')).toBe(true)
+  })
+
+  it('does not count or show a playbook Hindsight is still writing', () => {
+    const rec: Recommendation = {
+      ...detail.recommendation!,
+      source: 'memory',
+      citations: [
+        detail.recommendation!.citations[0],
+        { id: 'mm', kind: 'mental_model', text: 'Generating content...', occurred_at: null, exception_id: null },
+      ],
+    }
+    renderApp(<OpinionPanel c={{ ...detail, recommendation: rec }} />)
+    expect(screen.getByText('Grounded in 1 precedent')).toBeInTheDocument()
+    expect(screen.queryByText(/Generating content/)).not.toBeInTheDocument()
   })
 })
