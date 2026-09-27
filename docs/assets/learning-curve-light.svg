@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="360" viewBox="0 0 1000 360" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Precedent learning curve</title>
+<desc id="d">Over 26 simulated weeks the agent's recommendations match the clerk far more often with Hindsight memory than without, and the share of exceptions it resolves on its own rises from 0 as it earns autonomy.</desc>
+<rect x="0.5" y="0.5" width="999" height="359" rx="12" fill="#fcfcfb" stroke="#e1e0d9"/>
+<text x="28" y="34" font-size="15" font-weight="600" fill="#0b0b0b">Recommendation matches the clerk</text>
+<text x="28" y="54" font-size="12.5" fill="#52514e">Same payment outcome · 4-week rolling average</text>
+<rect x="333.9" y="96" width="126.1" height="204" fill="#f0efec" rx="3"/>
+<text x="397.0" y="276" font-size="11" text-anchor="middle" fill="#898781">measured: months 5–6</text>
+<text x="397.0" y="291" font-size="11.5" font-weight="600" text-anchor="middle" fill="#52514e">avg  ON 96% · OFF 35%</text>
+<line x1="66" x2="460" y1="300.0" y2="300.0" stroke="#c3c2b7" stroke-width="1"/>
+<text x="58" y="304.0" font-size="11" text-anchor="end" fill="#898781">0%</text>
+<line x1="66" x2="460" y1="249.0" y2="249.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="58" y="253.0" font-size="11" text-anchor="end" fill="#898781">25%</text>
+<line x1="66" x2="460" y1="198.0" y2="198.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="58" y="202.0" font-size="11" text-anchor="end" fill="#898781">50%</text>
+<line x1="66" x2="460" y1="147.0" y2="147.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="58" y="151.0" font-size="11" text-anchor="end" fill="#898781">75%</text>
+<line x1="66" x2="460" y1="96.0" y2="96.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="58" y="100.0" font-size="11" text-anchor="end" fill="#898781">100%</text>
+<text x="66.0" y="318" font-size="11" text-anchor="middle" fill="#898781">W1</text>
+<text x="129.0" y="318" font-size="11" text-anchor="middle" fill="#898781">W5</text>
+<text x="192.1" y="318" font-size="11" text-anchor="middle" fill="#898781">W9</text>
+<text x="255.1" y="318" font-size="11" text-anchor="middle" fill="#898781">W13</text>
+<text x="318.2" y="318" font-size="11" text-anchor="middle" fill="#898781">W17</text>
+<text x="381.2" y="318" font-size="11" text-anchor="middle" fill="#898781">W21</text>
+<text x="460.0" y="318" font-size="11" text-anchor="middle" fill="#898781">W26</text>
+<line x1="28" x2="46" y1="72" y2="72" stroke="#2a78d6" stroke-width="2.5" stroke-linecap="round"/>
+<text x="52" y="76" font-size="12" fill="#52514e">Memory ON</text>
+<line x1="135.2" x2="153.2" y1="72" y2="72" stroke="#eb6834" stroke-width="2.5" stroke-linecap="round"/>
+<text x="159.2" y="76" font-size="12" fill="#52514e">Memory OFF</text>
+<path d="M66.0,198.0 L81.8,238.8 L97.5,204.8 L113.3,192.6 L129.0,170.2 L144.8,128.2 L160.6,117.5 L176.3,113.7 L192.1,111.7 L207.8,104.5 L223.6,105.3 L239.4,96.0 L255.1,106.7 L270.9,105.7 L286.6,111.1 L302.4,111.7 L318.2,105.3 L333.9,106.2 L349.7,96.0 L365.4,96.0 L381.2,96.0 L397.0,104.9 L412.7,104.9 L428.5,104.5 L444.2,113.8 L460.0,104.9" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="460.0" cy="104.9" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<text x="469.0" y="108.9" font-size="12" font-weight="600" fill="#0b0b0b">96%</text>
+<path d="M66.0,300.0 L81.8,279.6 L97.5,259.2 L113.3,246.3 L129.0,244.4 L144.8,224.8 L160.6,214.1 L176.3,220.2 L192.1,190.2 L207.8,181.0 L223.6,188.7 L239.4,168.0 L255.1,203.4 L270.9,222.3 L286.6,224.5 L302.4,237.3 L318.2,225.8 L333.9,218.4 L349.7,214.1 L365.4,202.8 L381.2,218.4 L397.0,220.2 L412.7,237.9 L428.5,232.0 L444.2,229.1 L460.0,237.9" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="460.0" cy="237.9" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<text x="469.0" y="241.9" font-size="12" font-weight="600" fill="#0b0b0b">30%</text>
+<text x="528" y="34" font-size="15" font-weight="600" fill="#0b0b0b">Resolved by the agent on its own</text>
+<text x="528" y="54" font-size="12.5" fill="#52514e">Earned autonomy · memory ON · 4-week rolling average</text>
+<rect x="833.9" y="96" width="126.1" height="204" fill="#f0efec" rx="3"/>
+<text x="897.0" y="276" font-size="11" text-anchor="middle" fill="#898781">measured: months 5–6</text>
+<text x="897.0" y="291" font-size="11.5" font-weight="600" text-anchor="middle" fill="#52514e">avg  55%</text>
+<line x1="566" x2="960" y1="300.0" y2="300.0" stroke="#c3c2b7" stroke-width="1"/>
+<text x="558" y="304.0" font-size="11" text-anchor="end" fill="#898781">0%</text>
+<line x1="566" x2="960" y1="249.0" y2="249.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="558" y="253.0" font-size="11" text-anchor="end" fill="#898781">25%</text>
+<line x1="566" x2="960" y1="198.0" y2="198.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="558" y="202.0" font-size="11" text-anchor="end" fill="#898781">50%</text>
+<line x1="566" x2="960" y1="147.0" y2="147.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="558" y="151.0" font-size="11" text-anchor="end" fill="#898781">75%</text>
+<line x1="566" x2="960" y1="96.0" y2="96.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="558" y="100.0" font-size="11" text-anchor="end" fill="#898781">100%</text>
+<text x="566.0" y="318" font-size="11" text-anchor="middle" fill="#898781">W1</text>
+<text x="629.0" y="318" font-size="11" text-anchor="middle" fill="#898781">W5</text>
+<text x="692.1" y="318" font-size="11" text-anchor="middle" fill="#898781">W9</text>
+<text x="755.1" y="318" font-size="11" text-anchor="middle" fill="#898781">W13</text>
+<text x="818.2" y="318" font-size="11" text-anchor="middle" fill="#898781">W17</text>
+<text x="881.2" y="318" font-size="11" text-anchor="middle" fill="#898781">W21</text>
+<text x="960.0" y="318" font-size="11" text-anchor="middle" fill="#898781">W26</text>
+<path d="M566.0,300.0 L581.8,300.0 L597.5,300.0 L613.3,289.3 L629.0,281.5 L644.8,278.5 L660.6,278.5 L676.3,282.3 L692.1,284.3 L707.8,257.5 L723.6,235.1 L739.4,216.0 L755.1,192.6 L770.9,222.3 L786.6,224.5 L802.4,229.4 L818.2,225.9 L833.9,208.2 L849.7,192.6 L865.4,202.8 L881.2,208.2 L897.0,220.2 L912.7,211.3 L928.5,181.0 L944.2,175.8 L960.0,158.1" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="960.0" cy="158.1" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<text x="969.0" y="162.1" font-size="12" font-weight="600" fill="#0b0b0b">70%</text>
+<text x="572" y="110" font-size="11.5" fill="#52514e">Memory OFF stays at 0% — autonomy requires memory</text>
+<text x="28" y="346" font-size="11" fill="#898781">Replay of 26 simulated weeks · 140 exceptions · 25 vendors · same data and LLM for both runs</text>
+</svg>
