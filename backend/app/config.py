@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     approval_threshold: float = 500_000.0
     autonomy_required_streak: int = 3
     autonomy_min_confidence: float = 0.75
-    recommender_mode: str = "hybrid"  # hybrid | reflect | recall
+    recommender_mode: str = "hybrid"  # hybrid | reflect | recall (recall_facts and rag: ablation only)
 
     @property
     def cors_origin_list(self) -> list[str]:

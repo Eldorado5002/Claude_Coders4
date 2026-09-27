@@ -50,8 +50,10 @@ DIRECTIVE_FOR = {
 }
 ANOMALY_CAP = 0.9
 REFLECT_COST = 0.05  # Hindsight Cloud: flat price per reflect call
+FACT_TYPES = ["world", "experience"]  # raw facts only, no consolidated observations (ablation)
 RECALL_COST = 0.0005  # recall is billed per output token; a typical call costs well under a tenth of a cent
 FAST_MIN_ACCEPTED = 2  # routine = this vendor x type already has accepted precedents
+FAST_MIN_CONFIDENCE = 0.8  # below this (or with no precedent) the fast path hands over to reflect
 NL = chr(10)
 
 
@@ -59,7 +61,12 @@ class RecDraft(BaseModel):
     """What the model must return."""
 
     action: Action = Field(description="One of approve, approve_adjusted, hold, reject, escalate")
-    confidence: float = Field(ge=0, le=1, description="0-1. Low (<0.5) when no precedent applies.")
+    confidence: float = Field(
+        ge=0,
+        le=1,
+        description="0-1: how sure you are that this exact action is what the team would decide. A hold because a "
+        "known limit is exceeded is a confident decision. Below 0.5 only when no precedent applies.",
+    )
     adjusted_amount: float | None = Field(
         description="Only for approve_adjusted: the corrected total to pay in rupees. Otherwise null."
     )
@@ -168,8 +175,10 @@ QUESTION = (
     "Actions: approve = pay as invoiced; approve_adjusted = pay a corrected amount (give it); hold = don't pay yet — "
     "send back to the vendor for justification, a revised invoice or missing goods (use this when a known limit or "
     "agreement is exceeded); reject = never pay (e.g. duplicate); escalate = needs a manager or treasury (bank "
-    "changes, approval limits, new vendors, suspected fraud). If no precedent really applies, set "
-    "precedent_found=false, choose hold or escalate, and keep confidence below 0.5."
+    "changes, approval limits, new vendors, suspected fraud). Confidence is how sure you are that the team would "
+    "make this exact decision, whichever action it is: holding an invoice that clearly breaks a known limit deserves "
+    "high confidence. If no precedent really applies, set precedent_found=false, choose hold or escalate, and keep "
+    "confidence below 0.5."
 )
 
 NO_MEMORY_SYSTEM = (
@@ -194,7 +203,9 @@ class Recommender:
     async def recommend(
         self, ctx: CaseContext, *, memory_enabled: bool, bank_id: str, now: datetime, mode: str | None = None
     ) -> Recommendation:
-        """mode: hybrid (default) | reflect | recall | rag. Hybrid sends routine cases down the fast path."""
+        """mode: hybrid (default) | reflect | recall | recall_facts | rag. Hybrid sends routine cases down the
+        fast path and hands them to reflect when that answer is ungrounded or unsure; recall_facts and rag exist
+        for the ablation study."""
         mode = mode or get_settings().recommender_mode
         brief = case_brief(ctx)
         t0 = time.perf_counter()
@@ -228,15 +239,29 @@ class Recommender:
             if mode == "rag" and self.rag is not None:
                 draft, citations, provider, cost = await self._rag_llm(ctx, brief)
                 route = "fast"
-            elif mode == "recall" or (mode == "hybrid" and ctx.extra.get("pair_accepted", 0) >= FAST_MIN_ACCEPTED):
+            elif mode in ("recall", "recall_facts") or (
+                mode == "hybrid" and ctx.extra.get("pair_accepted", 0) >= FAST_MIN_ACCEPTED
+            ):
                 try:
-                    fast = await self._recall_llm(ctx, brief, bank_id, require_observation=(mode == "hybrid"))
+                    fast = await self._recall_llm(
+                        ctx,
+                        brief,
+                        bank_id,
+                        require_observation=(mode == "hybrid"),
+                        fact_types=FACT_TYPES if mode == "recall_facts" else None,
+                    )
                 except (LlmUnavailable, Exception) as e:  # noqa: BLE001 — fall through to reflect
                     log.warning("fast path failed for %s: %s", ctx.case_id, e)
                     fast = None
                 if fast is not None:
-                    draft, citations, provider, cost = fast
-                    route = "fast"
+                    unsure = mode == "hybrid" and (
+                        not fast[0].precedent_found or fast[0].confidence < FAST_MIN_CONFIDENCE
+                    )
+                    if unsure:  # cheap answer not trusted: pay for reflect's deeper reasoning instead
+                        cost += fast[3]
+                    else:
+                        draft, citations, provider, cost = fast
+                        route = "fast"
             if draft is None:
                 try:
                     resp, citations, _ = await self.memory.reflect(
@@ -247,7 +272,7 @@ class Recommender:
                         response_schema=strict_schema(RecDraft),
                     )
                     draft = RecDraft.model_validate(resp.structured_output or {})
-                    provider, cost = "hindsight-reflect", REFLECT_COST
+                    provider, cost = "hindsight-reflect", cost + REFLECT_COST
                 except (ValidationError, Exception) as e:  # noqa: BLE001 — any memory failure falls back
                     log.warning("reflect failed for %s, falling back to recall+LLM: %s", ctx.case_id, e)
                     cost += REFLECT_COST
@@ -347,7 +372,9 @@ class Recommender:
                 log.warning("precedent recall for control case %s failed: %s", ctx.case_id, e)
         return out + memory
 
-    async def _recall_llm(self, ctx: CaseContext, brief: str, bank_id: str, *, require_observation: bool):
+    async def _recall_llm(
+        self, ctx: CaseContext, brief: str, bank_id: str, *, require_observation: bool, fact_types=None
+    ):
         """Fast path: Hindsight recall (this vendor + exception type, anchored at the invoice date) + one LLM call.
         Returns None when there is no consolidated observation to lean on (the caller then uses reflect)."""
         kinds = " and ".join(t.replace("_", " ") for t in ctx.types)
@@ -356,6 +383,7 @@ class Recommender:
             f"How does the AP team resolve {kinds} for {ctx.vendor['name']}?",
             vendor_id=ctx.vendor["id"],
             types=ctx.types,
+            fact_types=fact_types,
             query_timestamp=ctx.sim_date.isoformat(),
         )
         if require_observation and not any(getattr(f, "type", "") == "observation" for f in facts):
@@ -373,9 +401,9 @@ class Recommender:
 
     async def _rag_llm(self, ctx: CaseContext, brief: str):
         """Ablation baseline: plain vector search over past resolutions (no Hindsight) + the same LLM."""
-        hits = await self.rag.search(f"{ctx.vendor['name']} {' '.join(ctx.types)} {brief[:600]}", k=8)
+        hits, cost = await self.rag.search(f"{ctx.vendor['name']} {' '.join(ctx.types)} {brief[:600]}", k=8)
         citations = [Citation(id=h["id"], kind=CitationKind.WORLD, text=h["text"], exception_id=h["id"]) for h in hits]
-        return await self._decide_from(citations, brief, "rag", self.rag.last_cost)
+        return await self._decide_from(citations, brief, "rag", cost)
 
     async def _decide_from(self, citations: list[Citation], brief: str, label: str, base_cost: float):
         precedents = NL.join(f"- {c.text}" for c in citations) or "- (no past decisions found)"

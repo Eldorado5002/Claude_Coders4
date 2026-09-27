@@ -4,13 +4,17 @@ Among memory-backed recommendations to PAY (approve / approve_adjusted) that a h
 verified, we measure how often paying was wrong. The exact Clopper-Pearson upper bound turns
 k mistakes in n verified decisions into a guarantee: "the true wrong-payment rate is at most U
 with 95% confidence". We pick the auto-approval confidence threshold with a fixed-sequence
-("learn then test") search: start at the strictest threshold and relax it only while the bound
+("learn then test") search: start at the provisional threshold and relax it only while the bound
 stays under the target, so testing several thresholds does not inflate the error rate.
 
+With zero errors the bound falls below 5% only after 59 verified decisions, so "not certified
+yet" usually means "not enough evidence yet", not "unsafe".
+
 Status
-  collecting  not enough verified decisions yet -> strict provisional threshold (0.95) + per-pair ladder
+  collecting  not enough evidence to certify -> strict provisional threshold (0.95) + per-pair ladder
   certified   a threshold passed -> auto-approve only at or above it
-  paused      enough evidence but even the strictest threshold fails -> autonomy switched off (circuit breaker)
+  paused      at least 30 verified decisions and the observed wrong-payment rate is above the target
+              -> auto-approval switched off (circuit breaker)
 """
 
 from dataclasses import dataclass
@@ -25,7 +29,7 @@ from app.schemas import Action, AutonomyCertificate, CertificateRow
 TARGET = 0.05  # maximum acceptable wrong-payment rate
 DELTA = 0.05  # 95% confidence
 N_MIN = 30  # never certify on fewer verified decisions
-GRID = (0.99, 0.95, 0.9, 0.85, 0.8, 0.75)
+GRID = (0.95, 0.9, 0.85, 0.8, 0.75)  # fixed order, strictest first
 PROVISIONAL = 0.95
 
 
@@ -42,6 +46,14 @@ def cp_upper(k: int, n: int, delta: float = DELTA) -> float:
     if n == 0 or k >= n:
         return 1.0
     return float(beta.ppf(1 - delta, k + 1, n - k))
+
+
+def needed(k: int, target: float = TARGET, delta: float = DELTA) -> int:
+    """Verified decisions needed to certify `target` if no further errors occur."""
+    n = k + 1
+    while cp_upper(k, n, delta) > target:
+        n += 1
+    return n
 
 
 def verified_decisions(session: Session) -> list[Verified]:
@@ -74,10 +86,10 @@ def certificate(session: Session) -> AutonomyCertificate:
             break
         certified = tau
 
-    strict = next((r for r in rows if r.threshold == PROVISIONAL), rows[0])
+    strict = rows[0]  # the provisional threshold is the first one tested
     if certified is not None:
         status, threshold = "certified", certified
-    elif strict.decisions >= N_MIN:
+    elif strict.decisions >= N_MIN and strict.errors / strict.decisions > TARGET:
         status, threshold = "paused", None
     else:
         status, threshold = "collecting", PROVISIONAL
@@ -93,14 +105,16 @@ def certificate(session: Session) -> AutonomyCertificate:
         )
     elif status == "collecting":
         explain = (
-            f"{strict.decisions} verified pay recommendations so far; {N_MIN} are needed before the bound can be "
-            f"certified. Until then autonomy runs in strict provisional mode (confidence ≥ {PROVISIONAL:.2f} and an "
-            "earned per-vendor streak)."
+            f"{strict.decisions} verified pay recommendations at confidence ≥ {PROVISIONAL:.2f} so far, "
+            f"{strict.errors} wrong. Certifying a wrong-payment rate below {TARGET:.0%} with 95% confidence takes "
+            f"{needed(strict.errors)} of them if no more are wrong. Until then autonomy runs in strict provisional "
+            f"mode (confidence ≥ {PROVISIONAL:.2f} and an earned per-vendor streak)."
         )
     else:
         explain = (
-            f"Even at confidence ≥ {PROVISIONAL:.2f} the wrong-payment bound is {strict.upper_bound:.1%}, above the "
-            f"{TARGET:.0%} target. Auto-approval is paused until the evidence improves."
+            f"{strict.errors} of {strict.decisions} verified pay recommendations at confidence ≥ {PROVISIONAL:.2f} "
+            f"were wrong ({strict.errors / strict.decisions:.1%}), above the {TARGET:.0%} target. Auto-approval is "
+            "paused until the evidence improves."
         )
     return AutonomyCertificate(
         status=status,

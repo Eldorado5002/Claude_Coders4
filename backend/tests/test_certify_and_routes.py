@@ -37,6 +37,12 @@ def test_certificate_statuses(monkeypatch):
     c = certify.certificate(None)
     assert c.status == "certified" and c.threshold <= 0.9 and c.error_upper_bound <= certify.TARGET
 
+    clean_but_few = [Verified(0.97, "approve", True, False) for _ in range(40)]  # clean, but 59 are needed
+    _records(monkeypatch, clean_but_few)
+    c = certify.certificate(None)
+    assert c.status == "collecting" and c.threshold == certify.PROVISIONAL and "59" in c.explanation
+    assert certify.needed(0) == 59 and certify.needed(1) > 59
+
     risky = [Verified(0.99, "approve", i % 4 != 0, False) for i in range(80)]  # 25% wrong
     _records(monkeypatch, risky)
     c = certify.certificate(None)
@@ -134,3 +140,38 @@ def test_beliefs_and_knowledge_endpoints(client):
     assert client.get("/api/knowledge/nope").status_code == 404
     profile = client.get("/api/vendors/V001").json()
     assert profile["playbook"].startswith("## Freight")  # the vendor wiki page is the playbook
+
+
+def test_unsure_fast_path_hands_over_to_reflect(client, env, monkeypatch):
+    from app.agent.recommender import RecDraft
+    from app.llm.router import LlmResult
+    from app.models import Autonomy
+    from app.services.cases import get_cases
+    from tests.conftest import wait_retained
+
+    svc = get_cases()
+    cid = client.get("/api/exceptions", params={"status": "open"}).json()["items"][0]["id"]
+    client.post(f"/api/exceptions/{cid}/resolve", json={"decision": "approve", "reason": "Freight within the cap."})
+    wait_retained(env.memory, cid)
+    from app.db import get_engine
+
+    with Session(get_engine()) as s:
+        row = s.get(Autonomy, "V001:freight_charge")
+        row.accepted = 2
+        s.add(row)
+        s.commit()
+
+    async def unsure(system, user, schema, **_):
+        value = RecDraft(
+            action="hold", confidence=0.4, adjusted_amount=None, rationale="Not sure.", precedent_found=True
+        )
+        return LlmResult(value, "fake:model", 1)
+
+    monkeypatch.setattr(env.router, "structured", unsure)
+    new = next(
+        i for i in svc.process_arrivals(5) if client.get(f"/api/exceptions/{i}").json()["vendor"]["id"] == "V001"
+    )
+    reflects = env.memory.reflect_calls
+    rec = asyncio.run(svc.recommend_case(new, force=True))  # the detail GET above already cached one
+    assert rec.route == "reflect" and env.memory.reflect_calls == reflects + 1
+    assert rec.cost_usd > 0.05  # paid for the fast attempt and the reflect
