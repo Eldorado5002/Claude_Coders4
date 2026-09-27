@@ -36,7 +36,7 @@ export function TopBar() {
           </span>
         </div>
       )}
-      <StageRail className="flex justify-center border-b border-rule py-1.5 lg:hidden" />
+      <StageRail compact className="flex justify-center border-b border-rule py-1.5 lg:hidden" />
     </div>
   )
 }

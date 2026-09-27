@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils'
 import { useLive } from '@/stores/live'
 
 /** Day 1 → Week 3 → Week 8 → The twist. Snapshots make each jump near-instant. */
-export function StageRail({ className }: { className?: string }) {
+export function StageRail({ className, compact }: { className?: string; compact?: boolean }) {
   const demo = useQuery(demoQ())
   const advance = useAdvance()
   const reset = useReset()
@@ -76,7 +76,7 @@ export function StageRail({ className }: { className?: string }) {
                         busy && target === s.id && 'animate-pulse',
                       )}
                     />
-                    <span className="whitespace-nowrap">{s.label}</span>
+                    <span className={cn('whitespace-nowrap', compact && !isCurrent && 'sr-only')}>{s.label}</span>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>

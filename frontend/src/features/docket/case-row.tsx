@@ -48,10 +48,10 @@ export const CaseRow = forwardRef<HTMLAnchorElement, Props>(function CaseRow({ c
       aria-current={active ? 'page' : undefined}
       data-fresh={fresh || undefined}
       className={cn(
-        'group relative block border-b border-rule px-5 py-3.5 outline-none transition-colors duration-700',
+        'group relative block border-b border-rule px-5 py-3.5 outline-none transition-colors duration-150',
         'hover:bg-accent/60 focus-visible:bg-accent',
         active && 'bg-accent',
-        fresh && 'animate-rise bg-hold-soft',
+        fresh && 'animate-arrive',
         'before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-foreground before:opacity-0',
         active && 'before:opacity-100',
       )}

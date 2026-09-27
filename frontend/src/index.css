@@ -167,6 +167,7 @@
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-rise: rise 220ms var(--ease-out) both;
   --animate-stamp: stamp 520ms var(--ease-out) both;
+  --animate-arrive: rise 220ms var(--ease-out) both, fresh 1800ms ease-out both;
 
   @keyframes shimmer {
     from {
@@ -184,6 +185,14 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  @keyframes fresh {
+    from {
+      background-color: var(--color-hold-soft);
+    }
+    to {
+      background-color: transparent;
     }
   }
   @keyframes stamp {

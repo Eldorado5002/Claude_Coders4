@@ -66,7 +66,10 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
           <p className="font-serif text-[1.15rem] leading-[1.55] text-pretty">
             {p.body}
             {cites.map((ct, i) => (
-              <FootnoteMarker key={ct.id} n={i + 1} cite={ct} />
+              <span key={ct.id}>
+                {i > 0 && <span className="align-super font-sans text-[0.62em] text-muted-foreground">,</span>}
+                <FootnoteMarker n={i + 1} cite={ct} />
+              </span>
             ))}
           </p>
         )}
