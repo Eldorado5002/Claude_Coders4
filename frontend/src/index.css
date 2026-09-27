@@ -223,6 +223,11 @@
   ::selection {
     background: color-mix(in oklch, var(--foreground) 16%, transparent);
   }
+  /* quiet scrollbars: hairline, paper-coloured track */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--foreground) 22%, transparent) transparent;
+  }
 }
 
 @layer utilities {
