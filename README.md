@@ -65,15 +65,10 @@ The cost is real: slow payments, missed early-payment discounts, inconsistent de
 
 We built an agent that works alongside Priya in a simple loop:
 
-```mermaid
-flowchart LR
-    A["Invoice arrives"] --> B["3-way match<br/>invoice · PO · goods receipt"]
-    B --> C["Recall precedent<br/>how did we handle this before?"]
-    C --> D["Recommend<br/>with the past cases as proof"]
-    D --> E["Clerk decides<br/>or agent auto-resolves"]
-    E --> F["Learn<br/>the decision + reason become memory"]
-    F -.-> C
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/diagram-loop-dark.svg">
+  <img alt="The Precedent loop: invoice arrives, 3-way match, recall precedent from Hindsight, recommend with proof, the clerk or the agent decides, and the decision becomes memory for the next recall." src="docs/assets/diagram-loop-light.svg">
+</picture>
 
 1. **Match.** Every invoice is checked line by line against its PO and goods receipt. Mismatches become exceptions, sorted into 10 types: price, quantity, freight, GST, rounding, missing PO, and four fraud and approval controls.
 2. **Recall.** For each exception, Precedent asks Hindsight: *how did our team resolve this vendor's cases, and this type of exception, before?*
@@ -164,42 +159,17 @@ Our live demo tells the story in five short acts. It runs on a simulated calenda
 
 Under the hood, every invoice takes this path:
 
-```mermaid
-flowchart LR
-    ERP["ERP feed"] --> MATCH
-    CAM["Photo / PDF<br/>Gemini vision"] --> MATCH
-    MATCH["3-way match<br/>invoice · PO · GRN"] -->|clean| PAID["Paid"]
-    MATCH -->|exception| HC{"Hard<br/>controls"}
-    HC -->|fires| FORCE["Reject / escalate<br/>cites the directive"]
-    HC -->|passes| REF["Hindsight reflect()<br/>vendor + type precedents<br/>directives · playbooks"]
-    REF --> ML["Anomaly check<br/>IsolationForest"]
-    ML --> AUTO{"Earned<br/>autonomy?"}
-    AUTO -->|yes| AR["Auto-resolve"]
-    AUTO -->|no| HUMAN["Clerk decides<br/>with cited proof"]
-    AR --> RET["Hindsight retain()<br/>redacted · attributed"]
-    HUMAN --> RET
-    RET --> BANK[("Memory bank")]
-    BANK -.-> REF
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/diagram-pipeline-dark.svg">
+  <img alt="How an invoice flows: invoice in, 3-way match (clean invoices are paid), hard controls (fired controls go to a human), Hindsight reflect with an anomaly check, earned autonomy, and every decision retained in Hindsight to feed the next one." src="docs/assets/diagram-pipeline-light.svg">
+</picture>
 
 ### The learning loop, step by step
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant I as Invoice
-    participant P as Precedent API
-    participant H as Hindsight
-    participant C as AP clerk
-    I->>P: arrives, 3-way match finds a freight exception
-    P->>H: reflect(case brief, tags = vendor + exception type, typed response)
-    H-->>P: approve · 1.00 · rationale · based_on [observation, past decisions]
-    P->>C: recommendation + "memories used" panel
-    C->>P: approve (or correct it with a reason)
-    Note over P: autonomy ladder +1 (3 in a row → auto)
-    P->>H: retain(lesson, tags, timestamp, document_id = case id)
-    Note over H: extracts facts, consolidates observations,<br/>refreshes playbooks
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/diagram-sequence-dark.svg">
+  <img alt="The learning loop step by step between the invoice, the Precedent API, Hindsight and the AP clerk." src="docs/assets/diagram-sequence-light.svg">
+</picture>
 
 ### Decisions we made to keep it reliable
 
@@ -284,6 +254,7 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 | `uv run python -m scripts.build_demo` | Rebuilds every demo snapshot and the memory ON/OFF evaluation (about 20 minutes, live APIs) |
 | `uv run python -m scripts.gen_vapid` | Creates push-notification keys |
 | `uv run python -m scripts.make_charts` | Redraws the learning-curve chart from the evaluation |
+| `uv run python -m scripts.make_diagrams` | Redraws the README diagrams |
 
 <details>
 <summary><b>API overview (22 endpoints)</b></summary>
@@ -384,8 +355,6 @@ We're **Claude_Coders4**, building for HackwithHyderabad 3.0.
 
 <div align="center">
 <br/>
-
-Thanks for reading.
 
 *The database records what happened. **Hindsight stores what the team has learned.***
 

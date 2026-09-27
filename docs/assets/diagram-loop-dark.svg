@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="290" viewBox="0 0 960 290" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">What Precedent does</title><desc id="d">Invoice arrives, 3-way match, recall precedent from Hindsight, recommend with proof, a clerk or the agent decides, and the decision is retained as a lesson that improves the next recall.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d7c76"/></marker><marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3987e5"/></marker></defs>
+<rect x="0.5" y="0.5" width="959" height="289" rx="12" fill="#1a1a19" stroke="#2c2c2a"/>
+<rect x="24" y="40" width="160" height="112" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="104.0" y="83.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Invoice arrives</text>
+<text x="104.0" y="105.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">from the ERP, or as</text>
+<text x="104.0" y="123.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">a phone photo</text>
+<circle cx="26" cy="42" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
+<text x="26" y="46.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">1</text>
+<rect x="214" y="40" width="160" height="112" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="294.0" y="83.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">3-way match</text>
+<text x="294.0" y="105.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">invoice vs purchase</text>
+<text x="294.0" y="123.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">order vs goods receipt</text>
+<circle cx="216" cy="42" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
+<text x="216" y="46.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">2</text>
+<path d="M187,96.0 L211,96.0" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="404" y="40" width="160" height="112" rx="10" fill="#15263b" stroke="#3987e5" stroke-width="2"/>
+<text x="484.0" y="83.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Recall precedent</text>
+<text x="484.0" y="105.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">Hindsight: how did we</text>
+<text x="484.0" y="123.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">handle this before?</text>
+<circle cx="406" cy="42" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
+<text x="406" y="46.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">3</text>
+<path d="M377,96.0 L401,96.0" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="594" y="40" width="160" height="112" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="674.0" y="83.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Recommend</text>
+<text x="674.0" y="105.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">a decision, with the</text>
+<text x="674.0" y="123.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">past cases as proof</text>
+<circle cx="596" cy="42" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
+<text x="596" y="46.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">4</text>
+<path d="M567,96.0 L591,96.0" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="784" y="40" width="160" height="112" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="864.0" y="83.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Decide</text>
+<text x="864.0" y="105.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">the clerk decides, or</text>
+<text x="864.0" y="123.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">the agent auto-resolves</text>
+<circle cx="786" cy="42" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
+<text x="786" y="46.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">5</text>
+<path d="M757,96.0 L781,96.0" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M864.0,155 L864.0,204 L484.0,204 L484.0,159" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" marker-end="url(#aa)"/>
+<text x="674.0" y="232" font-size="14.5" font-weight="600" fill="#3987e5" text-anchor="middle">Learn: the decision and its reason become memory</text>
+<text x="24" y="272" font-size="13" font-weight="400" fill="#b3b2ab" text-anchor="start">Every loop makes the next recommendation better; nothing is ever re-learned from scratch.</text>
+</svg>
