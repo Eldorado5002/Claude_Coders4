@@ -8,12 +8,14 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from sqlmodel import Session, col, func, select
 
 from app.agent.autonomy import to_state
+from app.agent.certify import certificate
 from app.config import get_settings
 from app.db import get_engine, get_state, set_state
 from app.memory.store import citations_from, get_memory
 from app.models import Autonomy, ExceptionCase, Invoice, Vendor
 from app.schemas import (
     AdvanceRequest,
+    AutonomyCertificate,
     AutonomyLevel,
     AutonomyState,
     BenfordResult,
@@ -300,6 +302,13 @@ def benford_portfolio() -> BenfordResult:
     """Benford first-digit test over every line amount received so far."""
     with Session(get_engine()) as s:
         return portfolio_benford(s)
+
+
+@router.get("/autonomy/certificate", response_model=AutonomyCertificate)
+def autonomy_certificate() -> AutonomyCertificate:
+    """Statistical guarantee behind auto-approval (Clopper-Pearson bound on the wrong-payment rate)."""
+    with Session(get_engine()) as s:
+        return certificate(s)
 
 
 @router.get("/autonomy", response_model=list[AutonomyState])

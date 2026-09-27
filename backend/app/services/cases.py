@@ -14,6 +14,8 @@ from app.agent.autonomy import (
     same_outcome,
     to_state,
 )
+from app.agent.calibration import calibrate, calibration
+from app.agent.certify import certificate
 from app.agent.recommender import CaseContext, Recommender, inr
 from app.config import get_settings
 from app.db import get_engine, get_state, set_state
@@ -281,6 +283,7 @@ class CaseService:
         self.recommender = Recommender(self.memory)
         self.write_lock = asyncio.Lock()
         self.retain_enabled = True
+        self.mode: str | None = None  # None = settings.recommender_mode (the ablation overrides it)
         self._bg: set[asyncio.Task] = set()
 
     # ------------------------------------------------------------ arrivals
@@ -387,10 +390,14 @@ class CaseService:
             if not force and (case.rec_variants or {}).get(key):
                 return Recommendation(**case.rec_variants[key])
             ctx = self.build_context(session, case)
+            pair = session.get(Autonomy, f"{case.vendor_id}:{case.primary_type}")
+            ctx.extra["pair_accepted"] = pair.accepted if pair else 0
             bank = active_bank(session)
             now = case.created_at + timedelta(minutes=2)
+            cal = calibration(session)
 
-        rec = await self.recommender.recommend(ctx, memory_enabled=mem_on, bank_id=bank, now=now)
+        rec = await self.recommender.recommend(ctx, memory_enabled=mem_on, bank_id=bank, now=now, mode=self.mode)
+        rec = rec.model_copy(update={"calibrated_confidence": calibrate(rec.confidence, cal)})
 
         async with self.write_lock:
             with Session(get_engine()) as session:
@@ -406,10 +413,11 @@ class CaseService:
 
                 auto_row = get_or_create(session, case.vendor_id, case.primary_type)
                 envelope = approved_envelope(session, case.vendor_id, case.primary_type)
+                cert = certificate(session)
                 if (
                     mem_on
                     and case.status == CaseStatus.OPEN
-                    and can_auto_resolve(auto_row, variants[key], case, envelope)
+                    and can_auto_resolve(auto_row, variants[key], case, envelope, cert.threshold)
                 ):
                     rec = await self._auto_resolve(session, case, rec)
                 else:

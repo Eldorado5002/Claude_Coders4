@@ -229,6 +229,13 @@ class Recommendation(BaseModel):
     provider: str = Field(description="What produced it, e.g. 'hindsight-reflect' or 'groq:openai/gpt-oss-120b'")
     latency_ms: int
     generated_at: datetime
+    route: Literal["reflect", "fast", "guardrail", "no_memory"] = Field(
+        "reflect", description="reflect = deep Hindsight reasoning; fast = recall + LLM for routine cases"
+    )
+    calibrated_confidence: float | None = Field(
+        None, ge=0, le=1, description="How often past recommendations at this stated confidence were right"
+    )
+    cost_usd: float | None = Field(None, description="What this recommendation cost to produce")
 
 
 class Resolution(BaseModel):
@@ -393,6 +400,56 @@ class CopilotAnswer(BaseModel):
     latency_ms: int
 
 
+# ---------------------------------------------------------------- certified autonomy & calibration
+
+
+class CertificateRow(BaseModel):
+    threshold: float
+    decisions: int
+    errors: int
+    upper_bound: float = Field(description="95% Clopper-Pearson upper bound on the wrong-payment rate")
+    certified: bool
+
+
+class AutonomyCertificate(BaseModel):
+    status: Literal["collecting", "certified", "paused"]
+    target_error: float
+    confidence_level: float
+    threshold: float | None = Field(description="Minimum confidence for auto-approval (None when paused)")
+    decisions: int
+    errors: int
+    error_upper_bound: float
+    auto_resolutions: int
+    auto_errors: int
+    auto_error_upper_bound: float
+    table: list[CertificateRow]
+    explanation: str
+
+
+class CalibrationBin(BaseModel):
+    low: float
+    high: float
+    n: int
+    stated: float | None = None
+    actual: float | None = None
+
+
+class Calibration(BaseModel):
+    n: int
+    ece: float | None = Field(description="Expected calibration error of stated confidence")
+    pooled_accuracy: float
+    bins: list[CalibrationBin]
+
+
+class Performance(BaseModel):
+    recommendations: int
+    fast_share: float = Field(description="Share of recommendations served by the fast path")
+    latency_p50_ms: int | None = None
+    latency_p95_ms: int | None = None
+    avg_cost_usd: float | None = None
+    cost_per_1000_exceptions_usd: float | None = None
+
+
 # ---------------------------------------------------------------- metrics
 
 
@@ -432,6 +489,9 @@ class Metrics(BaseModel):
     acceptance_by_week: list[WeeklyPoint]
     by_type: list[TypeBreakdown]
     assumptions: list[str]
+    certificate: AutonomyCertificate | None = None
+    calibration: Calibration | None = None
+    performance: Performance | None = None
 
 
 # ---------------------------------------------------------------- settings, health, demo

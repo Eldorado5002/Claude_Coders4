@@ -84,6 +84,20 @@ class LlmResult(Generic[T]):
     provider: str
     latency_ms: int
     cached: bool = False
+    cost_usd: float = 0.0
+
+
+# USD per million tokens (input, output). Groq and NVIDIA are used on their free tiers.
+PRICES = {"gemini": (0.25, 1.50), "groq": (0.0, 0.0), "nvidia": (0.0, 0.0)}
+
+
+def token_cost(provider: str, usage) -> float:
+    if usage is None:
+        return 0.0
+    pin, pout = PRICES.get(provider, (0.0, 0.0))
+    prompt = getattr(usage, "prompt_tokens", 0) or 0
+    completion = getattr(usage, "completion_tokens", 0) or 0
+    return (prompt * pin + completion * pout) / 1_000_000
 
 
 class LlmUnavailable(RuntimeError):
@@ -145,14 +159,18 @@ class LLMRouter:
             "max_tokens": max_tokens + 1024,
         }
 
-    async def _call(self, p: Provider, messages: list[dict], schema: type[T], max_tokens: int, temperature: float) -> T:
+    async def _call(
+        self, p: Provider, messages: list[dict], schema: type[T], max_tokens: int, temperature: float
+    ) -> tuple[T, float]:
+        """Returns (validated value, USD cost of the call(s))."""
         kwargs = self._request_kwargs(p, schema, max_tokens)
         resp = await p.client.chat.completions.create(
             model=p.model, messages=messages, temperature=temperature, **kwargs
         )
+        cost = token_cost(p.name, getattr(resp, "usage", None))
         content = resp.choices[0].message.content or ""
         try:
-            return schema.model_validate(_extract_json(content))
+            return schema.model_validate(_extract_json(content)), cost
         except (ValidationError, json.JSONDecodeError, ValueError) as e:
             # one repair attempt on the same provider
             repair = [
@@ -165,7 +183,8 @@ class LLMRouter:
                 },
             ]
             resp = await p.client.chat.completions.create(model=p.model, messages=repair, temperature=0, **kwargs)
-            return schema.model_validate(_extract_json(resp.choices[0].message.content or ""))
+            cost += token_cost(p.name, getattr(resp, "usage", None))
+            return schema.model_validate(_extract_json(resp.choices[0].message.content or "")), cost
 
     async def structured(
         self,
@@ -194,12 +213,12 @@ class LLMRouter:
         for p in chain:
             t0 = time.perf_counter()
             try:
-                value = await self._call(p, messages, schema, max_tokens, temperature)
+                value, cost = await self._call(p, messages, schema, max_tokens, temperature)
             except (openai.APIError, ValidationError, json.JSONDecodeError, ValueError) as e:
                 errors.append(f"{p.label}: {type(e).__name__}: {str(e)[:160]}")
                 log.warning("LLM provider failed, trying next: %s", errors[-1])
                 continue
-            result = LlmResult(value, p.label, int((time.perf_counter() - t0) * 1000))
+            result = LlmResult(value, p.label, int((time.perf_counter() - t0) * 1000), cost_usd=cost)
             if key:
                 with Session(get_engine()) as session:
                     session.merge(
@@ -227,8 +246,8 @@ class LLMRouter:
         ]
         vp = Provider(name="gemini", model=self.gemini_vision_model, client=p.client)
         t0 = time.perf_counter()
-        value = await self._call(vp, messages, schema, max_tokens=2500, temperature=0)
-        return LlmResult(value, vp.label, int((time.perf_counter() - t0) * 1000))
+        value, cost = await self._call(vp, messages, schema, max_tokens=2500, temperature=0)
+        return LlmResult(value, vp.label, int((time.perf_counter() - t0) * 1000), cost_usd=cost)
 
 
 _router: LLMRouter | None = None

@@ -58,10 +58,13 @@ def test_auto_resolve_respects_envelope_blocking_and_anomaly():
         amount_at_risk=4000,
         created_at=datetime(2026, 3, 2),
     )
-    rec = {"action": "approve", "confidence": 0.9, "source": "memory", "anomaly_score": 0.2}
+    rec = {"action": "approve", "confidence": 0.97, "source": "memory", "anomaly_score": 0.2}
     assert can_auto_resolve(row, rec, case, envelope=4500)
     assert not can_auto_resolve(row, rec, case, envelope=3000)  # above what humans approved before
     assert can_auto_resolve(row, {**rec, "action": "hold"}, case, envelope=0)  # holding moves no money
+    assert not can_auto_resolve(row, rec, case, envelope=4500, pay_threshold=0.99)  # below certified threshold
+    assert not can_auto_resolve(row, rec, case, envelope=4500, pay_threshold=None)  # paused: no payments
+    assert can_auto_resolve(row, {**rec, "action": "hold"}, case, envelope=0, pay_threshold=None)
     assert not can_auto_resolve(row, {**rec, "anomaly_score": 0.95}, case, envelope=4500)
     assert not can_auto_resolve(row, {**rec, "source": "no_memory"}, case, envelope=4500)
     case.blocking = True
@@ -160,7 +163,7 @@ def test_hindsight_down_falls_back_without_crashing(client, env):
     env.memory.up = False
     case_id = client.get("/api/exceptions", params={"status": "open"}).json()["items"][0]["id"]
     rec = client.post(f"/api/exceptions/{case_id}/recommend").json()["recommendation"]
-    assert rec["provider"].startswith("recall+") and rec["action"] in {a.value for a in Action}
+    assert "recall+" in rec["provider"] and rec["action"] in {a.value for a in Action}
     assert client.get("/api/health").json()["hindsight"] == "down"
 
 

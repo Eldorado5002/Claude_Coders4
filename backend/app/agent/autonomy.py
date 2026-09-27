@@ -71,18 +71,26 @@ def approved_envelope(session: Session, vendor_id: str, exc_type: str) -> float:
     return max(amounts, default=0.0)
 
 
-def can_auto_resolve(row: Autonomy, rec: dict, case: ExceptionCase, envelope: float) -> bool:
+def can_auto_resolve(
+    row: Autonomy, rec: dict, case: ExceptionCase, envelope: float, pay_threshold: float | None = 0.95
+) -> bool:
+    """pay_threshold comes from the autonomy certificate (None = autonomy paused for payments)."""
     s = get_settings()
     action = Action(rec["action"])
+    confidence = float(rec.get("confidence", 0))
     if row.level != AutonomyLevel.AUTO or case.blocking:
         return False
     if rec.get("source") != RecSource.MEMORY or action not in AUTO_ACTIONS:
         return False
-    if float(rec.get("confidence", 0)) < s.autonomy_min_confidence:
+    if confidence < s.autonomy_min_confidence:
         return False
     if (rec.get("anomaly_score") or 0) >= ANOMALY_BLOCK:
         return False
-    return not (action in MONEY_OUT and case.amount_at_risk > envelope + 0.5)
+    if action in MONEY_OUT:
+        if pay_threshold is None or confidence < pay_threshold:
+            return False
+        return case.amount_at_risk <= envelope + 0.5
+    return True
 
 
 def record_outcome(row: Autonomy, agent_action: str | None, human_action: str, when: datetime) -> tuple[bool, bool]:

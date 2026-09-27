@@ -344,6 +344,7 @@ class MemoryStore:
         fact_types: list[str] | None = None,
         strict: bool = False,
         max_tokens: int = 2048,
+        query_timestamp: str | None = None,
     ) -> list[Any]:
         await self.ensure_bank(bank_id)
         tags = [vendor_tag(vendor_id)] if vendor_id else []
@@ -356,6 +357,7 @@ class MemoryStore:
             max_tokens=max_tokens,
             tags=tags or None,
             tags_match="any_strict" if strict else "any",
+            query_timestamp=query_timestamp,
         )
         return list(resp.results or [])
 

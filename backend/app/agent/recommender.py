@@ -9,11 +9,13 @@
 """
 
 import logging
+import time
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
+from app.config import get_settings
 from app.llm.router import LlmUnavailable, get_router, strict_schema
 from app.memory.store import DIRECTIVES, MemoryStore, get_memory
 from app.schemas import Action, Citation, CitationKind, ExceptionType, Issue, Recommendation, RecSource
@@ -29,6 +31,7 @@ CONTROL_ACTION = {
     ExceptionType.INVALID_GSTIN: Action.ESCALATE,
     ExceptionType.EINVOICE_MISSING: Action.HOLD,
 }
+MEMORY_KINDS = {CitationKind.OBSERVATION, CitationKind.WORLD, CitationKind.EXPERIENCE, CitationKind.MENTAL_MODEL}
 CONTROL_ORDER = [
     ExceptionType.DUPLICATE_INVOICE,
     ExceptionType.BANK_DETAILS_CHANGED,
@@ -46,6 +49,10 @@ DIRECTIVE_FOR = {
     ExceptionType.INVALID_GSTIN: DIRECTIVES[6],
 }
 ANOMALY_CAP = 0.9
+REFLECT_COST = 0.05  # Hindsight Cloud: flat price per reflect call
+RECALL_COST = 0.0005  # recall is billed per output token; a typical call costs well under a tenth of a cent
+FAST_MIN_ACCEPTED = 2  # routine = this vendor x type already has accepted precedents
+NL = chr(10)
 
 
 class RecDraft(BaseModel):
@@ -182,50 +189,91 @@ class Recommender:
     def __init__(self, memory: MemoryStore | None = None):
         self.memory = memory or get_memory()
         self.router = get_router()
+        self.rag = None  # set only by the ablation study
 
-    async def recommend(self, ctx: CaseContext, *, memory_enabled: bool, bank_id: str, now: datetime) -> Recommendation:
+    async def recommend(
+        self, ctx: CaseContext, *, memory_enabled: bool, bank_id: str, now: datetime, mode: str | None = None
+    ) -> Recommendation:
+        """mode: hybrid (default) | reflect | recall | rag. Hybrid sends routine cases down the fast path."""
+        mode = mode or get_settings().recommender_mode
         brief = case_brief(ctx)
-        draft: RecDraft | None = None
+        t0 = time.perf_counter()
+        control = next((t for t in CONTROL_ORDER if t.value in ctx.types), None)
         citations: list[Citation] = []
-        provider = ""
-        latency = 0
-        source = RecSource.NO_MEMORY
+        cost = 0.0
 
-        if memory_enabled:
-            try:
-                resp, citations, latency = await self.memory.reflect(
-                    bank_id,
-                    f"NEW INVOICE EXCEPTION\n{brief}\n\n{QUESTION}",
-                    vendor_id=ctx.vendor["id"],
-                    types=ctx.types,
-                    response_schema=strict_schema(RecDraft),
-                )
-                draft = RecDraft.model_validate(resp.structured_output or {})
-                provider = "hindsight-reflect"
-            except (ValidationError, Exception) as e:  # noqa: BLE001 — any memory failure falls back
-                log.warning("reflect failed for %s, falling back to recall+LLM: %s", ctx.case_id, e)
-                try:
-                    draft, citations, provider, latency = await self._recall_llm(ctx, brief, bank_id)
-                except LlmUnavailable as e2:
-                    log.error("recall fallback failed too: %s", e2)
-                    draft = RecDraft(
-                        action=Action.HOLD,
-                        confidence=0.2,
-                        adjusted_amount=None,
-                        rationale="Memory and models unavailable — holding for manual review.",
-                        precedent_found=False,
-                    )
-                    citations, provider, latency = [], "rules", 0
-            has_memory_evidence = any(
-                c.kind
-                in (CitationKind.OBSERVATION, CitationKind.WORLD, CitationKind.EXPERIENCE, CitationKind.MENTAL_MODEL)
-                for c in citations
+        if control is not None:
+            # a hard control decides the action in code: no model call is needed
+            forced = CONTROL_ACTION[control]
+            msg = next(i.message for i in ctx.issues if i.type == control)
+            citations = await self._control_citations(ctx, control, [], bank_id if memory_enabled else None)
+            cost += RECALL_COST if memory_enabled else 0.0
+            has_context = any(c.kind != CitationKind.DIRECTIVE for c in citations)
+            context = (
+                " Past decisions for this vendor are shown for context; they cannot override this rule."
+                if has_context
+                else ""
             )
-            source = RecSource.MEMORY if (draft.precedent_found and has_memory_evidence) else RecSource.NO_MEMORY
+            draft = RecDraft(
+                action=forced,
+                confidence=0.99,
+                adjusted_amount=None,
+                rationale=f"Hard control: {msg} Action: {forced.value}.{context}",
+                precedent_found=False,
+            )
+            provider, route, source = "guardrail", "guardrail", RecSource.GUARDRAIL
+        elif memory_enabled:
+            draft = None
+            route, provider = "reflect", ""
+            if mode == "rag" and self.rag is not None:
+                draft, citations, provider, cost = await self._rag_llm(ctx, brief)
+                route = "fast"
+            elif mode == "recall" or (mode == "hybrid" and ctx.extra.get("pair_accepted", 0) >= FAST_MIN_ACCEPTED):
+                try:
+                    fast = await self._recall_llm(ctx, brief, bank_id, require_observation=(mode == "hybrid"))
+                except (LlmUnavailable, Exception) as e:  # noqa: BLE001 — fall through to reflect
+                    log.warning("fast path failed for %s: %s", ctx.case_id, e)
+                    fast = None
+                if fast is not None:
+                    draft, citations, provider, cost = fast
+                    route = "fast"
+            if draft is None:
+                try:
+                    resp, citations, _ = await self.memory.reflect(
+                        bank_id,
+                        "NEW INVOICE EXCEPTION" + NL + brief + NL + NL + QUESTION,
+                        vendor_id=ctx.vendor["id"],
+                        types=ctx.types,
+                        response_schema=strict_schema(RecDraft),
+                    )
+                    draft = RecDraft.model_validate(resp.structured_output or {})
+                    provider, cost = "hindsight-reflect", REFLECT_COST
+                except (ValidationError, Exception) as e:  # noqa: BLE001 — any memory failure falls back
+                    log.warning("reflect failed for %s, falling back to recall+LLM: %s", ctx.case_id, e)
+                    cost += REFLECT_COST
+                    try:
+                        draft, citations, provider, extra_cost = await self._recall_llm(
+                            ctx, brief, bank_id, require_observation=False
+                        )
+                        cost += extra_cost
+                    except (LlmUnavailable, Exception) as e2:  # noqa: BLE001
+                        log.error("recall fallback failed too: %s", e2)
+                        draft = RecDraft(
+                            action=Action.HOLD,
+                            confidence=0.2,
+                            adjusted_amount=None,
+                            rationale="Memory and models unavailable — holding for manual review.",
+                            precedent_found=False,
+                        )
+                        citations, provider = [], "rules"
+            citations = [c for c in citations if c.kind != CitationKind.DIRECTIVE]
+            evidence = any(c.kind in MEMORY_KINDS for c in citations)
+            source = RecSource.MEMORY if (draft.precedent_found and evidence) else RecSource.NO_MEMORY
         else:
+            route, source = "no_memory", RecSource.NO_MEMORY
             try:
-                res = await self.router.structured(NO_MEMORY_SYSTEM, f"{brief}\n\n{QUESTION}", RecDraft)
-                draft, provider, latency = res.value, res.provider, res.latency_ms
+                res = await self.router.structured(NO_MEMORY_SYSTEM, brief + NL + NL + QUESTION, RecDraft)
+                draft, provider, cost = res.value, res.provider, res.cost_usd
             except LlmUnavailable as e:
                 log.error("all LLMs unavailable: %s", e)
                 draft = RecDraft(
@@ -238,23 +286,6 @@ class Recommender:
                 provider = "rules"
 
         action, confidence, rationale = draft.action, draft.confidence, draft.rationale.strip()
-
-        control = next((t for t in CONTROL_ORDER if t.value in ctx.types), None)
-        if control is None:
-            # directives apply to every reflect; only show them when a hard control actually fired
-            citations = [c for c in citations if c.kind != CitationKind.DIRECTIVE]
-        if control is not None:
-            forced = CONTROL_ACTION[control]
-            msg = next(i.message for i in ctx.issues if i.type == control)
-            if action != forced:
-                rationale = f"Hard control: {msg} Action forced to {forced.value}. " + (
-                    f"(Memory alone would have suggested {action.value}.)" if memory_enabled else ""
-                )
-            else:
-                rationale = f"Hard control: {msg} {rationale}"
-            action, confidence, source = forced, 0.99, RecSource.GUARDRAIL
-            citations = await self._control_citations(ctx, control, citations, bank_id if memory_enabled else None)
-
         adjusted = payable_amount(ctx) if action == Action.APPROVE_ADJUSTED else None
 
         msme = ctx.extra.get("msme")
@@ -278,8 +309,10 @@ class Recommender:
             anomaly_score=ctx.anomaly,
             auto_resolved=False,
             provider=provider,
-            latency_ms=latency,
+            latency_ms=int((time.perf_counter() - t0) * 1000),
             generated_at=now,
+            route=route,
+            cost_usd=round(cost, 6),
         )
 
     async def _control_citations(
@@ -314,26 +347,38 @@ class Recommender:
                 log.warning("precedent recall for control case %s failed: %s", ctx.case_id, e)
         return out + memory
 
-    async def _recall_llm(self, ctx: CaseContext, brief: str, bank_id: str):
-        citations: list[Citation] = []
-        try:
-            facts = await self.memory.recall(
-                bank_id, f"{ctx.vendor['name']} {' '.join(ctx.types)}", vendor_id=ctx.vendor["id"], types=ctx.types
-            )
-            for f in facts[:8]:
-                citations.append(
-                    Citation(
-                        id=str(f.id),
-                        kind=CitationKind(f.type) if f.type in CitationKind._value2member_map_ else CitationKind.WORLD,
-                        text=f.text,
-                        occurred_at=None,
-                        exception_id=f.document_id,
-                    )
-                )
-        except Exception as e:  # noqa: BLE001
-            log.warning("recall failed for %s: %s", ctx.case_id, e)
-        precedents = "\n".join(f"- {c.text}" for c in citations) or "- (no past decisions found)"
-        res = await self.router.structured(
-            RECALL_SYSTEM, f"PAST DECISIONS:\n{precedents}\n\nNEW EXCEPTION:\n{brief}\n\n{QUESTION}", RecDraft
+    async def _recall_llm(self, ctx: CaseContext, brief: str, bank_id: str, *, require_observation: bool):
+        """Fast path: Hindsight recall (this vendor + exception type, anchored at the invoice date) + one LLM call.
+        Returns None when there is no consolidated observation to lean on (the caller then uses reflect)."""
+        kinds = " and ".join(t.replace("_", " ") for t in ctx.types)
+        facts = await self.memory.recall(
+            bank_id,
+            f"How does the AP team resolve {kinds} for {ctx.vendor['name']}?",
+            vendor_id=ctx.vendor["id"],
+            types=ctx.types,
+            query_timestamp=ctx.sim_date.isoformat(),
         )
-        return res.value, citations, f"recall+{res.provider}", res.latency_ms
+        if require_observation and not any(getattr(f, "type", "") == "observation" for f in facts):
+            return None
+        citations = [
+            Citation(
+                id=str(f.id),
+                kind=CitationKind(f.type) if f.type in CitationKind._value2member_map_ else CitationKind.WORLD,
+                text=f.text,
+                exception_id=f.document_id,
+            )
+            for f in facts[:8]
+        ]
+        return await self._decide_from(citations, brief, "hindsight-recall", RECALL_COST)
+
+    async def _rag_llm(self, ctx: CaseContext, brief: str):
+        """Ablation baseline: plain vector search over past resolutions (no Hindsight) + the same LLM."""
+        hits = await self.rag.search(f"{ctx.vendor['name']} {' '.join(ctx.types)} {brief[:600]}", k=8)
+        citations = [Citation(id=h["id"], kind=CitationKind.WORLD, text=h["text"], exception_id=h["id"]) for h in hits]
+        return await self._decide_from(citations, brief, "rag", self.rag.last_cost)
+
+    async def _decide_from(self, citations: list[Citation], brief: str, label: str, base_cost: float):
+        precedents = NL.join(f"- {c.text}" for c in citations) or "- (no past decisions found)"
+        prompt = "PAST DECISIONS:" + NL + precedents + NL + NL + "NEW EXCEPTION:" + NL + brief + NL + NL + QUESTION
+        res = await self.router.structured(RECALL_SYSTEM, prompt, RecDraft)
+        return res.value, citations, f"{label}+{res.provider}", base_cost + res.cost_usd

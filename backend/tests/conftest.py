@@ -15,6 +15,8 @@ class FakeMemory:
         self.retained: list[dict] = []
         self.up = True
         self.settings = None
+        self.reflect_calls = 0
+        self.recall_calls = 0
 
     async def ensure_bank(self, bank_id):
         return None
@@ -44,6 +46,7 @@ class FakeMemory:
     async def reflect(self, bank_id, query, *, vendor_id=None, types=None, response_schema=None, budget="low"):
         from app.memory.store import citations_from
 
+        self.reflect_calls += 1
         if not self.up:
             raise ConnectionError("hindsight down")
         prior = [r for r in self.retained if r["vendor_id"] == vendor_id and set(r["types"]) & set(types or [])]
@@ -83,8 +86,26 @@ class FakeMemory:
         )
         return resp, citations_from(resp), 5
 
-    async def recall(self, bank_id, query, **_):
-        return []
+    async def recall(self, bank_id, query, vendor_id=None, types=None, **_):
+        self.recall_calls += 1
+        prior = [r for r in self.retained if r["vendor_id"] == vendor_id and set(r["types"]) & set(types or [])]
+        if not prior:
+            return []
+        last = prior[-1]
+        return [
+            SimpleNamespace(
+                id=f"obs-{last['case_id']}",
+                type="observation",
+                document_id=last["case_id"],
+                text=f"{vendor_id} {types[0]} is usually resolved: {last['decision']}",
+            ),
+            SimpleNamespace(
+                id=f"m-{last['case_id']}",
+                type="world",
+                document_id=last["case_id"],
+                text=f"Case {last['case_id']}: {last['decision']}",
+            ),
+        ]
 
     async def delete_document(self, bank_id, document_id):
         before = len(self.retained)
@@ -122,13 +143,23 @@ class FakeRouter:
 
     async def structured(self, system, user, schema, **_):
         self.calls += 1
-        value = schema(
-            action="hold",
-            confidence=0.4,
-            adjusted_amount=None,
-            rationale="No history available; hold.",
-            precedent_found=False,
-        )
+        if "PAST DECISIONS" in user and "Case EXC" in user:  # fast path with precedents
+            decision = user.split("Case EXC")[1].split(": ")[1].split()[0]
+            value = schema(
+                action=decision,
+                confidence=0.96,
+                adjusted_amount=None,
+                rationale="Same as the recalled precedent.",
+                precedent_found=True,
+            )
+        else:
+            value = schema(
+                action="hold",
+                confidence=0.4,
+                adjusted_amount=None,
+                rationale="No history available; hold.",
+                precedent_found=False,
+            )
         return LlmResult(value, "fake:model", 1)
 
 

@@ -11,7 +11,7 @@ from sqlmodel import Session, select
 from app.agent.autonomy import same_outcome
 from app.config import BACKEND_DIR, get_settings
 from app.models import ExceptionCase, Invoice, Vendor
-from app.schemas import Action, ExceptionType, Kpis, Metrics, TypeBreakdown, WeeklyPoint
+from app.schemas import Action, ExceptionType, Kpis, Metrics, Performance, TypeBreakdown, WeeklyPoint
 
 EVAL_FILE = BACKEND_DIR / "data" / "eval.json"
 MANUAL_MIN, CONFIRM_MIN = 7.0, 1.0
@@ -111,6 +111,25 @@ def open_msme_at_risk(session: Session, cases: list[ExceptionCase]) -> list:
     return out
 
 
+def performance(cases: list[ExceptionCase]) -> Performance:
+    recs = [c.recommendation for c in cases if c.recommendation]
+    lat = sorted(int(r.get("latency_ms") or 0) for r in recs if r.get("latency_ms"))
+    costs = [float(r["cost_usd"]) for r in recs if r.get("cost_usd") is not None]
+
+    def pct(p: float) -> int | None:
+        return lat[min(len(lat) - 1, int(round(p * (len(lat) - 1))))] if lat else None
+
+    avg = sum(costs) / len(costs) if costs else None
+    return Performance(
+        recommendations=len(recs),
+        fast_share=round(sum(1 for r in recs if r.get("route") == "fast") / len(recs), 3) if recs else 0.0,
+        latency_p50_ms=pct(0.5),
+        latency_p95_ms=pct(0.95),
+        avg_cost_usd=round(avg, 5) if avg is not None else None,
+        cost_per_1000_exceptions_usd=round(avg * 1000, 2) if avg is not None else None,
+    )
+
+
 def compute_metrics(session: Session, memories: int) -> Metrics:
     s = get_settings()
     cases = session.exec(select(ExceptionCase)).all()
@@ -190,7 +209,13 @@ def compute_metrics(session: Session, memories: int) -> Metrics:
     ]
     if ev:
         assumptions.append(f"Replay evaluation run on {ev.get('generated_at', '')[:10]}: {ev.get('summary', '')}")
+    from app.agent.calibration import calibration
+    from app.agent.certify import certificate
+
     return Metrics(
+        certificate=certificate(session),
+        calibration=calibration(session),
+        performance=performance(cases),
         kpis=kpis,
         touchless_by_week=touch_series,
         acceptance_by_week=acc_series,

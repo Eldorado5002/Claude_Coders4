@@ -60,11 +60,15 @@ class Simulator:
                 truth = self._truth(session, c)
                 if c.status == CaseStatus.AUTO_RESOLVED:
                     if c.resolution and same_outcome(c.resolution.get("decision"), truth["decision"]):
+                        if not c.resolution.get("audited"):
+                            c.resolution = {**c.resolution, "audited": True}
+                            session.add(c)
                         continue  # audit passed
                     reason = f"Audit override: {truth['reason']}"
                 else:
                     reason = truth["reason"]
                 todo.append((c.id, c.created_at, truth, reason))
+            session.commit()
         n = 0
         for cid, created, truth, reason in todo:
             req = ResolveRequest(
