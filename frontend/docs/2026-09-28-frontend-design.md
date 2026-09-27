@@ -21,11 +21,11 @@ Out of scope: login and roles, editing vendors or POs, i18n, offline writes.
 - Stack (pinned, verified in a test build):
   - Vite 8.3 · React 19.3 · TypeScript ~6.0 (7.x breaks openapi-typescript)
   - Tailwind 4.3 · shadcn CLI 4.21, `--base radix`, preset **Sera**
-  - TanStack Query 5.104 · TanStack Table 9.2 · Zustand 5
+  - TanStack Query 5.104 · TanStack Table 8.21 · Zustand 5
   - React Router **7.18** in data mode (npm `latest` is 8)
   - Recharts 3.10 · openapi-fetch 0.17
-  - Utilities: nuqs · motion · @number-flow/react · react-hotkeys-hook · react-markdown + remark-gfm · @tailwindcss/typography · react-dropzone · react-error-boundary · date-fns · vite-plugin-pwa 1.3
-  - Registry components: Dice `stepper` + `timeline` · ai-elements `inline-citation` · Kibo `dropzone` · tablecn `data-table`
+  - Utilities: motion · @number-flow/react · react-hotkeys-hook · react-markdown + remark-gfm · @tailwindcss/typography · react-dropzone · react-error-boundary · date-fns · vite-plugin-pwa 1.3
+  - Stage rail, timeline, citation hover cards and dropzone are built on shadcn primitives, not community registries, to keep one visual language. URL state uses `useSearchParams`.
 - The backend owns the contract. Anything we need changed in `docs/` or `backend/` is a request to the backend owner, never an edit.
 - Work happens on branch `frontend`, which is merged to `main` at the end. Commits are under the author's own name with no AI attribution.
 - Money is INR in `Intl.NumberFormat('en-IN')`. Dates follow the **simulated clock** (`settings.sim_date`), never `Date.now()`.
@@ -165,7 +165,7 @@ Confidence is shown as a band plus a number: **High ≥ 80 · Medium 50–79 · 
 ### 5.1 Docket: `/exceptions`
 
 The list pane is 400px wide and resizable:
-- **Status tabs:** Open · Auto-resolved · Resolved · All, with counts. The tab lives in the URL via nuqs.
+- **Status tabs:** Open · Auto-resolved · Resolved · All, with counts. The tab lives in the URL search params.
 - **Filters:** vendor (popover + command) and type.
 - **Rows show:**
   - vendor, type chip, amount at risk
@@ -197,13 +197,13 @@ The list pane is 400px wide and resizable:
 - **Missing PO:** an explainer panel replaces the PO and GRN groups.
 - **Bank check:** `invoice.bank_account` vs `vendor_bank_on_file`. Equal shows ✓; different shows red 🔒.
 - **Anomaly:** `anomaly_score` on a 0–1 scale with "typical / unusual". Null shows "Not enough history yet".
-- **Timeline** (Dice timeline): Received (`created_at`) → Matched (N issues) → Opinion (`generated_at`) → Resolved (`resolved_at`) → Lesson filed.
+- **Timeline:** Received (`created_at`) → Matched (N issues) → Opinion (`generated_at`) → Resolved (`resolved_at`) → Lesson filed.
 
 **Opinion** (right, about 42%, sticky):
 - **Header:** "◆ Precedent's opinion" and the source chip.
 - **Decision:** the decision chip, then the confidence band. For `approve_adjusted` it shows "Pay ₹X".
 - **Rationale:** Newsreader 18px, ending with footnote markers ¹²³.
-  - Hovering a marker opens its hover card (ai-elements `inline-citation`).
+  - Hovering a marker opens its hover card (shadcn `hover-card`).
   - The **Precedents cited** list below shows kind label, text, date and "→ EXC-xxxx" when `exception_id` is present.
   - Directives appear only on guardrail recommendations; the backend already filters them.
 - **Guardrail:**
@@ -248,7 +248,7 @@ The list pane is 400px wide and resizable:
 
 ### 5.4 Vendors: `/vendors`, `/vendors/:id`
 
-- **Index:** a tablecn data table with vendor (name, city, category), GSTIN (mono), terms, invoices, exceptions, open, and touchless rate as an inline bar. Sort and search are kept in the URL.
+- **Index:** a TanStack Table with vendor (name, city, category), GSTIN (mono), terms, invoices, exceptions, open, and touchless rate as an inline bar. Sort and search are kept in the URL.
 - **Vendor file:**
   - Header: name in serif, GSTIN, state, terms, bank on file.
   - **What Precedent has learned** (`learned` observations).
@@ -304,7 +304,7 @@ The list pane is 400px wide and resizable:
 
 - **Input:**
   - Phones: `<input type=file accept="image/*" capture="environment">`.
-  - Desktop: a Kibo dropzone plus a **"Use sample invoice"** button that loads the bundled Balaji PNG.
+  - Desktop: a react-dropzone area plus a **"Use sample invoice"** button that loads the bundled Balaji PNG.
 - **Processing:** the image with a scan line (reduced-motion: a spinner) and "Reading invoice…".
 - **Result:**
   - The extracted invoice card: vendor matched ✓ by GSTIN, lines, total, bank account.
@@ -316,7 +316,7 @@ The list pane is 400px wide and resizable:
 
 ### 5.9 Stage rail and narrator
 
-- **Rail:** Dice stepper with four nodes (`reached`, current).
+- **Rail:** a custom stepper with four nodes (`reached`, current).
 - **Advancing:**
   - Clicking the next node confirms first: "Advance to Week 8 · Earned autonomy?".
   - Snapshots make it near-instant, but while `busy` the rail shows progress and controls are disabled.
