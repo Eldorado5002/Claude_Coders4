@@ -21,7 +21,7 @@ const NARRATION: Record<DemoStageId, { title: string; body: string }> = {
   },
   twist: {
     title: 'Someone changes Balaji’s bank account.',
-    body: 'Memory says “approve”. The hard controls say no. Controls never bend, however much the agent has learned.',
+    body: 'Balaji’s freight is on autopilot, yet this invoice stops cold: a changed bank account and a resubmitted duplicate hit hard controls, which run before memory and never bend.',
   },
 }
 
