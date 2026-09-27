@@ -122,3 +122,15 @@ def test_certificate_endpoint_and_metrics(client):
     m = client.get("/api/metrics").json()
     assert m["certificate"]["target_error"] == 0.05
     assert "ece" in m["calibration"] and "latency_p50_ms" in m["performance"]
+
+
+def test_beliefs_and_knowledge_endpoints(client):
+    beliefs = client.get("/api/vendors/V001/beliefs").json()
+    assert beliefs[0]["evidence_count"] == 4 and beliefs[0]["versions"][0]["new_evidence"]
+    assert client.get("/api/vendors/V999/beliefs").status_code == 404
+    pages = client.get("/api/knowledge").json()
+    assert pages == [{"id": "kp-1", "name": "Shree Balaji Steel Traders", "vendor_id": "V001", "stale": False}]
+    assert "5,000" in client.get("/api/knowledge/kp-1").json()["markdown"]
+    assert client.get("/api/knowledge/nope").status_code == 404
+    profile = client.get("/api/vendors/V001").json()
+    assert profile["playbook"].startswith("## Freight")  # the vendor wiki page is the playbook

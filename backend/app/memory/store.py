@@ -245,6 +245,106 @@ class MemoryStore:
                 await self.client.arefresh_mental_model(bank_id, TEAM_POLICY_ID)
         return _mm_content(mm), refreshed
 
+    # ---------------------------------------------------------------- beliefs (observation history)
+
+    async def beliefs(self, bank_id: str, vendor_id: str, vendor_name: str, limit: int = 5) -> list[dict]:
+        """Consolidated observations about a vendor, each with its evidence count and version history."""
+        await self.ensure_bank(bank_id)
+        obs = await self.recall(
+            bank_id,
+            f"How does the AP team handle invoices from {vendor_name}?",
+            vendor_id=vendor_id,
+            fact_types=["observation"],
+            strict=True,
+        )
+        out = []
+        for o in obs[:limit]:
+            oid = str(o.id)
+            detail, history = await asyncio.gather(
+                self.client._memory_api.get_memory(bank_id, oid, _request_timeout=self.settings.hindsight_timeout),
+                self.client._memory_api.get_observation_history(
+                    bank_id, oid, _request_timeout=self.settings.hindsight_timeout
+                ),
+                return_exceptions=True,
+            )
+            detail = {} if isinstance(detail, Exception) else (_to_dict(detail) or {})
+            history = [] if isinstance(history, Exception) else [_to_dict(h) for h in (history or [])]
+            versions = [
+                {
+                    "text": h.get("previous_text", ""),
+                    "as_of": h.get("previous_mentioned_at") or h.get("previous_occurred_end"),
+                    "new_evidence": [f.get("text", "") for f in (h.get("source_facts") or []) if f.get("is_new")],
+                }
+                for h in history
+                if h.get("previous_text")
+            ]
+            versions.sort(key=lambda v: str(v["as_of"] or ""))
+            out.append(
+                {
+                    "id": oid,
+                    "text": o.text,
+                    "evidence_count": len(detail.get("source_memory_ids") or []),
+                    "first_seen": getattr(o, "occurred_start", None) or detail.get("occurred_start"),
+                    "last_updated": getattr(o, "mentioned_at", None) or detail.get("mentioned_at"),
+                    "versions": versions,
+                }
+            )
+        return out
+
+    # ---------------------------------------------------------------- knowledge pages (vendor wiki)
+
+    async def _tree(self, bank_id: str) -> list[dict]:
+        tree = _to_dict(await self.client.aget_knowledge_base_tree(bank_id)) or {}
+        return tree.get("roots") or []
+
+    async def knowledge_pages(self, bank_id: str) -> list[dict]:
+        await self.ensure_bank(bank_id)
+        pages = []
+
+        def walk(nodes: list[dict]) -> None:
+            for n in nodes:
+                if n.get("kind") == "page":
+                    vendor = next((t.split(":", 1)[1] for t in n.get("tags") or [] if t.startswith("vendor:")), None)
+                    pages.append({"id": n["id"], "name": n["name"], "vendor_id": vendor, "stale": n.get("is_stale")})
+                walk(n.get("children") or [])
+
+        walk(await self._tree(bank_id))
+        return pages
+
+    async def knowledge_page(self, bank_id: str, page_id: str) -> dict:
+        page = _to_dict(await self.client.aget_knowledge_page(bank_id, page_id)) or {}
+        vendor = next((t.split(":", 1)[1] for t in page.get("tags") or [] if t.startswith("vendor:")), None)
+        return {
+            "id": page_id,
+            "name": page.get("name", ""),
+            "vendor_id": vendor,
+            "stale": None,
+            "markdown": strip_frontmatter(page.get("markdown") or page.get("body")),
+        }
+
+    async def vendor_page(self, bank_id: str, vendor_id: str, vendor_name: str) -> str | None:
+        """The vendor's wiki page (Hindsight Knowledge Page), created on first use under a 'Vendors' folder."""
+        await self.ensure_bank(bank_id)
+        existing = next((p for p in await self.knowledge_pages(bank_id) if p["vendor_id"] == vendor_id), None)
+        if existing:
+            return (await self.knowledge_page(bank_id, existing["id"]))["markdown"]
+        roots = await self._tree(bank_id)
+        folder = next((n for n in roots if n.get("kind") == "folder" and n.get("name") == "Vendors"), None)
+        if folder is None:
+            folder = _to_dict(await self.client.acreate_knowledge_folder(bank_id, name="Vendors"))
+        await self.client.acreate_knowledge_page(
+            bank_id,
+            name=vendor_name,
+            parent_id=folder["id"],
+            source_query=(
+                f"What should an AP clerk know about invoices from {vendor_name} ({vendor_id})? Billing habits, exact "
+                "limits and conditions, the standard decision for each exception type, and anything that changed "
+                "over time."
+            ),
+            tags=[vendor_tag(vendor_id)],
+        )
+        return None  # Hindsight writes it in the background; the next request returns it
+
     async def delete_document(self, bank_id: str, document_id: str) -> bool:
         """Forget one lesson: deletes the document and every fact extracted from it."""
         try:
@@ -396,6 +496,20 @@ class MemoryStore:
         except Exception as e:
             log.info("create mental model %s: %s", mm_id, e)
         return None
+
+
+def _to_dict(x: Any) -> Any:
+    return x.to_dict() if hasattr(x, "to_dict") else x
+
+
+def strip_frontmatter(md: str | None) -> str | None:
+    if not md:
+        return None
+    if md.startswith("---"):
+        end = md.find("---", 3)
+        if end != -1:
+            md = md[end + 3 :]
+    return md.strip() or None
 
 
 def _mm_content(mm: Any) -> str | None:

@@ -18,6 +18,7 @@ from app.schemas import (
     AutonomyCertificate,
     AutonomyLevel,
     AutonomyState,
+    Belief,
     BenfordResult,
     CaptureResult,
     CaseStatus,
@@ -30,6 +31,8 @@ from app.schemas import (
     ExceptionSummary,
     ExceptionType,
     Health,
+    KnowledgePage,
+    KnowledgePageSummary,
     Lesson,
     MemoryItem,
     Metrics,
@@ -265,7 +268,7 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
     if base.exceptions_count:
         mem = get_memory()
         try:
-            facts, playbook = await asyncio.gather(
+            facts, page = await asyncio.gather(
                 mem.recall(
                     bank,
                     f"How does the AP team handle invoices from {name}?",
@@ -273,8 +276,9 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
                     fact_types=["observation"],
                     strict=True,
                 ),
-                mem.playbook(bank, vendor_id, name),
+                mem.vendor_page(bank, vendor_id, name),
             )
+            playbook = page or await mem.playbook(bank, vendor_id, name)
             learned = [Citation(id=str(f.id), kind=CitationKind.OBSERVATION, text=f.text) for f in facts[:8]]
         except Exception as e:  # noqa: BLE001
             log.warning("vendor memory unavailable: %s", e)
@@ -288,6 +292,41 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
         risk=risk,
         udyam=udyam,
     )
+
+
+@router.get("/vendors/{vendor_id}/beliefs", response_model=list[Belief])
+async def vendor_beliefs(vendor_id: str) -> list[Belief]:
+    """What the agent believes about this vendor, how many memories back each belief, and how it changed."""
+    with Session(get_engine()) as s:
+        v = s.get(Vendor, vendor_id)
+        if v is None:
+            raise HTTPException(404, f"Vendor {vendor_id} not found")
+        bank, name = active_bank(s), v.name
+    try:
+        return [Belief(**b) for b in await get_memory().beliefs(bank, vendor_id, name)]
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(503, f"Hindsight unavailable: {e}") from e
+
+
+@router.get("/knowledge", response_model=list[KnowledgePageSummary])
+async def knowledge_pages() -> list[KnowledgePageSummary]:
+    """The vendor wiki: Hindsight Knowledge Pages that rewrite themselves as the team learns."""
+    with Session(get_engine()) as s:
+        bank = active_bank(s)
+    try:
+        return [KnowledgePageSummary(**p) for p in await get_memory().knowledge_pages(bank)]
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(503, f"Hindsight unavailable: {e}") from e
+
+
+@router.get("/knowledge/{page_id}", response_model=KnowledgePage)
+async def knowledge_page(page_id: str) -> KnowledgePage:
+    with Session(get_engine()) as s:
+        bank = active_bank(s)
+    try:
+        return KnowledgePage(**await get_memory().knowledge_page(bank, page_id))
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(404, f"Knowledge page {page_id} not found: {e}") from e
 
 
 @router.get("/risk", response_model=list[VendorRiskRow])
@@ -378,10 +417,11 @@ async def recent_memory(limit: int = Query(20, ge=1, le=100)) -> list[MemoryItem
 @router.post("/copilot/ask", response_model=CopilotAnswer)
 async def copilot(body: CopilotRequest) -> CopilotAnswer:
     with Session(get_engine()) as s:
-        bank = active_bank(s)
+        bank, today = active_bank(s), sim_date(s)
     try:
         resp, cites, ms = await get_memory().reflect(
             bank,
+            f"Today's date is {today:%d %B %Y}; interpret 'last month', 'last monsoon' etc. relative to it.\n"
             f"{body.question}\n\nAnswer as Precedent for the AP team in a few short markdown sentences or bullets. "
             "Quote exact amounts, limits and dates from memory. Say so if memory has no answer.",
             vendor_id=body.vendor_id,

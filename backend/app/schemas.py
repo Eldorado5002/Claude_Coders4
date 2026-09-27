@@ -377,6 +377,37 @@ class VendorProfile(VendorSummary):
     udyam: str | None = None
 
 
+# ---------------------------------------------------------------- beliefs & knowledge pages
+
+
+class BeliefVersion(BaseModel):
+    text: str = Field(description="What the agent believed before this change")
+    as_of: datetime | None = Field(None, description="Simulated date that version reflects")
+    new_evidence: list[str] = Field(description="The new facts that changed it")
+
+
+class Belief(BaseModel):
+    """A consolidated Hindsight observation, with how it evolved."""
+
+    id: str
+    text: str
+    evidence_count: int = Field(description="Memories that support this belief")
+    first_seen: datetime | None = None
+    last_updated: datetime | None = None
+    versions: list[BeliefVersion] = Field(description="Earlier versions, oldest first")
+
+
+class KnowledgePageSummary(BaseModel):
+    id: str
+    name: str
+    vendor_id: str | None = None
+    stale: bool | None = None
+
+
+class KnowledgePage(KnowledgePageSummary):
+    markdown: str | None = Field(None, description="None while Hindsight is still writing it")
+
+
 # ---------------------------------------------------------------- memory feed & copilot
 
 

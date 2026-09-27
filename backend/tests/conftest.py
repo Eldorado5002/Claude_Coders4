@@ -7,6 +7,8 @@ import pytest
 
 from app.llm.router import LlmResult
 
+WIKI = "## Freight" + chr(10) + "Approved under Rs 5,000 per trip."
+
 
 class FakeMemory:
     """Remembers retained resolutions per vendor; 'reflects' by reusing the latest human decision."""
@@ -111,6 +113,41 @@ class FakeMemory:
         before = len(self.retained)
         self.retained = [r for r in self.retained if r["case_id"] != document_id]
         return len(self.retained) < before
+
+    async def beliefs(self, bank_id, vendor_id, vendor_name, limit=5):
+        return [
+            {
+                "id": "obs-1",
+                "text": f"{vendor_name} freight under Rs 5,000 is approved",
+                "evidence_count": 4,
+                "first_seen": None,
+                "last_updated": None,
+                "versions": [
+                    {
+                        "text": "Freight is approved",
+                        "as_of": "2026-03-05T00:00:00",
+                        "new_evidence": ["Priya approved Rs 3,850 freight"],
+                    }
+                ],
+            }
+        ]
+
+    async def knowledge_pages(self, bank_id):
+        return [{"id": "kp-1", "name": "Shree Balaji Steel Traders", "vendor_id": "V001", "stale": False}]
+
+    async def knowledge_page(self, bank_id, page_id):
+        if page_id != "kp-1":
+            raise KeyError(page_id)
+        return {
+            "id": "kp-1",
+            "name": "Shree Balaji Steel Traders",
+            "vendor_id": "V001",
+            "stale": None,
+            "markdown": WIKI,
+        }
+
+    async def vendor_page(self, bank_id, vendor_id, vendor_name):
+        return WIKI if vendor_id == "V001" else None
 
     async def team_policy(self, bank_id):
         return "- Freight up to Rs 5,000 per trip is approved for Balaji.", None
