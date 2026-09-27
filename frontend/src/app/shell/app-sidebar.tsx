@@ -43,6 +43,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { InstallMenuItem, NotifyMenuItem } from '@/features/pwa/pwa'
 import { CLERKS, useUi } from '@/stores/ui'
 
 const NAV: { to: string; label: string; icon: LucideIcon; hint: string }[] = [
@@ -132,6 +133,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="gap-1 pb-3">
         <SidebarMenu>
+          <InstallMenuItem />
+          <NotifyMenuItem />
           <SidebarMenuItem>
             <SidebarMenuButton onClick={toggle} tooltip={resolved === 'dark' ? 'Paper theme (D)' : 'Ink theme (D)'}>
               {resolved === 'dark' ? <Sun /> : <Moon />}

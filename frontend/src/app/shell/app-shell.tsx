@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router'
 import AskSheet from '@/features/ask/ask-sheet'
+import { PwaRuntime } from '@/features/pwa/pwa'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useServerEvents } from '@/hooks/use-server-events'
 import { AppSidebar } from './app-sidebar'
@@ -26,6 +27,7 @@ export function AppShell() {
       <AskSheet />
       <MobileTabs />
       <PresenterHint />
+      <PwaRuntime />
     </SidebarProvider>
   )
 }
