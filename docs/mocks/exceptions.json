@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "id": "EXC-0012",
+      "id": "EXC-0014",
       "status": "open",
       "primary_type": "freight_charge",
       "issue_types": [
@@ -10,22 +10,45 @@
       "vendor": {
         "id": "V001",
         "name": "Shree Balaji Steel Traders Pvt Ltd",
-        "gstin": "36AAECS4821K1Z3",
+        "gstin": "36ASICS1238O1ZX",
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1231",
-      "invoice_total": 241428.0,
-      "amount_at_risk": 4543.0,
-      "created_at": "2026-03-18T09:30:00",
+      "invoice_number": "SBST/2526/1110",
+      "invoice_total": 173165.0,
+      "amount_at_risk": 4956.0,
+      "created_at": "2026-03-18T09:00:00",
       "recommended_action": "approve",
-      "confidence": 0.91,
+      "confidence": 1.0,
       "autonomy_level": "suggest",
       "blocking": false
     },
     {
       "id": "EXC-0013",
-      "status": "open",
+      "status": "resolved",
+      "primary_type": "price_variance",
+      "issue_types": [
+        "price_variance"
+      ],
+      "vendor": {
+        "id": "V013",
+        "name": "Rayalaseema Cement Agencies",
+        "gstin": "37GCTFR7306T1ZR",
+        "city": "Kurnool",
+        "category": "construction"
+      },
+      "invoice_number": "RCA/2526/1310",
+      "invoice_total": 144570.06,
+      "amount_at_risk": 8280.06,
+      "created_at": "2026-03-17T09:00:00",
+      "recommended_action": "hold",
+      "confidence": 0.3,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0012",
+      "status": "resolved",
       "primary_type": "tax_mismatch",
       "issue_types": [
         "tax_mismatch"
@@ -33,63 +56,40 @@
       "vendor": {
         "id": "V004",
         "name": "Kaveri Packaging Industries",
-        "gstin": "29AAFFK7310M1ZP",
+        "gstin": "29QRZFK8615D1ZB",
         "city": "Bengaluru",
         "category": "packaging"
       },
-      "invoice_number": "KPI/26/0419",
-      "invoice_total": 96180.0,
-      "amount_at_risk": 10530.0,
-      "created_at": "2026-03-18T10:02:00",
-      "recommended_action": "hold",
-      "confidence": 0.88,
+      "invoice_number": "KPI/2526/1247",
+      "invoice_total": 148680.0,
+      "amount_at_risk": 16380.0,
+      "created_at": "2026-03-16T09:07:00",
+      "recommended_action": "escalate",
+      "confidence": 0.4,
       "autonomy_level": "suggest",
       "blocking": false
     },
     {
-      "id": "EXC-0014",
-      "status": "open",
-      "primary_type": "bank_details_changed",
-      "issue_types": [
-        "bank_details_changed"
-      ],
-      "vendor": {
-        "id": "V005",
-        "name": "Deccan Freight Carriers",
-        "gstin": "36AAJFD8812L1Z6",
-        "city": "Hyderabad",
-        "category": "logistics"
-      },
-      "invoice_number": "DFC/0932",
-      "invoice_total": 44625.0,
-      "amount_at_risk": 44625.0,
-      "created_at": "2026-03-18T11:40:00",
-      "recommended_action": "escalate",
-      "confidence": 0.99,
-      "autonomy_level": "locked",
-      "blocking": true
-    },
-    {
       "id": "EXC-0011",
-      "status": "auto_resolved",
-      "primary_type": "rounding_difference",
+      "status": "resolved",
+      "primary_type": "price_variance",
       "issue_types": [
-        "rounding_difference"
+        "price_variance"
       ],
       "vendor": {
-        "id": "V005",
-        "name": "Deccan Freight Carriers",
-        "gstin": "36AAJFD8812L1Z6",
-        "city": "Hyderabad",
-        "category": "logistics"
+        "id": "V002",
+        "name": "Sri Venkateswara Alloys & Castings",
+        "gstin": "36CTNFS1710S1ZH",
+        "city": "Medchal",
+        "category": "raw_materials"
       },
-      "invoice_number": "DFC/0927",
-      "invoice_total": 31864.0,
-      "amount_at_risk": 4.0,
-      "created_at": "2026-03-17T16:15:00",
-      "recommended_action": "approve",
-      "confidence": 0.95,
-      "autonomy_level": "auto",
+      "invoice_number": "SVAC/2526/0919",
+      "invoice_total": 189428.35,
+      "amount_at_risk": 3578.35,
+      "created_at": "2026-03-16T09:00:00",
+      "recommended_action": "hold",
+      "confidence": 0.3,
+      "autonomy_level": "suggest",
       "blocking": false
     },
     {
@@ -100,21 +100,228 @@
         "quantity_variance"
       ],
       "vendor": {
+        "id": "V008",
+        "name": "Precision Bearings India",
+        "gstin": "27EJECP5624B1Z2",
+        "city": "Pune",
+        "category": "components"
+      },
+      "invoice_number": "PBI/2526/0367",
+      "invoice_total": 233640.0,
+      "amount_at_risk": 34220.0,
+      "created_at": "2026-03-12T09:14:00",
+      "recommended_action": "hold",
+      "confidence": 0.8,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0009",
+      "status": "resolved",
+      "primary_type": "rounding_difference",
+      "issue_types": [
+        "rounding_difference"
+      ],
+      "vendor": {
+        "id": "V005",
+        "name": "Deccan Freight Carriers",
+        "gstin": "36EGSFD1100V1ZI",
+        "city": "Hyderabad",
+        "category": "logistics"
+      },
+      "invoice_number": "DFC/2526/0229",
+      "invoice_total": 26784.0,
+      "amount_at_risk": 9.0,
+      "created_at": "2026-03-12T09:07:00",
+      "recommended_action": "hold",
+      "confidence": 0.3,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0008",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1103",
+      "invoice_total": 172752.0,
+      "amount_at_risk": 3422.0,
+      "created_at": "2026-03-12T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 1.0,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0007",
+      "status": "resolved",
+      "primary_type": "quantity_variance",
+      "issue_types": [
+        "quantity_variance"
+      ],
+      "vendor": {
+        "id": "V014",
+        "name": "Hi-Tech Tooling Solutions",
+        "gstin": "29RFQCH3157B1ZQ",
+        "city": "Bengaluru",
+        "category": "components"
+      },
+      "invoice_number": "HTTS/2526/1072",
+      "invoice_total": 280722.0,
+      "amount_at_risk": 9912.0,
+      "created_at": "2026-03-11T09:14:00",
+      "recommended_action": "hold",
+      "confidence": 0.4,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0006",
+      "status": "resolved",
+      "primary_type": "missing_po",
+      "issue_types": [
+        "missing_po"
+      ],
+      "vendor": {
+        "id": "V007",
+        "name": "Nexa Telecom Enterprise Services",
+        "gstin": "36XKKCN7666E1ZU",
+        "city": "Hyderabad",
+        "category": "utilities"
+      },
+      "invoice_number": "NTES/2526/1282",
+      "invoice_total": 44205.88,
+      "amount_at_risk": 44205.88,
+      "created_at": "2026-03-11T09:07:00",
+      "recommended_action": "escalate",
+      "confidence": 0.4,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0005",
+      "status": "resolved",
+      "primary_type": "missing_po",
+      "issue_types": [
+        "missing_po"
+      ],
+      "vendor": {
+        "id": "V006",
+        "name": "Southern Grid Power Services Ltd",
+        "gstin": "36IHOCS7961W1Z8",
+        "city": "Hyderabad",
+        "category": "utilities"
+      },
+      "invoice_number": "SGPS/2526/1197",
+      "invoice_total": 182482.05,
+      "amount_at_risk": 182482.05,
+      "created_at": "2026-03-11T09:00:00",
+      "recommended_action": "escalate",
+      "confidence": 0.4,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0004",
+      "status": "resolved",
+      "primary_type": "missing_po",
+      "issue_types": [
+        "missing_po"
+      ],
+      "vendor": {
+        "id": "V015",
+        "name": "Metro Office Mart",
+        "gstin": "36QGLFM5940Y1ZA",
+        "city": "Hyderabad",
+        "category": "office_supplies"
+      },
+      "invoice_number": "MOM/2526/1397",
+      "invoice_total": 3363.0,
+      "amount_at_risk": 3363.0,
+      "created_at": "2026-03-10T09:07:00",
+      "recommended_action": "hold",
+      "confidence": 0.4,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0003",
+      "status": "resolved",
+      "primary_type": "quantity_variance",
+      "issue_types": [
+        "quantity_variance"
+      ],
+      "vendor": {
         "id": "V003",
         "name": "Godavari Polymers LLP",
-        "gstin": "37AAKFG2294Q1Z8",
+        "gstin": "37IHKFG4458U1ZQ",
         "city": "Rajahmundry",
         "category": "raw_materials"
       },
-      "invoice_number": "GP/1123",
-      "invoice_total": 231520.0,
-      "amount_at_risk": 6945.6,
-      "created_at": "2026-03-16T14:00:00",
-      "recommended_action": "approve_adjusted",
-      "confidence": 0.82,
+      "invoice_number": "GP/2526/0567",
+      "invoice_total": 405330.0,
+      "amount_at_risk": 29075.2,
+      "created_at": "2026-03-10T09:00:00",
+      "recommended_action": "hold",
+      "confidence": 0.4,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0002",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1102",
+      "invoice_total": 73278.0,
+      "amount_at_risk": 4838.0,
+      "created_at": "2026-03-07T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 1.0,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0001",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1100",
+      "invoice_total": 173873.0,
+      "amount_at_risk": 4543.0,
+      "created_at": "2026-03-02T09:00:00",
+      "recommended_action": "hold",
+      "confidence": 0.3,
       "autonomy_level": "suggest",
       "blocking": false
     }
   ],
-  "total": 5
+  "total": 14
 }

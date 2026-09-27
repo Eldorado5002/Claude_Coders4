@@ -1,384 +1,367 @@
 {
   "kpis": {
-    "touchless_rate": 0.62,
-    "acceptance_rate": 0.9,
-    "exceptions_total": 131,
-    "auto_resolved": 58,
-    "blocked_by_controls": 9,
+    "touchless_rate": 0.0,
+    "acceptance_rate": 0.385,
+    "exceptions_total": 14,
+    "auto_resolved": 0,
+    "blocked_by_controls": 0,
     "false_approvals": 0,
-    "memories": 412,
-    "minutes_saved": 1310.0
+    "memories": 42,
+    "minutes_saved": 30.0
   },
   "touchless_by_week": [
     {
       "week": 1,
       "week_start": "2026-03-02",
-      "memory_on": 0.05,
-      "memory_off": 0.088
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 2,
       "week_start": "2026-03-09",
-      "memory_on": 0.154,
-      "memory_off": 0.089
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 3,
       "week_start": "2026-03-16",
-      "memory_on": 0.243,
-      "memory_off": 0.081
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 4,
       "week_start": "2026-03-23",
-      "memory_on": 0.32,
-      "memory_off": 0.072
+      "memory_on": 0.25,
+      "memory_off": 0.0
     },
     {
       "week": 5,
       "week_start": "2026-03-30",
-      "memory_on": 0.385,
-      "memory_off": 0.07
+      "memory_on": 0.2,
+      "memory_off": 0.0
     },
     {
       "week": 6,
       "week_start": "2026-04-06",
-      "memory_on": 0.442,
-      "memory_off": 0.077
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 7,
       "week_start": "2026-04-13",
-      "memory_on": 0.49,
-      "memory_off": 0.087
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 8,
       "week_start": "2026-04-20",
-      "memory_on": 0.531,
-      "memory_off": 0.09
+      "memory_on": 0.125,
+      "memory_off": 0.0
     },
     {
       "week": 9,
       "week_start": "2026-04-27",
-      "memory_on": 0.567,
-      "memory_off": 0.084
+      "memory_on": 0.125,
+      "memory_off": 0.0
     },
     {
       "week": 10,
       "week_start": "2026-05-04",
-      "memory_on": 0.597,
-      "memory_off": 0.075
+      "memory_on": 1.0,
+      "memory_off": 0.0
     },
     {
       "week": 11,
       "week_start": "2026-05-11",
-      "memory_on": 0.623,
-      "memory_off": 0.07
+      "memory_on": 0.667,
+      "memory_off": 0.0
     },
     {
       "week": 12,
       "week_start": "2026-05-18",
-      "memory_on": 0.646,
-      "memory_off": 0.075
+      "memory_on": 0.333,
+      "memory_off": 0.0
     },
     {
       "week": 13,
       "week_start": "2026-05-25",
-      "memory_on": 0.665,
-      "memory_off": 0.084
+      "memory_on": 0.4,
+      "memory_off": 0.0
     },
     {
       "week": 14,
       "week_start": "2026-06-01",
-      "memory_on": 0.681,
-      "memory_off": 0.09
+      "memory_on": 0.2,
+      "memory_off": 0.0
     },
     {
       "week": 15,
       "week_start": "2026-06-08",
-      "memory_on": 0.695,
-      "memory_off": 0.087
+      "memory_on": 0.444,
+      "memory_off": 0.0
     },
     {
       "week": 16,
       "week_start": "2026-06-15",
-      "memory_on": 0.707,
-      "memory_off": 0.077
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 17,
       "week_start": "2026-06-22",
-      "memory_on": 0.718,
-      "memory_off": 0.07
+      "memory_on": 0.5,
+      "memory_off": 0.0
     },
     {
       "week": 18,
       "week_start": "2026-06-29",
-      "memory_on": 0.727,
-      "memory_off": 0.072
+      "memory_on": 0.667,
+      "memory_off": 0.0
     },
     {
       "week": 19,
       "week_start": "2026-07-06",
-      "memory_on": 0.734,
-      "memory_off": 0.081
+      "memory_on": 0.625,
+      "memory_off": 0.0
     },
     {
       "week": 20,
       "week_start": "2026-07-13",
-      "memory_on": 0.741,
-      "memory_off": 0.089
+      "memory_on": 0.0,
+      "memory_off": 0.0
     },
     {
       "week": 21,
       "week_start": "2026-07-20",
-      "memory_on": 0.746,
-      "memory_off": 0.088
+      "memory_on": 0.4,
+      "memory_off": 0.0
     },
     {
       "week": 22,
       "week_start": "2026-07-27",
-      "memory_on": 0.751,
-      "memory_off": 0.08
+      "memory_on": 0.333,
+      "memory_off": 0.0
     },
     {
       "week": 23,
       "week_start": "2026-08-03",
-      "memory_on": 0.755,
-      "memory_off": 0.072
+      "memory_on": 0.75,
+      "memory_off": 0.0
     },
     {
       "week": 24,
       "week_start": "2026-08-10",
-      "memory_on": 0.759,
-      "memory_off": 0.071
+      "memory_on": 0.8,
+      "memory_off": 0.0
     },
     {
       "week": 25,
       "week_start": "2026-08-17",
-      "memory_on": 0.762,
-      "memory_off": 0.079
+      "memory_on": 0.5,
+      "memory_off": 0.0
     },
     {
       "week": 26,
       "week_start": "2026-08-24",
-      "memory_on": 0.764,
-      "memory_off": 0.088
+      "memory_on": 0.667,
+      "memory_off": 0.0
     }
   ],
   "acceptance_by_week": [
     {
       "week": 1,
       "week_start": "2026-03-02",
-      "memory_on": 0.3,
-      "memory_off": 0.291
+      "memory_on": 0.5,
+      "memory_off": 0.0
     },
     {
       "week": 2,
       "week_start": "2026-03-09",
-      "memory_on": 0.418,
-      "memory_off": 0.272
+      "memory_on": 0.25,
+      "memory_off": 0.125
     },
     {
       "week": 3,
       "week_start": "2026-03-16",
-      "memory_on": 0.514,
-      "memory_off": 0.26
+      "memory_on": 0.8,
+      "memory_off": 0.4
     },
     {
       "week": 4,
       "week_start": "2026-03-23",
-      "memory_on": 0.593,
-      "memory_off": 0.267
+      "memory_on": 0.75,
+      "memory_off": 0.5
     },
     {
       "week": 5,
       "week_start": "2026-03-30",
-      "memory_on": 0.658,
-      "memory_off": 0.286
+      "memory_on": 1.0,
+      "memory_off": 0.2
     },
     {
       "week": 6,
       "week_start": "2026-04-06",
-      "memory_on": 0.711,
-      "memory_off": 0.299
+      "memory_on": 0.8,
+      "memory_off": 0.4
     },
     {
       "week": 7,
       "week_start": "2026-04-13",
-      "memory_on": 0.754,
-      "memory_off": 0.295
+      "memory_on": 1.0,
+      "memory_off": 0.6
     },
     {
       "week": 8,
       "week_start": "2026-04-20",
-      "memory_on": 0.79,
-      "memory_off": 0.277
+      "memory_on": 0.875,
+      "memory_off": 0.375
     },
     {
       "week": 9,
       "week_start": "2026-04-27",
-      "memory_on": 0.819,
-      "memory_off": 0.262
+      "memory_on": 1.0,
+      "memory_off": 0.75
     },
     {
       "week": 10,
       "week_start": "2026-05-04",
-      "memory_on": 0.843,
-      "memory_off": 0.263
+      "memory_on": 1.0,
+      "memory_off": 0.667
     },
     {
       "week": 11,
       "week_start": "2026-05-11",
-      "memory_on": 0.862,
-      "memory_off": 0.28
+      "memory_on": 1.0,
+      "memory_off": 0.333
     },
     {
       "week": 12,
       "week_start": "2026-05-18",
-      "memory_on": 0.878,
-      "memory_off": 0.297
+      "memory_on": 1.0,
+      "memory_off": 0.667
     },
     {
       "week": 13,
       "week_start": "2026-05-25",
-      "memory_on": 0.891,
-      "memory_off": 0.298
+      "memory_on": 0.9,
+      "memory_off": 0.4
     },
     {
       "week": 14,
       "week_start": "2026-06-01",
-      "memory_on": 0.902,
-      "memory_off": 0.283
+      "memory_on": 1.0,
+      "memory_off": 0.2
     },
     {
       "week": 15,
       "week_start": "2026-06-08",
-      "memory_on": 0.91,
-      "memory_off": 0.265
+      "memory_on": 0.889,
+      "memory_off": 0.333
     },
     {
       "week": 16,
       "week_start": "2026-06-15",
-      "memory_on": 0.918,
-      "memory_off": 0.261
+      "memory_on": 1.0,
+      "memory_off": 0.0
     },
     {
       "week": 17,
       "week_start": "2026-06-22",
-      "memory_on": 0.924,
-      "memory_off": 0.274
+      "memory_on": 1.0,
+      "memory_off": 0.667
     },
     {
       "week": 18,
       "week_start": "2026-06-29",
-      "memory_on": 0.928,
-      "memory_off": 0.293
+      "memory_on": 1.0,
+      "memory_off": 0.333
     },
     {
       "week": 19,
       "week_start": "2026-07-06",
-      "memory_on": 0.932,
-      "memory_off": 0.3
+      "memory_on": 1.0,
+      "memory_off": 0.375
     },
     {
       "week": 20,
       "week_start": "2026-07-13",
-      "memory_on": 0.935,
-      "memory_off": 0.288
+      "memory_on": 1.0,
+      "memory_off": 0.5
     },
     {
       "week": 21,
       "week_start": "2026-07-20",
-      "memory_on": 0.938,
-      "memory_off": 0.269
+      "memory_on": 1.0,
+      "memory_off": 0.4
     },
     {
       "week": 22,
       "week_start": "2026-07-27",
-      "memory_on": 0.94,
-      "memory_off": 0.26
+      "memory_on": 0.833,
+      "memory_off": 0.333
     },
     {
       "week": 23,
       "week_start": "2026-08-03",
-      "memory_on": 0.942,
-      "memory_off": 0.269
+      "memory_on": 1.0,
+      "memory_off": 0.125
     },
     {
       "week": 24,
       "week_start": "2026-08-10",
-      "memory_on": 0.943,
-      "memory_off": 0.288
+      "memory_on": 1.0,
+      "memory_off": 0.6
     },
     {
       "week": 25,
       "week_start": "2026-08-17",
-      "memory_on": 0.945,
-      "memory_off": 0.3
+      "memory_on": 0.75,
+      "memory_off": 0.5
     },
     {
       "week": 26,
       "week_start": "2026-08-24",
-      "memory_on": 0.946,
-      "memory_off": 0.293
+      "memory_on": 1.0,
+      "memory_off": 0.167
     }
   ],
   "by_type": [
     {
       "type": "freight_charge",
-      "count": 34,
-      "touchless_rate": 0.74
-    },
-    {
-      "type": "price_variance",
-      "count": 27,
-      "touchless_rate": 0.52
+      "count": 4,
+      "touchless_rate": 0.0
     },
     {
       "type": "quantity_variance",
-      "count": 22,
-      "touchless_rate": 0.55
-    },
-    {
-      "type": "rounding_difference",
-      "count": 19,
-      "touchless_rate": 0.95
-    },
-    {
-      "type": "tax_mismatch",
-      "count": 12,
+      "count": 3,
       "touchless_rate": 0.0
     },
     {
       "type": "missing_po",
-      "count": 8,
-      "touchless_rate": 0.63
-    },
-    {
-      "type": "bank_details_changed",
       "count": 3,
       "touchless_rate": 0.0
     },
     {
-      "type": "duplicate_invoice",
-      "count": 3,
+      "type": "price_variance",
+      "count": 2,
       "touchless_rate": 0.0
     },
     {
-      "type": "new_vendor",
+      "type": "rounding_difference",
       "count": 1,
       "touchless_rate": 0.0
     },
     {
-      "type": "over_threshold",
-      "count": 2,
+      "type": "tax_mismatch",
+      "count": 1,
       "touchless_rate": 0.0
     }
   ],
   "assumptions": [
-    "Touchless = exceptions resolved by the agent with no human action.",
-    "Minutes saved assumes 7 min per manual exception, 1 min to confirm an accepted recommendation."
+    "Touchless = exceptions the agent resolved on its own under earned autonomy (no human action).",
+    "Acceptance = the clerk's decision had the same payment outcome as the agent's recommendation (pay in full / pay adjusted / don't pay).",
+    "Minutes saved assumes 7 min per manual exception and 1 min to confirm an accepted recommendation.",
+    "Learning curve: replay of the full 26-week timeline; 'correct' = recommendation matched the ground-truth payment outcome. Memory OFF uses the same LLM with no Hindsight memory.",
+    "Replay evaluation run on 2026-09-28: Months 5-6: agent correct 96% with memory vs 35% without; touchless 55% vs 0%; false approvals 0."
   ]
 }

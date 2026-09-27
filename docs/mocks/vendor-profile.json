@@ -1,33 +1,33 @@
 {
   "id": "V001",
   "name": "Shree Balaji Steel Traders Pvt Ltd",
-  "gstin": "36AAECS4821K1Z3",
+  "gstin": "36ASICS1238O1ZX",
   "city": "Hyderabad",
   "category": "raw_materials",
   "state": "Telangana",
   "payment_terms_days": 45,
-  "invoices_count": 14,
-  "exceptions_count": 11,
+  "invoices_count": 4,
+  "exceptions_count": 4,
   "open_exceptions": 1,
-  "touchless_rate": 0.45,
+  "touchless_rate": 0.0,
   "bank_account": {
     "bank_name": "HDFC Bank",
-    "account_number": "XXXXXX4521",
+    "account_number": "XXXXXX2071",
     "ifsc": "HDFC0001234"
   },
   "learned": [
     {
-      "id": "mem_7f3a91",
+      "id": "73422225-97c2-42af-8a10-f29f9b170e90",
       "kind": "observation",
-      "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
-      "occurred_at": "2026-03-12T11:20:00",
-      "exception_id": "EXC-0007"
+      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges under â‚¹5,000 per trip are approved by the AP clerk, regardless of whether the AP agent (Precedent) recommends holding or approving the invoice.",
+      "occurred_at": null,
+      "exception_id": null
     }
   ],
-  "playbook": "### Shree Balaji Steel — AP playbook\n- **Freight** is billed on a separate last line. Approve when ≤ ₹5,000 per trip; hold above that.\n- Materials are usually billed exactly at PO price.\n- Bank details on file: HDFC Bank XXXXXX4521. Any change needs a callback on the registered number.",
+  "playbook": null,
   "recent": [
     {
-      "id": "EXC-0012",
+      "id": "EXC-0014",
       "status": "open",
       "primary_type": "freight_charge",
       "issue_types": [
@@ -36,16 +36,85 @@
       "vendor": {
         "id": "V001",
         "name": "Shree Balaji Steel Traders Pvt Ltd",
-        "gstin": "36AAECS4821K1Z3",
+        "gstin": "36ASICS1238O1ZX",
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1231",
-      "invoice_total": 241428.0,
-      "amount_at_risk": 4543.0,
-      "created_at": "2026-03-18T09:30:00",
+      "invoice_number": "SBST/2526/1110",
+      "invoice_total": 173165.0,
+      "amount_at_risk": 4956.0,
+      "created_at": "2026-03-18T09:00:00",
       "recommended_action": "approve",
-      "confidence": 0.91,
+      "confidence": 1.0,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0008",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1103",
+      "invoice_total": 172752.0,
+      "amount_at_risk": 3422.0,
+      "created_at": "2026-03-12T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 1.0,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0002",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1102",
+      "invoice_total": 73278.0,
+      "amount_at_risk": 4838.0,
+      "created_at": "2026-03-07T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 1.0,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0001",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1100",
+      "invoice_total": 173873.0,
+      "amount_at_risk": 4543.0,
+      "created_at": "2026-03-02T09:00:00",
+      "recommended_action": "hold",
+      "confidence": 0.3,
       "autonomy_level": "suggest",
       "blocking": false
     }
@@ -61,7 +130,7 @@
       "accepted": 2,
       "overruled": 1,
       "auto_resolved": 0,
-      "updated_at": "2026-03-12T11:20:00"
+      "updated_at": "2026-03-12T11:05:00"
     }
   ]
 }
