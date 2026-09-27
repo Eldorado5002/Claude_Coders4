@@ -269,5 +269,7 @@
     "correct_off": 0.347,
     "false_approvals_on": 0
   },
-  "summary": "Months 5-6: agent correct 96% with memory vs 35% without; touchless 55% vs 0%; false approvals 0."
+  "summary": "Months 5-6: agent correct 96% with memory vs 35% without; touchless 55% vs 0%; false approvals 0.",
+  "citation_relevance": 0.87,
+  "citation_relevance_note": "weeks 1-8 (Twist snapshot): 131 memories cited across 29 memory-backed recommendations"
 }

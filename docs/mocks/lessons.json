@@ -1,0 +1,154 @@
+[
+  {
+    "case_id": "EXC-0046",
+    "vendor": {
+      "id": "V005",
+      "name": "Deccan Freight Carriers",
+      "gstin": "36EGSFD1100V1ZI",
+      "city": "Hyderabad",
+      "category": "logistics"
+    },
+    "exception_type": "rounding_difference",
+    "decision": "approve",
+    "reason": "Auto-resolved under earned autonomy. Established precedents for Deccan Freight Carriers allow for rounding differences within a tolerance threshold of ₹10.00. Since the ₹5.00 difference is within this limit, the invoice should be approved.",
+    "taught_by": "Precedent (auto)",
+    "taught_at": "2026-04-27T09:30:05",
+    "auto": true,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0042",
+    "vendor": {
+      "id": "V017",
+      "name": "Indus Logistics & Warehousing",
+      "gstin": "27ZCCCI8712C1Z0",
+      "city": "Nagpur",
+      "category": "logistics"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Fuel surcharge of 4.7% is within the 6% allowed in the Indus rate contract.",
+    "taught_by": "Rahul (AP)",
+    "taught_at": "2026-04-24T11:40:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0041",
+    "vendor": {
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36ASICS1238O1ZX",
+      "city": "Hyderabad",
+      "category": "raw_materials"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Auto-resolved under earned autonomy. The freight charge of ₹3,600.00 is below the ₹5,000.00 per-trip limit for Shree Balaji Steel Traders Pvt Ltd, consistent with the precedent set by invoice SBST/2627/0562.",
+    "taught_by": "Precedent (auto)",
+    "taught_at": "2026-04-22T09:02:05",
+    "auto": true,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0040",
+    "vendor": {
+      "id": "V012",
+      "name": "Gujarat Chemical Traders",
+      "gstin": "24LMPFG9073A1ZE",
+      "city": "Ahmedabad",
+      "category": "raw_materials"
+    },
+    "exception_type": "price_variance",
+    "decision": "approve",
+    "reason": "Rate contract with Gujarat Chemical Traders has a raw-material escalation clause up to 2.5%; this 2.2% increase is within it.",
+    "taught_by": "Sneha (AP Lead)",
+    "taught_at": "2026-04-21T12:43:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0039",
+    "vendor": {
+      "id": "V004",
+      "name": "Kaveri Packaging Industries",
+      "gstin": "29QRZFK8615D1ZB",
+      "city": "Bengaluru",
+      "category": "packaging"
+    },
+    "exception_type": "tax_mismatch",
+    "decision": "hold",
+    "reason": "GST on corrugated boxes (HSN 4819) is 5% after GST 2.0 but Kaveri charged 18%; sent back for a revised invoice — do not pay excess GST.",
+    "taught_by": "Sneha (AP Lead)",
+    "taught_at": "2026-04-21T09:39:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0035",
+    "vendor": {
+      "id": "V005",
+      "name": "Deccan Freight Carriers",
+      "gstin": "36EGSFD1100V1ZI",
+      "city": "Hyderabad",
+      "category": "logistics"
+    },
+    "exception_type": "rounding_difference",
+    "decision": "approve",
+    "reason": "₹6 rounding difference from Deccan Freight Carriers's billing software — within the ₹10 tolerance.",
+    "taught_by": "Arjun (AP)",
+    "taught_at": "2026-04-20T12:59:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0037",
+    "vendor": {
+      "id": "V016",
+      "name": "SafeGuard Facility Services",
+      "gstin": "36WGFCS7572Q1ZI",
+      "city": "Hyderabad",
+      "category": "services"
+    },
+    "exception_type": "price_variance",
+    "decision": "hold",
+    "reason": "Price 8.5% above PO; no revision agreed with SafeGuard Facility Services. Requested credit note.",
+    "taught_by": "Sneha (AP Lead)",
+    "taught_at": "2026-04-20T12:49:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0038",
+    "vendor": {
+      "id": "V024",
+      "name": "Vijaya Canteen & Catering",
+      "gstin": "36GAFFV4579J1ZE",
+      "city": "Hyderabad",
+      "category": "services"
+    },
+    "exception_type": "missing_po",
+    "decision": "hold",
+    "reason": "No-PO spend above ₹60,000 needs a purchase order; asked the requester to raise one.",
+    "taught_by": "Rahul (AP)",
+    "taught_at": "2026-04-20T11:00:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  }
+]

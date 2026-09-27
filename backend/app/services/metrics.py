@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 
 from app.agent.autonomy import same_outcome
 from app.config import BACKEND_DIR, get_settings
-from app.models import ExceptionCase, Invoice
+from app.models import ExceptionCase, Invoice, Vendor
 from app.schemas import Action, ExceptionType, Kpis, Metrics, TypeBreakdown, WeeklyPoint
 
 EVAL_FILE = BACKEND_DIR / "data" / "eval.json"
@@ -35,6 +35,40 @@ def case_outcome(case: ExceptionCase, truth: dict) -> dict:
         "false_approval": false_approval,
         "correct": correct,
     }
+
+
+TYPE_WORDS = {
+    "freight_charge": ("freight", "surcharge"),
+    "price_variance": ("price", "rate", "escalation"),
+    "quantity_variance": ("quantity", "qty", "short", "received", "shipped", "dispatch"),
+    "tax_mismatch": ("gst", "tax"),
+    "rounding_difference": ("rounding",),
+    "missing_po": ("purchase order", "no po", "no-po", "without a po", "utility", "monthly bill"),
+    "duplicate_invoice": ("duplicate",),
+    "bank_details_changed": ("bank",),
+    "new_vendor": ("new vendor", "kyc", "onboard"),
+    "over_threshold": ("5,00,000", "approval limit", "controller"),
+}
+MEMORY_KINDS = {"world", "experience", "observation"}
+
+
+def citation_relevance(cases: list[ExceptionCase], vendor_names: dict[str, str]) -> float | None:
+    """Share of cited memories that refer to the same vendor or the same exception type."""
+    total = hits = 0
+    for c in cases:
+        rec = c.recommendation or {}
+        if rec.get("source") != "memory":
+            continue
+        name = " ".join(vendor_names.get(c.vendor_id, "").lower().split()[:2])
+        words = [w for t in c.issue_types for w in TYPE_WORDS.get(t, ())]
+        for cit in rec.get("citations", []):
+            if cit.get("kind") not in MEMORY_KINDS:
+                continue
+            total += 1
+            text = cit.get("text", "").lower()
+            if (name and name in text) or c.vendor_id.lower() in text or any(w in text for w in words):
+                hits += 1
+    return round(hits / total, 3) if total else None
 
 
 def weekly(session: Session) -> dict[int, dict]:
@@ -86,6 +120,8 @@ def compute_metrics(session: Session, memories: int) -> Metrics:
         false_approvals=sum(o["false_approval"] for _, o in outcomes),
         memories=memories,
         minutes_saved=round(touchless * MANUAL_MIN + accepted * (MANUAL_MIN - CONFIRM_MIN), 1),
+        citation_relevance=citation_relevance(cases, {v.id: v.name for v in session.exec(select(Vendor)).all()}),
+        lessons_revoked=sum(1 for c in cases if (c.resolution or {}).get("revoked_at")),
     )
 
     ev = load_eval()

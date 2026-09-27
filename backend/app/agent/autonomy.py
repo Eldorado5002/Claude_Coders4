@@ -64,7 +64,9 @@ def approved_envelope(session: Session, vendor_id: str, exc_type: str) -> float:
     amounts = [
         c.amount_at_risk
         for c in rows
-        if c.resolution and c.resolution.get("decision") in (Action.APPROVE, Action.APPROVE_ADJUSTED)
+        if c.resolution
+        and c.resolution.get("decision") in (Action.APPROVE, Action.APPROVE_ADJUSTED)
+        and not c.resolution.get("revoked_at")
     ]
     return max(amounts, default=0.0)
 

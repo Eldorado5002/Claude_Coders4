@@ -86,6 +86,14 @@ class FakeMemory:
     async def recall(self, bank_id, query, **_):
         return []
 
+    async def delete_document(self, bank_id, document_id):
+        before = len(self.retained)
+        self.retained = [r for r in self.retained if r["case_id"] != document_id]
+        return len(self.retained) < before
+
+    async def team_policy(self, bank_id):
+        return "- Freight up to Rs 5,000 per trip is approved for Balaji.", None
+
     async def playbook(self, bank_id, vendor_id, vendor_name):
         return None
 

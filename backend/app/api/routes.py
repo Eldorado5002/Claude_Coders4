@@ -27,13 +27,17 @@ from app.schemas import (
     ExceptionSummary,
     ExceptionType,
     Health,
+    Lesson,
     MemoryItem,
     Metrics,
     Page,
+    PolicyDoc,
     PublicKey,
     PushSubscription,
     ResolveRequest,
     ResolveResult,
+    RevokeRequest,
+    RevokeResult,
     Settings,
     SettingsPatch,
     VendorProfile,
@@ -41,7 +45,16 @@ from app.schemas import (
 )
 from app.services import demo, push
 from app.services.capture import capture_invoice
-from app.services.cases import active_bank, detail, get_cases, memory_enabled, sim_date, summary, vendor_bank
+from app.services.cases import (
+    active_bank,
+    detail,
+    get_cases,
+    memory_enabled,
+    sim_date,
+    summary,
+    to_lesson,
+    vendor_bank,
+)
 from app.services.events import bus
 from app.services.metrics import compute_metrics
 from app.services.sim import get_sim
@@ -332,6 +345,46 @@ async def copilot(body: CopilotRequest) -> CopilotAnswer:
         raise HTTPException(503, f"Hindsight unavailable: {e}") from e
     cites = [c for c in citations_from(resp) if c.kind != CitationKind.DIRECTIVE] or cites
     return CopilotAnswer(answer=resp.text or "", citations=cites, latency_ms=ms)
+
+
+# ---------------------------------------------------------------- lessons (review what the agent learned)
+
+
+@router.get("/lessons", response_model=list[Lesson])
+def list_lessons(
+    vendor_id: str | None = None,
+    include_revoked: bool = True,
+    limit: int = Query(50, ge=1, le=500),
+) -> list[Lesson]:
+    with Session(get_engine()) as s:
+        q = select(ExceptionCase).where(ExceptionCase.status != CaseStatus.OPEN)
+        if vendor_id:
+            q = q.where(ExceptionCase.vendor_id == vendor_id)
+        lessons = [to_lesson(s, c) for c in s.exec(q).all() if c.resolution]
+    if not include_revoked:
+        lessons = [l for l in lessons if not l.revoked]
+    return sorted(lessons, key=lambda l: l.taught_at, reverse=True)[:limit]
+
+
+@router.post("/lessons/{case_id}/revoke", response_model=RevokeResult)
+async def revoke_lesson(case_id: str, body: RevokeRequest) -> RevokeResult:
+    try:
+        return await get_cases().revoke_lesson(case_id, body)
+    except KeyError as e:
+        raise HTTPException(404, f"No lesson for {case_id}") from e
+    except ValueError as e:
+        raise HTTPException(409, str(e)) from e
+
+
+@router.get("/memory/policy", response_model=PolicyDoc)
+async def team_policy() -> PolicyDoc:
+    with Session(get_engine()) as s:
+        bank = active_bank(s)
+    try:
+        content, refreshed = await get_memory().team_policy(bank)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(503, f"Hindsight unavailable: {e}") from e
+    return PolicyDoc(content=content, refreshed_at=refreshed)
 
 
 # ---------------------------------------------------------------- capture

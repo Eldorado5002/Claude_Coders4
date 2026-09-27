@@ -95,6 +95,7 @@ ENTITY_LABELS = [
 ]
 
 CASE_ID = re.compile(r"EXC-\d{4}")
+TEAM_POLICY_ID = "team-policy"
 
 
 def vendor_tag(vendor_id: str) -> str:
@@ -127,6 +128,7 @@ class MemoryStore:
         self._client: Hindsight | None = None
         self._ready: set[str] = set()
         self._lock = asyncio.Lock()
+        self.hindsight_defense = False
 
     @property
     def client(self) -> Hindsight:
@@ -186,7 +188,61 @@ class MemoryStore:
             if not items:
                 for priority, (name, content) in enumerate(DIRECTIVES):
                     await self.client.acreate_directive(bank_id, name=name, content=content, priority=10 - priority)
+            # playbooks refresh at most every 5 min (each refresh is a paid LLM call)
+            with contextlib.suppress(Exception):
+                await self.client.aupdate_bank_config(bank_id, mental_model_min_refresh_interval_seconds=300)
+            # Hindsight's own PII redaction is a paid add-on; use it when the org has it.
+            # Precedent always redacts locally before retain (app/memory/redact.py).
+            try:
+                await self.client.aupdate_bank_config(
+                    bank_id, memory_defense={"enabled": True, "rules": [{"on": "sensitive_data", "action": "redact"}]}
+                )
+                self.hindsight_defense = True
+            except Exception:
+                self.hindsight_defense = False
+            await self._ensure_team_policy(bank_id)
             self._ready.add(bank_id)
+
+    async def _ensure_team_policy(self, bank_id: str) -> None:
+        try:
+            await self.client.aget_mental_model(bank_id, TEAM_POLICY_ID, detail="metadata")
+        except Exception:
+            with contextlib.suppress(Exception):
+                await self.client.acreate_mental_model(
+                    bank_id,
+                    name="AP team exception policy",
+                    source_query=(
+                        "What standing policies does the AP team apply to invoice exceptions across all vendors? "
+                        "List tolerances, caps, no-PO limits, GST rules, seasonal allowances, and which exceptions "
+                        "are always held, rejected or escalated. Quote exact numbers. Short markdown bullets."
+                    ),
+                    id=TEAM_POLICY_ID,
+                )
+
+    async def team_policy(self, bank_id: str) -> tuple[str | None, datetime | None]:
+        """Team-wide policy mental model; refreshed on demand when older than 10 minutes."""
+        await self.ensure_bank(bank_id)
+        try:
+            mm = await self.client.aget_mental_model(bank_id, TEAM_POLICY_ID, detail="full")
+        except Exception:
+            return None, None
+        refreshed = _dt(getattr(mm, "last_refreshed_at", None))
+        stale = refreshed is None or (datetime.now(refreshed.tzinfo) - refreshed).total_seconds() > 600
+        if stale or getattr(mm, "is_stale", False):
+            with contextlib.suppress(Exception):
+                await self.client.arefresh_mental_model(bank_id, TEAM_POLICY_ID)
+        return _mm_content(mm), refreshed
+
+    async def delete_document(self, bank_id: str, document_id: str) -> bool:
+        """Forget one lesson: deletes the document and every fact extracted from it."""
+        try:
+            resp = await self.client._documents_api.delete_document(
+                bank_id, document_id, _request_timeout=self.settings.hindsight_timeout
+            )
+            return bool(getattr(resp, "success", True))
+        except Exception as e:  # noqa: BLE001
+            log.warning("delete_document %s/%s failed: %s", bank_id, document_id, e)
+            return False
 
     async def delete_bank(self, bank_id: str) -> None:
         try:
@@ -207,6 +263,7 @@ class MemoryStore:
         types: list[str],
         decision: str,
         when: datetime,
+        taught_by: str = "",
         retain_async: bool = False,
     ) -> str:
         await self.ensure_bank(bank_id)
@@ -216,7 +273,7 @@ class MemoryStore:
             timestamp=when,
             context="AP invoice exception resolution",
             document_id=case_id,
-            metadata={"exception_id": case_id, "vendor_id": vendor_id, "decision": decision},
+            metadata={"exception_id": case_id, "vendor_id": vendor_id, "decision": decision, "taught_by": taught_by},
             tags=[vendor_tag(vendor_id), *(exc_tag(t) for t in types), f"decision:{decision}"],
             retain_async=retain_async,
         )

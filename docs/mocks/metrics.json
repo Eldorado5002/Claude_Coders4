@@ -1,13 +1,15 @@
 {
   "kpis": {
-    "touchless_rate": 0.0,
-    "acceptance_rate": 0.385,
-    "exceptions_total": 14,
-    "auto_resolved": 0,
-    "blocked_by_controls": 0,
+    "touchless_rate": 0.085,
+    "acceptance_rate": 0.718,
+    "exceptions_total": 47,
+    "auto_resolved": 4,
+    "blocked_by_controls": 4,
     "false_approvals": 0,
-    "memories": 42,
-    "minutes_saved": 30.0
+    "memories": 119,
+    "minutes_saved": 196.0,
+    "citation_relevance": 0.87,
+    "lessons_revoked": 0
   },
   "touchless_by_week": [
     {
@@ -328,31 +330,46 @@
   "by_type": [
     {
       "type": "freight_charge",
-      "count": 4,
-      "touchless_rate": 0.0
+      "count": 10,
+      "touchless_rate": 0.3
     },
     {
-      "type": "quantity_variance",
-      "count": 3,
+      "type": "price_variance",
+      "count": 10,
       "touchless_rate": 0.0
     },
     {
       "type": "missing_po",
-      "count": 3,
-      "touchless_rate": 0.0
-    },
-    {
-      "type": "price_variance",
-      "count": 2,
+      "count": 9,
       "touchless_rate": 0.0
     },
     {
       "type": "rounding_difference",
-      "count": 1,
+      "count": 7,
+      "touchless_rate": 0.143
+    },
+    {
+      "type": "quantity_variance",
+      "count": 4,
       "touchless_rate": 0.0
     },
     {
       "type": "tax_mismatch",
+      "count": 3,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "duplicate_invoice",
+      "count": 2,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "bank_details_changed",
+      "count": 1,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "over_threshold",
       "count": 1,
       "touchless_rate": 0.0
     }

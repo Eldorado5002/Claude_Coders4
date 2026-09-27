@@ -282,3 +282,75 @@ def test_restore_removes_invoices_captured_during_rehearsal(client, env):
     with Session(get_engine()) as s:
         assert s.get(Invoice, "INV-C001") is None
         assert s.get(Invoice, "INV-0001") is not None
+
+
+def test_revoke_lesson_forgets_it_and_resets_the_ladder(client, env):
+    from app.db import get_engine
+
+    cid = client.get("/api/exceptions", params={"status": "open"}).json()["items"][0]["id"]
+    client.post(f"/api/exceptions/{cid}/resolve", json={"decision": "approve", "reason": "Pay any freight, always."})
+    assert any(r["case_id"] == cid for r in env.memory.retained)
+    with Session(get_engine()) as s:  # pretend the pair had already earned autonomy
+        row = s.get(Autonomy, "V001:freight_charge")
+        row.level, row.streak = "auto", 4
+        s.add(row)
+        s.commit()
+
+    lessons = client.get("/api/lessons").json()
+    assert lessons[0]["case_id"] == cid and lessons[0]["taught_by"] == "AP Clerk" and not lessons[0]["revoked"]
+
+    r = client.post(f"/api/lessons/{cid}/revoke", json={"reason": "Wrong: freight is capped at Rs 5,000."})
+    body = r.json()
+    assert r.status_code == 200 and body["memory_deleted"] is True
+    assert body["lesson"]["revoked"] and body["autonomy"]["level"] == "suggest" and body["autonomy"]["streak"] == 0
+    assert not any(x["case_id"] == cid for x in env.memory.retained)
+    assert client.post(f"/api/lessons/{cid}/revoke", json={"reason": "again please"}).status_code == 409
+    assert client.post("/api/lessons/EXC-9999/revoke", json={"reason": "nope nope"}).status_code == 404
+    assert client.get("/api/lessons", params={"include_revoked": False}).json() == []
+    assert client.get("/api/metrics").json()["kpis"]["lessons_revoked"] == 1
+
+
+def test_personal_data_never_reaches_memory(client, env):
+    cid = client.get("/api/exceptions", params={"status": "open"}).json()["items"][0]["id"]
+    reason = "Vendor asked to call 9876543210 and pay a/c 50200011223344, PAN ABCDE1234F. Freight under cap."
+    res = client.post(f"/api/exceptions/{cid}/resolve", json={"decision": "approve", "reason": reason}).json()
+    stored = res["exception"]["resolution"]
+    assert "9876543210" not in stored["reason"] and "50200011223344" not in stored["reason"]
+    assert set(stored["redacted"]) >= {"phone", "bank_account", "pan"}
+    memory_text = env.memory.retained[-1]["content"]
+    assert "9876543210" not in memory_text and "ABCDE1234F" not in memory_text and "[REDACTED:phone]" in memory_text
+
+
+def test_citation_relevance_metric():
+    from app.services.metrics import citation_relevance
+
+    def case(vid, types, cites, source="memory"):
+        return ExceptionCase(
+            id="E",
+            invoice_id="I",
+            vendor_id=vid,
+            primary_type=types[0],
+            issue_types=types,
+            created_at=datetime(2026, 3, 2),
+            recommendation={"source": source, "citations": [{"kind": k, "text": t} for k, t in cites]},
+        )
+
+    cases = [
+        case(
+            "V001",
+            ["freight_charge"],
+            [
+                ("observation", "Shree Balaji Steel freight is approved under Rs 5,000"),
+                ("world", "Indus Logistics fuel surcharge within 6%"),
+                ("world", "Kaveri charged 18% GST on boxes"),
+                ("directive", "ignored"),
+            ],
+        ),
+        case("V005", ["rounding_difference"], [("world", "Priya approved a Rs 3 rounding gap")], source="guardrail"),
+    ]
+    assert citation_relevance(cases, {"V001": "Shree Balaji Steel Traders Pvt Ltd"}) == pytest.approx(2 / 3, abs=1e-3)
+
+
+def test_team_policy_endpoint(client):
+    body = client.get("/api/memory/policy").json()
+    assert "5,000" in body["content"]

@@ -1,0 +1,35 @@
+{
+  "lesson": {
+    "case_id": "EXC-0042",
+    "vendor": {
+      "id": "V017",
+      "name": "Indus Logistics & Warehousing",
+      "gstin": "27ZCCCI8712C1Z0",
+      "city": "Nagpur",
+      "category": "logistics"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Fuel surcharge of 4.7% is within the 6% allowed in the Indus rate contract.",
+    "taught_by": "Rahul (AP)",
+    "taught_at": "2026-04-24T11:40:00",
+    "auto": false,
+    "revoked": true,
+    "revoked_by": "Sneha (AP Lead)",
+    "revoke_reason": "Wrong: freight is capped at Rs 5,000 per trip."
+  },
+  "autonomy": {
+    "vendor_id": "V001",
+    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+    "exception_type": "freight_charge",
+    "level": "suggest",
+    "streak": 0,
+    "required_streak": 3,
+    "accepted": 2,
+    "overruled": 1,
+    "auto_resolved": 0,
+    "updated_at": "2026-03-12T11:05:00"
+  },
+  "memory_deleted": true,
+  "invalidated_recommendations": 1
+}

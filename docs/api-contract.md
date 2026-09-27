@@ -32,6 +32,9 @@ npx openapi-typescript http://localhost:8000/openapi.json -o src/api/schema.d.ts
 | GET | `/api/autonomy` | — | `AutonomyState[]` | `autonomy.json` |
 | GET | `/api/metrics` | — | `Metrics` | `metrics.json` |
 | GET | `/api/memory/recent?limit=20` | — | `MemoryItem[]` | `memory-recent.json` |
+| GET | `/api/memory/policy` | — | `PolicyDoc` (team-wide policy learned from all resolutions, markdown) | `policy.json` |
+| GET | `/api/lessons?vendor_id=&include_revoked=true&limit=50` | — | `Lesson[]` (what the agent learned, who taught it) | `lessons.json` |
+| POST | `/api/lessons/{case_id}/revoke` | `RevokeRequest` `{reason, revoked_by}` | `RevokeResult` (404 unknown, 409 already revoked) | `revoke-result.json` |
 | POST | `/api/copilot/ask` | `CopilotRequest` `{question, vendor_id?}` | `CopilotAnswer` | `copilot-answer.json` |
 | POST | `/api/invoices/capture` | `multipart/form-data` field `file` (jpg/png/pdf) | `CaptureResult` | `capture-result.json` |
 | GET | `/api/demo/state` | — | `DemoState` | `demo-state.json` |
@@ -55,6 +58,7 @@ es.addEventListener('exception.created', e => { const data = JSON.parse(e.data);
 | `memory.retained` | `MemoryItem` | "Agent learned…" feed |
 | `autonomy.changed` | `AutonomyState` | Update ladder, celebrate promotion |
 | `sim.changed` | `DemoState` | Update clock / stage bar |
+| `memory.revoked` | `Lesson` | Strike the lesson through, show the ladder reset |
 
 Tip: on any event, `queryClient.invalidateQueries()` for the affected keys is enough.
 
@@ -83,3 +87,10 @@ Tip: on any event, `queryClient.invalidateQueries()` for the affected keys is en
 | Demo controls (Day 1 → Week 3 → Week 8 → Twist) | `GET /api/demo/state`, `POST /api/demo/advance`, `POST /api/demo/reset` |
 | Hindsight-down banner | `GET /api/health` → `hindsight: "down"` |
 | Push notifications | `GET /api/push/public-key`, `POST /api/push/subscribe` |
+| Lessons / memory review (who taught what; revoke a wrong lesson) | `GET /api/lessons`, `POST /api/lessons/{id}/revoke`, SSE `memory.revoked` |
+| Team policy (what the whole team has learned) | `GET /api/memory/policy` |
+
+## Notes on newer fields
+
+- `Resolution.redacted`: kinds of personal data removed from the clerk's reason before storage (e.g. `["phone"]`). Show a small "PII redacted" badge. `Resolution.revoked_at/by/revoke_reason` are set when a lesson is revoked.
+- `Kpis.citation_relevance`: share of cited memories that refer to the same vendor or exception type. `Kpis.lessons_revoked`: count of revoked lessons.

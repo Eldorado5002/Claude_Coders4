@@ -18,6 +18,7 @@ from app.agent.recommender import CaseContext, Recommender, inr
 from app.config import get_settings
 from app.db import get_engine, get_state, set_state
 from app.matching.engine import MatchInput, match_invoice
+from app.memory.redact import redact
 from app.memory.store import MemoryStore, get_memory
 from app.ml.anomaly import anomaly_score
 from app.models import Autonomy, ExceptionCase, GoodsReceipt, Invoice, PurchaseOrder, Vendor
@@ -33,6 +34,7 @@ from app.schemas import (
     GrnLine,
     InvoiceDoc,
     Issue,
+    Lesson,
     LineItem,
     MemoryItem,
     PurchaseOrderDoc,
@@ -40,6 +42,8 @@ from app.schemas import (
     Resolution,
     ResolveRequest,
     ResolveResult,
+    RevokeRequest,
+    RevokeResult,
     VendorRef,
 )
 from app.services.events import bus
@@ -227,6 +231,25 @@ def resolution_text(case: ExceptionCase, v: Vendor, inv: Invoice, res: dict, rec
 def lesson_line(v: Vendor, case: ExceptionCase, res: dict) -> str:
     kind = case.primary_type.replace("_", " ")
     return f"{v.name} · {kind}: {Action(res['decision']).value.replace('_', ' ')} — “{res['reason']}”"
+
+
+def to_lesson(session: Session, case: ExceptionCase) -> Lesson:
+    res = case.resolution or {}
+    v = session.get(Vendor, case.vendor_id)
+    by = res.get("resolved_by", "")
+    return Lesson(
+        case_id=case.id,
+        vendor=vendor_ref(v),
+        exception_type=ExceptionType(case.primary_type),
+        decision=Action(res["decision"]),
+        reason=res.get("reason", ""),
+        taught_by=by,
+        taught_at=res["resolved_at"],
+        auto=by.startswith("Precedent"),
+        revoked=bool(res.get("revoked_at")),
+        revoked_by=res.get("revoked_by"),
+        revoke_reason=res.get("revoke_reason"),
+    )
 
 
 # ---------------------------------------------------------------- service
@@ -422,9 +445,11 @@ class CaseService:
                 when = now or sim_now(session)
                 if when < case.created_at:
                     when = case.created_at + timedelta(minutes=5)
+                clean_reason, redacted = redact(req.reason.strip())
                 res = Resolution(
                     decision=req.decision,
-                    reason=req.reason.strip(),
+                    reason=clean_reason,
+                    redacted=redacted,
                     adjusted_amount=req.adjusted_amount if req.decision == Action.APPROVE_ADJUSTED else None,
                     resolved_by=req.resolved_by,
                     resolved_at=when,
@@ -466,8 +491,9 @@ class CaseService:
         if not self.retain_enabled:
             return None
         # capture plain values now: ORM objects expire once the session closes
-        content = resolution_text(case, v, inv, res, rec)
+        content, _ = redact(resolution_text(case, v, inv, res, rec))
         bank = active_bank(session)
+        taught_by = res.get("resolved_by", "")
         case_id, vendor_id = case.id, v.id
         types, primary = list(case.issue_types), case.primary_type
         lesson = lesson_line(v, case, res)
@@ -484,6 +510,7 @@ class CaseService:
                     types=types,
                     decision=res["decision"],
                     when=when,
+                    taught_by=taught_by,
                 )
                 bus.publish(
                     "memory.retained",
@@ -503,6 +530,55 @@ class CaseService:
         self._bg.add(task)
         task.add_done_callback(self._bg.discard)
         return task
+
+    # ------------------------------------------------------------ lesson review (memory poisoning defense)
+
+    async def revoke_lesson(self, case_id: str, req: RevokeRequest) -> RevokeResult:
+        """Forget a wrong lesson: delete its Hindsight document, reset the vendor × type ladder,
+        and drop cached recommendations that may have relied on it."""
+        async with self.write_lock:
+            with Session(get_engine()) as session:
+                case = session.get(ExceptionCase, case_id)
+                if case is None or not case.resolution:
+                    raise KeyError(case_id)
+                if case.resolution.get("revoked_at"):
+                    raise ValueError(f"Lesson {case_id} is already revoked")
+                bank = active_bank(session)
+                when = sim_now(session)
+                clean_reason, _ = redact(req.reason.strip())
+                case.resolution = {
+                    **case.resolution,
+                    "revoked_at": when.isoformat(),
+                    "revoked_by": req.revoked_by,
+                    "revoke_reason": clean_reason,
+                }
+                row = get_or_create(session, case.vendor_id, case.primary_type)
+                if row.level != AutonomyLevel.LOCKED:
+                    row.level = AutonomyLevel.SUGGEST
+                row.streak = 0
+                row.updated_at = when
+                stale = session.exec(
+                    select(ExceptionCase).where(
+                        ExceptionCase.vendor_id == case.vendor_id,
+                        ExceptionCase.primary_type == case.primary_type,
+                        ExceptionCase.status == CaseStatus.OPEN,
+                    )
+                ).all()
+                for other in stale:
+                    variants = dict(other.rec_variants or {})
+                    variants.pop("on", None)
+                    other.rec_variants = variants
+                    session.add(other)
+                session.add_all([case, row])
+                session.commit()
+                v = session.get(Vendor, case.vendor_id)
+                state = to_state(row, v.name)
+                lesson = to_lesson(session, case)
+                n_stale = len(stale)
+        deleted = await self.memory.delete_document(bank, case_id)
+        bus.publish("memory.revoked", lesson)
+        bus.publish("autonomy.changed", state)
+        return RevokeResult(lesson=lesson, autonomy=state, memory_deleted=deleted, invalidated_recommendations=n_stale)
 
     async def drain(self) -> None:
         """Wait for pending memory writes (used by the simulator between days)."""

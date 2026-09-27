@@ -20,13 +20,14 @@ from app.config import get_settings
 from app.data.seed import seed
 from app.db import get_engine, set_state
 from app.memory.store import get_memory
-from app.models import ExceptionCase
+from app.models import ExceptionCase, Vendor
 from app.services import demo
 from app.services.cases import get_cases
-from app.services.metrics import save_eval, weekly
+from app.services.metrics import citation_relevance, save_eval, weekly
 from app.services.sim import get_sim
 
 log = logging.getLogger("build")
+CITATIONS: dict[str, float | None] = {}
 T0 = time.time()
 
 
@@ -95,6 +96,9 @@ async def memory_on_run() -> dict[int, dict]:
     say("memory ON -> rest of timeline")
     await sim.advance_to(s.sim_days - 1, leave_last_open=False, on_day=progress)
     with Session(get_engine()) as session:
+        cases = session.exec(select(ExceptionCase)).all()
+        names = {v.id: v.name for v in session.exec(select(Vendor)).all()}
+        CITATIONS["full_timeline"] = citation_relevance(cases, names)
         return dict(weekly(session))
 
 
@@ -152,7 +156,13 @@ def summarise(on: dict, off: dict) -> dict:
         if off and m56["correct_on"] is not None and m56["correct_off"] is not None
         else f"Months 5-6 with memory: correct {m56['correct_on']}, touchless {m56['touchless_on']}."
     )
-    return {"generated_at": datetime.now().isoformat(), "weeks": weeks, "months_5_6": m56, "summary": summary}
+    return {
+        "generated_at": datetime.now().isoformat(),
+        "weeks": weeks,
+        "months_5_6": m56,
+        "citation_relevance": CITATIONS.get("full_timeline"),
+        "summary": summary,
+    }
 
 
 async def main(skip_off: bool) -> None:

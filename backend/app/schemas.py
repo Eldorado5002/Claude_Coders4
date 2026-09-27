@@ -185,6 +185,10 @@ class Resolution(BaseModel):
     resolved_at: datetime
     agent_action: Action | None = None
     agreed_with_agent: bool | None = None
+    redacted: list[str] = Field(default_factory=list, description="Kinds of personal data removed from the reason")
+    revoked_at: datetime | None = None
+    revoked_by: str | None = None
+    revoke_reason: str | None = None
 
 
 class AutonomyState(BaseModel):
@@ -246,6 +250,42 @@ class ResolveResult(BaseModel):
 class Page(BaseModel, Generic[T]):
     items: list[T]
     total: int
+
+
+# ---------------------------------------------------------------- lessons (memory review)
+
+
+class Lesson(BaseModel):
+    """One thing the agent learned: a resolved exception stored in Hindsight."""
+
+    case_id: str = Field(description="Also the Hindsight document id")
+    vendor: VendorRef
+    exception_type: ExceptionType
+    decision: Action
+    reason: str
+    taught_by: str
+    taught_at: datetime
+    auto: bool = Field(description="Resolved by the agent itself under earned autonomy")
+    revoked: bool
+    revoked_by: str | None = None
+    revoke_reason: str | None = None
+
+
+class RevokeRequest(BaseModel):
+    reason: str = Field(min_length=5, description="Why this lesson is wrong")
+    revoked_by: str = "AP Lead"
+
+
+class RevokeResult(BaseModel):
+    lesson: Lesson
+    autonomy: AutonomyState
+    memory_deleted: bool = Field(description="Hindsight document and its facts were deleted")
+    invalidated_recommendations: int = Field(description="Open cases whose recommendation will be recomputed")
+
+
+class PolicyDoc(BaseModel):
+    content: str | None = Field(description="Team-wide AP policy learned from all resolutions (markdown)")
+    refreshed_at: datetime | None = None
 
 
 # ---------------------------------------------------------------- vendors
@@ -316,6 +356,10 @@ class Kpis(BaseModel):
     false_approvals: int
     memories: int
     minutes_saved: float = Field(description="Modelled estimate; see assumptions")
+    citation_relevance: float | None = Field(
+        None, description="Share of cited memories that refer to the same vendor or exception type"
+    )
+    lessons_revoked: int = 0
 
 
 class Metrics(BaseModel):
