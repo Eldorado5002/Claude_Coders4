@@ -15,10 +15,10 @@ export function AppShell() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="min-w-0">
+      <SidebarInset className="h-svh min-w-0 overflow-hidden">
         <TopBar />
         <Banners />
-        <main className="flex min-h-0 flex-1 flex-col pb-16 md:pb-0">
+        <main id="main" className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-16 md:pb-0">
           <Outlet />
         </main>
       </SidebarInset>

@@ -13,7 +13,7 @@ export function TopBar() {
   const memoryOff = settings.data?.memory_enabled === false
 
   return (
-    <div className="sticky top-0 z-30 bg-background">
+    <div className="z-30 flex-none bg-background">
       <header className="relative flex h-14 items-center gap-3 border-b border-rule px-3 md:px-5">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="!h-5" />
