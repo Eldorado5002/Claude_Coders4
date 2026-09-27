@@ -33,7 +33,13 @@ We replayed 26 weeks of invoices. With memory, our agent matched the clerk's dec
 
 ## Contents
 
-[The problem](#the-problem) · [What Precedent does](#what-precedent-does) · [Memory is the star](#memory-is-the-star) · [Results](#results) · [The demo](#the-demo-in-five-acts) · [How it works](#how-it-works) · [Hindsight features](#every-hindsight-feature-we-use) · [Safety](#safety-and-trust) · [Highlights](#highlights-at-a-glance) · [Run it](#run-it-yourself) · [Tech stack](#tech-stack) · [Team](#team)
+| The story | How it's built | Reference |
+|---|---|---|
+| 1. [The problem](#the-problem) | 6. [How it works](#how-it-works) | 10. [Run it yourself](#run-it-yourself) |
+| 2. [What Precedent does](#what-precedent-does) | 7. [Every Hindsight feature we use](#every-hindsight-feature-we-use) | 11. [Tech stack](#tech-stack) |
+| 3. [Memory is the star](#memory-is-the-star) | 8. [Safety and trust](#safety-and-trust) | 12. [What's next](#whats-next) |
+| 4. [Results](#results) | 9. [Highlights at a glance](#highlights-at-a-glance) | 13. [Team](#team) |
+| 5. [The demo in five acts](#the-demo-in-five-acts) | | |
 
 ---
 
