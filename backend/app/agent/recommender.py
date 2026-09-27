@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 from app.llm.router import LlmUnavailable, get_router, strict_schema
 from app.memory.store import DIRECTIVES, MemoryStore, get_memory
 from app.schemas import Action, Citation, CitationKind, ExceptionType, Issue, Recommendation, RecSource
+from app.services.compliance import msme_note
 
 log = logging.getLogger("precedent.agent")
 
@@ -25,13 +26,24 @@ CONTROL_ACTION = {
     ExceptionType.BANK_DETAILS_CHANGED: Action.ESCALATE,
     ExceptionType.OVER_THRESHOLD: Action.ESCALATE,
     ExceptionType.NEW_VENDOR: Action.ESCALATE,
+    ExceptionType.INVALID_GSTIN: Action.ESCALATE,
+    ExceptionType.EINVOICE_MISSING: Action.HOLD,
 }
-CONTROL_ORDER = list(CONTROL_ACTION)
+CONTROL_ORDER = [
+    ExceptionType.DUPLICATE_INVOICE,
+    ExceptionType.BANK_DETAILS_CHANGED,
+    ExceptionType.INVALID_GSTIN,
+    ExceptionType.OVER_THRESHOLD,
+    ExceptionType.NEW_VENDOR,
+    ExceptionType.EINVOICE_MISSING,
+]
 DIRECTIVE_FOR = {
     ExceptionType.BANK_DETAILS_CHANGED: DIRECTIVES[0],
     ExceptionType.DUPLICATE_INVOICE: DIRECTIVES[1],
     ExceptionType.NEW_VENDOR: DIRECTIVES[2],
     ExceptionType.OVER_THRESHOLD: DIRECTIVES[3],
+    ExceptionType.EINVOICE_MISSING: DIRECTIVES[5],
+    ExceptionType.INVALID_GSTIN: DIRECTIVES[6],
 }
 ANOMALY_CAP = 0.9
 
@@ -244,6 +256,10 @@ class Recommender:
             citations = await self._control_citations(ctx, control, citations, bank_id if memory_enabled else None)
 
         adjusted = payable_amount(ctx) if action == Action.APPROVE_ADJUSTED else None
+
+        msme = ctx.extra.get("msme")
+        if msme is not None and action in (Action.HOLD, Action.ESCALATE):
+            rationale += " " + msme_note(msme)
 
         if ctx.anomaly is not None and ctx.anomaly >= ANOMALY_CAP and control is None:
             confidence = min(confidence, 0.6)

@@ -36,6 +36,7 @@ class CapturedInvoice(BaseModel):
     bank_name: str | None
     account_number: str | None = Field(description="Bank account number as printed, else null")
     ifsc: str | None
+    irn: str | None = Field(description="e-invoice IRN (64 hex characters) if printed, else null")
 
 
 SYSTEM = (
@@ -117,6 +118,8 @@ async def capture_invoice(data: bytes, mime: str) -> CaptureResult:
             if cap.account_number
             else (vendor.account_number if vendor else ""),
             ifsc=(cap.ifsc or (vendor.ifsc if vendor else "")).upper(),
+            supplier_gstin=(cap.vendor_gstin or "").replace(" ", "").upper() or None,
+            irn=(cap.irn or "").strip().lower() or None,
             source="capture",
             status="pending",
             truth={"expected_types": [], "decision": "approve", "reason": "", "scenario": "captured"},

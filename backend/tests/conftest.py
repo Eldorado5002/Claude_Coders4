@@ -101,6 +101,19 @@ class FakeMemory:
         return []
 
 
+def wait_retained(memory: "FakeMemory", case_id: str, timeout: float = 3.0) -> dict:
+    """Memory writes run as background tasks after a resolve; wait for the one we expect."""
+    import time
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        hit = next((r for r in memory.retained if r["case_id"] == case_id), None)
+        if hit:
+            return hit
+        time.sleep(0.02)
+    raise AssertionError(f"{case_id} was never retained")
+
+
 class FakeRouter:
     chain = ["fake:model"]
 

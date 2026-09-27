@@ -31,3 +31,6 @@ dev-dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# raw external datasets (downloaded by scripts)
+backend/data/external/

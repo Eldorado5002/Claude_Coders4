@@ -16,6 +16,7 @@ from app.schemas import (
     AdvanceRequest,
     AutonomyLevel,
     AutonomyState,
+    BenfordResult,
     CaptureResult,
     CaseStatus,
     Citation,
@@ -41,6 +42,8 @@ from app.schemas import (
     Settings,
     SettingsPatch,
     VendorProfile,
+    VendorRisk,
+    VendorRiskRow,
     VendorSummary,
 )
 from app.services import demo, push
@@ -54,9 +57,11 @@ from app.services.cases import (
     summary,
     to_lesson,
     vendor_bank,
+    vendor_ref,
 )
 from app.services.events import bus
 from app.services.metrics import compute_metrics
+from app.services.risk import all_vendor_risk, portfolio_benford, portfolio_exception_rate, vendor_risk
 from app.services.sim import get_sim
 
 log = logging.getLogger("precedent.api")
@@ -136,6 +141,7 @@ def list_exceptions(
     status: str = Query("open", pattern="^(open|auto_resolved|resolved|all)$"),
     vendor_id: str | None = None,
     type: ExceptionType | None = None,
+    sort: str = Query("newest", pattern="^(newest|msme_deadline|amount)$"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> Page[ExceptionSummary]:
@@ -148,9 +154,16 @@ def list_exceptions(
         if type:
             q = q.where(ExceptionCase.primary_type == type.value)
         total = s.exec(select(func.count()).select_from(q.subquery())).one()
-        rows = s.exec(q.order_by(col(ExceptionCase.created_at).desc()).offset(offset).limit(limit)).all()
         mem_on = memory_enabled(s)
-        return Page[ExceptionSummary](items=[summary(s, c, mem_on) for c in rows], total=total)
+        if sort == "newest":
+            rows = s.exec(q.order_by(col(ExceptionCase.created_at).desc()).offset(offset).limit(limit)).all()
+            return Page[ExceptionSummary](items=[summary(s, c, mem_on) for c in rows], total=total)
+        items = [summary(s, c, mem_on) for c in s.exec(q).all()]
+        if sort == "msme_deadline":
+            items.sort(key=lambda x: (x.msme_days_left is None, x.msme_days_left or 0, -x.amount_at_risk))
+        else:
+            items.sort(key=lambda x: -x.amount_at_risk)
+        return Page[ExceptionSummary](items=items[offset : offset + limit], total=total)
 
 
 def _case_or_404(s: Session, case_id: str) -> ExceptionCase:
@@ -192,7 +205,8 @@ async def resolve(case_id: str, body: ResolveRequest) -> ResolveResult:
 # ---------------------------------------------------------------- vendors & autonomy
 
 
-def _vendor_summary(s: Session, v: Vendor) -> VendorSummary:
+def _vendor_summary(s: Session, v: Vendor, risk: VendorRisk | None = None) -> VendorSummary:
+    msme = (v.profile or {}).get("msme") or {}
     arrived = s.exec(select(Invoice).where(Invoice.vendor_id == v.id, Invoice.status != "pending")).all()
     cases = s.exec(select(ExceptionCase).where(ExceptionCase.vendor_id == v.id)).all()
     auto = sum(1 for c in cases if c.status == CaseStatus.AUTO_RESOLVED)
@@ -208,13 +222,18 @@ def _vendor_summary(s: Session, v: Vendor) -> VendorSummary:
         exceptions_count=len(cases),
         open_exceptions=sum(1 for c in cases if c.status == CaseStatus.OPEN),
         touchless_rate=round(auto / len(cases), 3) if cases else None,
+        msme_category=msme.get("category"),
+        e_invoice_required=bool((v.profile or {}).get("e_invoice")),
+        risk_score=risk.score if risk else None,
+        risk_level=risk.level if risk else None,
     )
 
 
 @router.get("/vendors", response_model=list[VendorSummary])
 def list_vendors() -> list[VendorSummary]:
     with Session(get_engine()) as s:
-        return [_vendor_summary(s, v) for v in s.exec(select(Vendor).order_by(col(Vendor.id))).all()]
+        risks = {v.id: r for v, r in all_vendor_risk(s)}
+        return [_vendor_summary(s, v, risks[v.id]) for v in s.exec(select(Vendor).order_by(col(Vendor.id))).all()]
 
 
 @router.get("/vendors/{vendor_id}", response_model=VendorProfile)
@@ -223,7 +242,9 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
         v = s.get(Vendor, vendor_id)
         if v is None:
             raise HTTPException(404, f"Vendor {vendor_id} not found")
-        base = _vendor_summary(s, v)
+        risk = vendor_risk(s, v, portfolio_exception_rate(s))
+        base = _vendor_summary(s, v, risk)
+        udyam = ((v.profile or {}).get("msme") or {}).get("udyam")
         bank = active_bank(s)
         mem_on = memory_enabled(s)
         recent = s.exec(
@@ -262,7 +283,23 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
         playbook=playbook,
         recent=recent_summaries,
         autonomy=autonomy,
+        risk=risk,
+        udyam=udyam,
     )
+
+
+@router.get("/risk", response_model=list[VendorRiskRow])
+def risk_ranking() -> list[VendorRiskRow]:
+    """Vendors ranked by fraud and control risk."""
+    with Session(get_engine()) as s:
+        return [VendorRiskRow(vendor=vendor_ref(v), risk=r) for v, r in all_vendor_risk(s)]
+
+
+@router.get("/benford", response_model=BenfordResult)
+def benford_portfolio() -> BenfordResult:
+    """Benford first-digit test over every line amount received so far."""
+    with Session(get_engine()) as s:
+        return portfolio_benford(s)
 
 
 @router.get("/autonomy", response_model=list[AutonomyState])

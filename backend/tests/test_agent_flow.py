@@ -9,6 +9,7 @@ from app.agent.recommender import RecDraft
 from app.llm.router import strict_schema
 from app.models import Autonomy, ExceptionCase
 from app.schemas import Action, AutonomyLevel, CaseStatus
+from tests.conftest import wait_retained
 
 # ---------------------------------------------------------------- pure logic
 
@@ -94,7 +95,7 @@ def test_day1_case_then_learning_then_promotion(client, env):
     ).json()
     assert r["exception"]["status"] == "resolved" and r["autonomy"]["overruled"] == 1
     assert "Shree Balaji" in r["lesson"]
-    assert env.memory.retained and env.memory.retained[-1]["decision"] == "approve"
+    assert wait_retained(env.memory, day0["id"])["decision"] == "approve"
 
 
 def test_memory_toggle_regression_promotion_uses_visible_recommendation(client, env):
@@ -289,7 +290,7 @@ def test_revoke_lesson_forgets_it_and_resets_the_ladder(client, env):
 
     cid = client.get("/api/exceptions", params={"status": "open"}).json()["items"][0]["id"]
     client.post(f"/api/exceptions/{cid}/resolve", json={"decision": "approve", "reason": "Pay any freight, always."})
-    assert any(r["case_id"] == cid for r in env.memory.retained)
+    wait_retained(env.memory, cid)
     with Session(get_engine()) as s:  # pretend the pair had already earned autonomy
         row = s.get(Autonomy, "V001:freight_charge")
         row.level, row.streak = "auto", 4
@@ -317,7 +318,7 @@ def test_personal_data_never_reaches_memory(client, env):
     stored = res["exception"]["resolution"]
     assert "9876543210" not in stored["reason"] and "50200011223344" not in stored["reason"]
     assert set(stored["redacted"]) >= {"phone", "bank_account", "pan"}
-    memory_text = env.memory.retained[-1]["content"]
+    memory_text = wait_retained(env.memory, cid)["content"]
     assert "9876543210" not in memory_text and "ABCDE1234F" not in memory_text and "[REDACTED:phone]" in memory_text
 
 

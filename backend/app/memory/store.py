@@ -69,6 +69,17 @@ DIRECTIVES = [
         "the most recent and mention the conflict. If no precedent applies, recommend hold or escalate with low "
         "confidence.",
     ),
+    (
+        "E-invoicing",
+        "Suppliers above Rs 5 crore turnover must issue GST e-invoices with an IRN and signed QR code. An invoice "
+        "from such a supplier without a valid IRN is not a valid tax invoice: recommend hold and ask for an "
+        "IRP-registered invoice.",
+    ),
+    (
+        "Supplier GSTIN",
+        "If the GSTIN printed on an invoice fails its checksum or differs from the vendor master, treat it as "
+        "possible impersonation and recommend escalate.",
+    ),
 ]
 
 ENTITY_LABELS = [
@@ -185,8 +196,9 @@ class MemoryStore:
                 await self.client.aupdate_bank_config(bank_id, entity_labels=ENTITY_LABELS)
             existing = await self.client.alist_directives(bank_id)
             items = getattr(existing, "items", None) or getattr(existing, "directives", None) or []
-            if not items:
-                for priority, (name, content) in enumerate(DIRECTIVES):
+            have = {getattr(d, "name", None) for d in items}
+            for priority, (name, content) in enumerate(DIRECTIVES):
+                if name not in have:
                     await self.client.acreate_directive(bank_id, name=name, content=content, priority=10 - priority)
             # playbooks refresh at most every 5 min (each refresh is a paid LLM call)
             with contextlib.suppress(Exception):

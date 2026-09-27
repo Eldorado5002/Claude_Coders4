@@ -97,6 +97,20 @@ def save_eval(data: dict) -> None:
     EVAL_FILE.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
 
 
+def open_msme_at_risk(session: Session, cases: list[ExceptionCase]) -> list:
+    from app.services.cases import case_msme, sim_date
+
+    today = sim_date(session)
+    out = []
+    for c in cases:
+        if c.status != "open":
+            continue
+        m = case_msme(session, session.get(Vendor, c.vendor_id), session.get(Invoice, c.invoice_id), today)
+        if m and m.status != "ok":
+            out.append(m)
+    return out
+
+
 def compute_metrics(session: Session, memories: int) -> Metrics:
     s = get_settings()
     cases = session.exec(select(ExceptionCase)).all()
@@ -109,6 +123,7 @@ def compute_metrics(session: Session, memories: int) -> Metrics:
 
     total = len(cases)
     touchless = sum(o["touchless"] for _, o in outcomes)
+    msme_risky = open_msme_at_risk(session, cases)
     decided = [o for _, o in outcomes if o["decided"]]
     accepted = sum(o["agreed"] for o in decided)
     kpis = Kpis(
@@ -122,6 +137,8 @@ def compute_metrics(session: Session, memories: int) -> Metrics:
         minutes_saved=round(touchless * MANUAL_MIN + accepted * (MANUAL_MIN - CONFIRM_MIN), 1),
         citation_relevance=citation_relevance(cases, {v.id: v.name for v in session.exec(select(Vendor)).all()}),
         lessons_revoked=sum(1 for c in cases if (c.resolution or {}).get("revoked_at")),
+        msme_open_at_risk=len(msme_risky),
+        msme_tax_at_risk=round(sum(m.tax_at_risk for m in msme_risky), 2),
     )
 
     ev = load_eval()

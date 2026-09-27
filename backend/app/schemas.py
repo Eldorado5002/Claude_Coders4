@@ -24,6 +24,8 @@ class ExceptionType(StrEnum):
     BANK_DETAILS_CHANGED = "bank_details_changed"
     NEW_VENDOR = "new_vendor"
     OVER_THRESHOLD = "over_threshold"
+    EINVOICE_MISSING = "einvoice_missing"
+    INVALID_GSTIN = "invalid_gstin"
 
 
 # Hard financial controls: never auto-resolved, never approved by the agent.
@@ -33,6 +35,8 @@ HARD_CONTROL_TYPES = frozenset(
         ExceptionType.BANK_DETAILS_CHANGED,
         ExceptionType.NEW_VENDOR,
         ExceptionType.OVER_THRESHOLD,
+        ExceptionType.EINVOICE_MISSING,
+        ExceptionType.INVALID_GSTIN,
     }
 )
 
@@ -113,6 +117,8 @@ class InvoiceDoc(BaseModel):
     total: float
     currency: Literal["INR"] = "INR"
     bank_account: BankAccount
+    supplier_gstin: str | None = Field(None, description="GSTIN printed on the invoice")
+    irn: str | None = Field(None, description="GST e-invoice reference number (64 hex chars), when e-invoiced")
     source: Literal["erp", "capture"] = "erp"
 
 
@@ -139,6 +145,54 @@ class GoodsReceiptDoc(BaseModel):
     po_number: str
     received_date: date
     lines: list[GrnLine]
+
+
+# ---------------------------------------------------------------- compliance & risk (India)
+
+
+class MsmeStatus(BaseModel):
+    """Income Tax Act Section 43B(h): pay micro/small suppliers within 15 days (45 with a written agreement)
+    of accepting the goods, or the expense is disallowed as a deduction for the year."""
+
+    category: Literal["micro", "small"]
+    udyam: str
+    limit_days: int
+    accepted_on: date
+    deadline: date
+    days_left: int
+    status: Literal["ok", "due_soon", "breached"]
+    tax_at_risk: float = Field(description="Estimated tax cost if the deduction is disallowed (25.17% rate)")
+    terms_exceed_limit: bool = Field(description="Vendor payment terms are longer than the statutory limit")
+
+
+class EInvoiceStatus(BaseModel):
+    required: bool = Field(description="Supplier turnover above Rs 5 crore: B2B invoices need an IRN")
+    irn_present: bool
+
+
+class Compliance(BaseModel):
+    msme: MsmeStatus | None = None
+    e_invoice: EInvoiceStatus
+
+
+class BenfordResult(BaseModel):
+    n: int
+    mad: float | None = Field(None, description="Mean absolute deviation from Benford's first-digit law")
+    conformity: str = Field(description="close / acceptable / marginal / nonconformity / insufficient data")
+    observed: list[float]
+    expected: list[float]
+
+
+class VendorRisk(BaseModel):
+    score: int = Field(ge=0, le=100)
+    level: Literal["low", "medium", "high"]
+    reasons: list[str]
+    benford: BenfordResult
+
+
+class VendorRiskRow(BaseModel):
+    vendor: VendorRef
+    risk: VendorRisk
 
 
 # ---------------------------------------------------------------- exceptions
@@ -218,6 +272,7 @@ class ExceptionSummary(BaseModel):
     confidence: float | None = None
     autonomy_level: AutonomyLevel
     blocking: bool = Field(description="At least one hard control fired")
+    msme_days_left: int | None = Field(None, description="Days left before the MSME 43B(h) deadline, if MSME")
 
 
 class ExceptionDetail(ExceptionSummary):
@@ -229,6 +284,7 @@ class ExceptionDetail(ExceptionSummary):
     recommendation: Recommendation | None = None
     resolution: Resolution | None = None
     autonomy: AutonomyState
+    compliance: Compliance
 
 
 class ResolveRequest(BaseModel):
@@ -298,6 +354,10 @@ class VendorSummary(VendorRef):
     exceptions_count: int
     open_exceptions: int
     touchless_rate: float | None = None
+    msme_category: Literal["micro", "small"] | None = None
+    e_invoice_required: bool = False
+    risk_score: int | None = None
+    risk_level: Literal["low", "medium", "high"] | None = None
 
 
 class VendorProfile(VendorSummary):
@@ -306,6 +366,8 @@ class VendorProfile(VendorSummary):
     playbook: str | None = Field(None, description="Hindsight mental model (markdown)")
     recent: list[ExceptionSummary]
     autonomy: list[AutonomyState]
+    risk: VendorRisk | None = None
+    udyam: str | None = None
 
 
 # ---------------------------------------------------------------- memory feed & copilot
@@ -360,6 +422,8 @@ class Kpis(BaseModel):
         None, description="Share of cited memories that refer to the same vendor or exception type"
     )
     lessons_revoked: int = 0
+    msme_open_at_risk: int = Field(0, description="Open MSME cases due within 7 days or already past 43B(h)")
+    msme_tax_at_risk: float = Field(0.0, description="Estimated tax at risk on those cases")
 
 
 class Metrics(BaseModel):

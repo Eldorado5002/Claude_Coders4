@@ -27,6 +27,7 @@ from app.schemas import (
     AutonomyLevel,
     BankAccount,
     CaseStatus,
+    Compliance,
     ExceptionDetail,
     ExceptionSummary,
     ExceptionType,
@@ -37,6 +38,7 @@ from app.schemas import (
     Lesson,
     LineItem,
     MemoryItem,
+    MsmeStatus,
     PurchaseOrderDoc,
     Recommendation,
     Resolution,
@@ -46,6 +48,7 @@ from app.schemas import (
     RevokeResult,
     VendorRef,
 )
+from app.services.compliance import einvoice_status, msme_status
 from app.services.events import bus
 
 log = logging.getLogger("precedent.cases")
@@ -115,6 +118,8 @@ def invoice_doc(i: Invoice) -> InvoiceDoc:
         tax_total=i.tax_total,
         total=i.total,
         bank_account=BankAccount(bank_name=i.bank_name, account_number=i.account_number, ifsc=i.ifsc),
+        supplier_gstin=i.supplier_gstin,
+        irn=i.irn,
         source=i.source,  # type: ignore[arg-type]
     )
 
@@ -144,6 +149,19 @@ def grn_doc(g: GoodsReceipt | None) -> GoodsReceiptDoc | None:
     )
 
 
+def grn_for(session: Session, inv: Invoice) -> GoodsReceipt | None:
+    if not inv.po_number:
+        return None
+    return session.exec(select(GoodsReceipt).where(GoodsReceipt.po_number == inv.po_number)).first()
+
+
+def case_msme(session: Session, v: Vendor, inv: Invoice, today) -> MsmeStatus | None:
+    if not (v.profile or {}).get("msme"):
+        return None
+    grn = grn_for(session, inv)
+    return msme_status(v.profile, row_dict(inv), row_dict(grn) if grn else None, today, v.payment_terms_days)
+
+
 def current_rec(case: ExceptionCase, mem_on: bool) -> dict | None:
     if case.status != CaseStatus.OPEN and case.recommendation:
         return case.recommendation
@@ -157,6 +175,7 @@ def summary(session: Session, case: ExceptionCase, mem_on: bool | None = None) -
     auto = session.get(Autonomy, f"{case.vendor_id}:{case.primary_type}")
     rec = current_rec(case, mem_on)
     level = AutonomyLevel(auto.level) if auto else (AutonomyLevel.LOCKED if case.blocking else AutonomyLevel.SUGGEST)
+    msme = case_msme(session, v, inv, sim_date(session)) if case.status == CaseStatus.OPEN else None
     return ExceptionSummary(
         id=case.id,
         status=CaseStatus(case.status),
@@ -171,6 +190,7 @@ def summary(session: Session, case: ExceptionCase, mem_on: bool | None = None) -
         confidence=rec["confidence"] if rec else None,
         autonomy_level=level,
         blocking=case.blocking,
+        msme_days_left=msme.days_left if msme else None,
     )
 
 
@@ -180,11 +200,7 @@ def detail(session: Session, case: ExceptionCase) -> ExceptionDetail:
     v = session.get(Vendor, case.vendor_id)
     inv = session.get(Invoice, case.invoice_id)
     po = session.get(PurchaseOrder, inv.po_number) if inv.po_number else None
-    grn = (
-        session.exec(select(GoodsReceipt).where(GoodsReceipt.po_number == inv.po_number)).first()
-        if inv.po_number
-        else None
-    )
+    grn = grn_for(session, inv)
     auto = get_or_create(session, case.vendor_id, case.primary_type)
     rec = current_rec(case, mem_on)
     return ExceptionDetail(
@@ -197,6 +213,10 @@ def detail(session: Session, case: ExceptionCase) -> ExceptionDetail:
         recommendation=Recommendation(**rec) if rec else None,
         resolution=Resolution(**case.resolution) if case.resolution else None,
         autonomy=to_state(auto, v.name),
+        compliance=Compliance(
+            msme=case_msme(session, v, inv, sim_date(session)),
+            e_invoice=einvoice_status(v.profile, row_dict(inv)),
+        ),
     )
 
 
@@ -354,6 +374,7 @@ class CaseService:
             anomaly=score,
             typical_total=typical,
             history_count=len(history),
+            extra={"msme": case_msme(session, v, inv, inv.arrival_date)},
         )
 
     async def recommend_case(self, case_id: str, *, force: bool = False, mem_on: bool | None = None) -> Recommendation:

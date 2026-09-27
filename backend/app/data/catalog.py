@@ -347,7 +347,7 @@ VENDORS: list[dict] = [
         state="Punjab",
         state_code="03",
         category="components",
-        terms=45,
+        terms=60,  # longer than the 45-day MSME cap: flagged by the compliance check
         entity="F",
         prefix="BFC",
         per_month=2,
@@ -460,3 +460,37 @@ VENDORS: list[dict] = [
         items=[("AL-SCRAP", "Aluminium extrusion scrap (sorted)", "7602", "Kg", 172, 18, (800, 2500), 100)],
     ),
 ]
+
+
+# Indian compliance attributes.
+#   msme      -> Udyam-registered micro/small supplier: Section 43B(h) requires payment within 15 days,
+#                or up to 45 days with a written agreement, or the expense is disallowed for income tax.
+#   e_invoice -> supplier's turnover is above Rs 5 crore, so B2B invoices must carry an IRN + signed QR
+#                from the GST Invoice Registration Portal.
+COMPLIANCE: dict[str, dict] = {
+    "V001": {"e_invoice": True},
+    "V002": {"msme": {"category": "small", "udyam": "UDYAM-TS-20-0031457", "agreement_days": 45}, "e_invoice": True},
+    "V003": {"e_invoice": True},
+    "V004": {"e_invoice": True},
+    "V005": {"msme": {"category": "small", "udyam": "UDYAM-TS-02-0048812", "agreement_days": 45}},
+    "V007": {"e_invoice": True},
+    "V008": {"e_invoice": True},
+    "V009": {"msme": {"category": "small", "udyam": "UDYAM-TN-02-0107733", "agreement_days": 45}},
+    "V010": {"msme": {"category": "micro", "udyam": "UDYAM-KL-07-0021904", "agreement_days": 45}},
+    "V011": {"msme": {"category": "micro", "udyam": "UDYAM-TS-22-0009561", "agreement_days": 45}},
+    "V012": {"e_invoice": True},
+    "V013": {"msme": {"category": "small", "udyam": "UDYAM-AP-11-0006128", "agreement_days": 45}},
+    "V014": {"e_invoice": True},
+    "V015": {"msme": {"category": "micro", "udyam": "UDYAM-TS-02-0077310", "agreement_days": None}},
+    "V016": {"e_invoice": True},
+    "V017": {"e_invoice": True},
+    "V019": {"msme": {"category": "small", "udyam": "UDYAM-PB-09-0014472", "agreement_days": 45}},
+    "V020": {"msme": {"category": "micro", "udyam": "UDYAM-AP-03-0030985", "agreement_days": 45}},
+    "V021": {"e_invoice": True},
+    "V023": {"e_invoice": True},
+    "V024": {"msme": {"category": "micro", "udyam": "UDYAM-TS-02-0090417", "agreement_days": None}},
+}
+for _v in VENDORS:
+    _v.setdefault("msme", None)
+    _v.setdefault("e_invoice", False)
+    _v.update(COMPLIANCE.get(_v["id"], {}))

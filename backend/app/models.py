@@ -55,6 +55,8 @@ class Invoice(SQLModel, table=True):
     bank_name: str
     account_number: str
     ifsc: str
+    supplier_gstin: str | None = None
+    irn: str | None = None
     source: str = "erp"
     # pending → not arrived yet; matched → clean; exception → case opened; paid/held/rejected → closed
     status: str = Field(default="pending", index=True)

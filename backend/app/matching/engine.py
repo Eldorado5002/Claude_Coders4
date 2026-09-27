@@ -12,8 +12,10 @@ FREIGHT_WORDS = re.compile(r"freight|surcharge|transport|cartage|delivery charge
 CONTROL_ORDER = [
     ExceptionType.DUPLICATE_INVOICE,
     ExceptionType.BANK_DETAILS_CHANGED,
+    ExceptionType.INVALID_GSTIN,
     ExceptionType.OVER_THRESHOLD,
     ExceptionType.NEW_VENDOR,
+    ExceptionType.EINVOICE_MISSING,
 ]
 
 

@@ -5,15 +5,27 @@ the decision a careful AP clerk would take (with a realistic reason). The simula
 clerk and the evaluation harness use it; the frontend never sees it.
 """
 
+import hashlib
+import itertools
+import json
+import math
 import random
 import string
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
+from pathlib import Path
 
 from app.data.catalog import CLERKS, VENDORS
 
 LETTERS = string.ascii_uppercase
-HARD = {"duplicate_invoice", "bank_details_changed", "new_vendor", "over_threshold"}
+HARD = {
+    "duplicate_invoice",
+    "bank_details_changed",
+    "new_vendor",
+    "over_threshold",
+    "einvoice_missing",
+    "invalid_gstin",
+}
 GSTIN_CHARS = string.digits + string.ascii_uppercase
 
 
@@ -103,11 +115,60 @@ class Draft:
     invoice_number: str | None = None
     invoice_date: date | None = None
     truth: dict = field(default_factory=dict)
+    rng: random.Random | None = None  # extra clean volume uses its own stream
+    number_variant: str | None = None  # fuzzy duplicates: "reformat" | "suffix"
+    irn_missing: bool = False  # e-invoice trap
+
+
+CALIBRATION_FILE = Path(__file__).resolve().parents[2] / "data" / "bpi2019_calibration.json"
+TARGET_EXCEPTION_RATE = 0.25
+PRICE_SPREAD = 0.18  # per-PO negotiated price variation (log-normal sigma)  # BPI 2019 implies ~24% per multi-line invoice; Ardent Partners reports 23%
+
+
+def load_calibration() -> dict:
+    if CALIBRATION_FILE.exists():
+        return json.loads(CALIBRATION_FILE.read_text(encoding="utf-8"))
+    return {}
+
+
+def sample_lag(rng: random.Random, q: dict | None, lo: float, hi: float, fallback: tuple[int, int]) -> int:
+    """Sample a lag in days from the real-log quantiles (piecewise-linear inverse CDF)."""
+    if not q:
+        return rng.randint(*fallback)
+    pts = [
+        (0.0, q["p10"] * 0.5),
+        (0.1, q["p10"]),
+        (0.25, q["p25"]),
+        (0.5, q["median"]),
+        (0.75, q["p75"]),
+        (0.9, q["p90"]),
+        (1.0, q["p90"] * 1.25),
+    ]
+    u = rng.random()
+    for (u0, v0), (u1, v1) in itertools.pairwise(pts):
+        if u <= u1:
+            value = v0 + (v1 - v0) * (u - u0) / (u1 - u0)
+            break
+    return int(round(min(max(value, lo), hi)))
+
+
+def make_irn(gstin: str, number: str, d: date) -> str:
+    return hashlib.sha256(f"{gstin}|{fy(d)}|{number}|{d.isoformat()}".encode()).hexdigest()
+
+
+def variant_number(number: str, variant: str) -> str:
+    """How vendors resubmit an old invoice so an exact-match check misses it."""
+    if variant == "reformat":  # CIS/2526/0423 -> CIS-2526-423
+        parts = number.split("/")
+        return "-".join([*parts[:-1], parts[-1].lstrip("0") or "0"])
+    return f"{number}-R"  # "revised" suffix
 
 
 class Generator:
     def __init__(self, seed: int, start: date, days: int):
         self.rng = random.Random(seed)
+        self.rng_extra = random.Random(seed + 7919)
+        self.cal = load_calibration()
         self.start = start
         self.days = days
         self.ds = Dataset()
@@ -143,7 +204,16 @@ class Generator:
                 "onboarded_on": onboarded,
                 "profile": {
                     k: spec[k]
-                    for k in ("quirks", "freight_cap", "escalation_cap", "surcharge_cap", "no_po_limit", "prefix")
+                    for k in (
+                        "quirks",
+                        "freight_cap",
+                        "escalation_cap",
+                        "surcharge_cap",
+                        "no_po_limit",
+                        "prefix",
+                        "msme",
+                        "e_invoice",
+                    )
                     if k in spec
                 },
             }
@@ -155,36 +225,43 @@ class Generator:
     def spec(self, vid: str) -> dict:
         return next(s for s in VENDORS if s["id"] == vid)
 
-    def pick_lines(self, spec: dict, n: int | None = None) -> list[dict]:
+    def pick_lines(self, spec: dict, n: int | None = None, rng: random.Random | None = None) -> list[dict]:
+        r = rng or self.rng
         items = spec["items"]
-        n = n or self.rng.randint(1, min(3, len(items)))
-        chosen = self.rng.sample(items, n)
+        n = n or r.randint(1, min(3, len(items)))
+        chosen = r.sample(items, n)
         lines = []
         for i, (sku, desc, hsn, uom, price, tax, (lo, hi), step) in enumerate(chosen, start=1):
-            qty = snap(self.rng.uniform(lo, hi), step)
-            lines.append(make_line(i, sku, desc, hsn, qty, uom, price, tax))
+            # real order quantities are closer to log-distributed than uniform, and negotiated prices move from
+            # one PO to the next; both keep amounts natural (Benford-like) instead of clustering
+            qty = snap(math.exp(r.uniform(math.log(lo), math.log(hi))), step)
+            unit_price = money(price * math.exp(r.gauss(0, PRICE_SPREAD)))
+            lines.append(make_line(i, sku, desc, hsn, qty, uom, unit_price, tax))
         return lines
 
-    def next_invoice_number(self, spec: dict, d: date) -> str:
+    def next_invoice_number(self, spec: dict, d: date, rng: random.Random | None = None) -> str:
+        r = rng or self.rng
         key = f"{spec['id']}{fy(d)}"
-        self.inv_seq[key] = self.inv_seq.get(key, self.rng.randint(180, 1400)) + self.rng.randint(1, 9)
+        self.inv_seq[key] = self.inv_seq.get(key, r.randint(180, 1400)) + r.randint(1, 9)
         return f"{spec['prefix']}/{fy(d)}/{self.inv_seq[key]:04d}"
 
     @staticmethod
-    def cap_total(lines: list[dict], items: list, limit: float = 400_000) -> None:
+    def cap_total(lines: list[dict], items: list, rng: random.Random, limit: float = 400_000) -> None:
         total = totals(lines)[2]
         if total <= limit:
             return
         steps = {i[0]: i[7] for i in items}
-        factor = limit / total
+        factor = limit * rng.uniform(0.3, 0.95) / total  # spread, don't pile up at the cap
         for l in lines:
             step = steps.get(l["sku"], 1)
             l["qty"] = max(step, snap(l["qty"] * factor, step))
             l["amount"] = money(l["qty"] * l["unit_price"])
 
-    def draft_standard(self, spec: dict, arrival: date, n_lines: int | None = None) -> Draft:
-        po_lines = self.pick_lines(spec, n_lines)
-        self.cap_total(po_lines, spec["items"])
+    def draft_standard(
+        self, spec: dict, arrival: date, n_lines: int | None = None, rng: random.Random | None = None
+    ) -> Draft:
+        po_lines = self.pick_lines(spec, n_lines, rng)
+        self.cap_total(po_lines, spec["items"], rng or self.rng)
         return Draft(
             vendor=spec,
             arrival=arrival,
@@ -601,6 +678,38 @@ class Generator:
                     )
                 self.drafts.append(d)
         self.add_traps()
+        self.add_clean_volume()
+
+    def add_clean_volume(self) -> None:
+        """Add clean invoices so exceptions are ~25% of volume, spread across vendors like the real log's
+        vendor curve. Uses its own random stream so the exception scenarios above are unaffected."""
+        r = self.rng_extra
+        exceptions = sum(1 for d in self.drafts if d.truth.get("expected_types"))
+        extra = max(0, round(exceptions / TARGET_EXCEPTION_RATE) - len(self.drafts))
+        eligible = [
+            s for s in VENDORS if s["id"] != "V001" and not ({"no_po_utility", "no_po_small"} & set(s["quirks"]))
+        ]
+        eligible.sort(key=lambda s: (-s["per_month"], s["id"]))
+        curve = self.cal.get("vendor_concentration", {}).get("top_25_relative_volume") or [1.0]
+        weights = [curve[min(i, len(curve) - 1)] for i in range(len(eligible))]
+        first_seen = {}
+        for d in self.drafts:
+            vid = d.vendor["id"]
+            first_seen[vid] = min(first_seen.get(vid, d.arrival), d.arrival)
+        added = 0
+        while added < extra:
+            spec = r.choices(eligible, weights)[0]
+            lo = 1
+            if spec.get("onboard_day") is not None:  # never before a new vendor's first (KYC) invoice
+                lo = (first_seen[spec["id"]] - self.start).days + 2
+            arrival = weekday_on_or_after(self.start + timedelta(days=r.randint(lo, self.days - 1)))
+            if (arrival - self.start).days >= self.days:
+                continue
+            d = self.draft_standard(spec, arrival, rng=r)
+            d.truth = self.truth([], "approve", "", "clean")
+            d.rng = r
+            self.drafts.append(d)
+            added += 1
 
     def add_traps(self) -> None:
         by_vendor: dict[str, list[Draft]] = {}
@@ -627,6 +736,40 @@ class Generator:
             )
             self.drafts.append(dup)
 
+        # Fuzzy duplicates: the same invoice resubmitted with its number reformatted, so an exact check misses it
+        for vid, idx, gap, variant in (("V009", 2, 20, "reformat"), ("V017", 3, 15, "suffix")):
+            orig = sorted(by_vendor[vid], key=lambda x: x.arrival)[idx]
+            dup = Draft(
+                vendor=orig.vendor,
+                arrival=weekday_on_or_after(orig.arrival + timedelta(days=gap)),
+                po_lines=None,
+                grn_qty=None,
+                inv_lines=[dict(l) for l in orig.inv_lines],
+                number_variant=variant,
+            )
+            dup.duplicate_of = orig  # type: ignore[attr-defined]
+            dup.total_delta = orig.total_delta
+            dup.truth = self.truth(
+                ["duplicate_invoice"],
+                "reject",
+                "Same invoice resubmitted with its number written differently (same amount, same goods) — "
+                "duplicate, rejected.",
+                "fuzzy_duplicate",
+            )
+            self.drafts.append(dup)
+
+        # E-invoice missing: a supplier above Rs 5 crore turnover sends an invoice without an IRN
+        target = sorted(by_vendor["V016"], key=lambda x: x.arrival)[3]
+        target.irn_missing = True
+        carried = [x for x in target.truth.get("expected_types", []) if x not in HARD]
+        target.truth = self.truth(
+            ["einvoice_missing", *carried],
+            "hold",
+            "SafeGuard must issue GST e-invoices, but this invoice has no IRN or signed QR code — it is not a valid "
+            "tax invoice. Returned to the vendor to register it on the IRP.",
+            "einvoice_missing",
+        )
+
         # Bank-detail changes (fraud attempts)
         for vid, idx in (("V013", 2), ("V005", 13)):
             target = sorted(by_vendor[vid], key=lambda x: x.arrival)[idx]
@@ -648,16 +791,21 @@ class Generator:
 
     def materialise(self) -> None:
         self.drafts.sort(key=lambda d: (d.arrival, d.vendor["id"]))
+        lags = self.cal.get("lag_days", {})
         for seq, d in enumerate(self.drafts, start=1):
             spec = d.vendor
             vendor = self.vendor_by_id[spec["id"]]
+            r = d.rng or self.rng
             po_number = None
             if d.po_lines is not None:
                 self.po_seq += 1
                 self.grn_seq += 1
                 po_number = f"PO-2026-{self.po_seq:04d}"
-                grn_date = d.arrival - timedelta(days=self.rng.randint(1, 4))
-                po_date = grn_date - timedelta(days=self.rng.randint(5, 14))
+                # timing calibrated on the real log: goods receipt -> invoice, and PO -> goods receipt
+                gr_to_inv = sample_lag(r, lags.get("goods_receipt_to_invoice_receipt"), 1, 40, (1, 4))
+                po_to_gr = sample_lag(r, lags.get("po_to_goods_receipt"), 2, 30, (5, 14))
+                grn_date = d.arrival - timedelta(days=gr_to_inv)
+                po_date = grn_date - timedelta(days=po_to_gr)
                 sub, tax, tot = totals(d.po_lines)
                 self.ds.pos.append(
                     {
@@ -693,11 +841,13 @@ class Generator:
                 carried = [x for x in dup_of.truth["expected_types"] if x not in HARD]
                 d.truth["expected_types"] = ["duplicate_invoice", *carried]
                 invoice_number = dup_of.invoice_number
+                if d.number_variant:
+                    invoice_number = variant_number(invoice_number, d.number_variant)
                 invoice_date = dup_of.invoice_date if spec["id"] != "V021" else d.arrival - timedelta(days=1)
                 po_number = dup_of.po_number
             else:
-                invoice_date = d.arrival - timedelta(days=self.rng.randint(0, 2))
-                invoice_number = self.next_invoice_number(spec, invoice_date)
+                invoice_date = d.arrival - timedelta(days=r.randint(0, 2))
+                invoice_number = self.next_invoice_number(spec, invoice_date, r)
             d.invoice_number, d.invoice_date, d.po_number = invoice_number, invoice_date, po_number  # type: ignore[attr-defined]
 
             sub, tax, tot = totals(d.inv_lines)
@@ -726,6 +876,12 @@ class Generator:
                     "bank_name": bank[0],
                     "account_number": bank[1],
                     "ifsc": bank[2],
+                    "supplier_gstin": vendor["gstin"],
+                    "irn": (
+                        make_irn(vendor["gstin"], invoice_number, invoice_date)
+                        if spec.get("e_invoice") and not d.irn_missing
+                        else None
+                    ),
                     "source": "erp",
                     "status": "pending",
                     "truth": d.truth,
