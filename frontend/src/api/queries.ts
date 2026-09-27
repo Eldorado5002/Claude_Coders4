@@ -1,5 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { api, unwrap } from './client'
+import { isPendingContent } from '@/lib/labels'
 import { qk, type ExceptionFilters } from './keys'
 
 export const settingsQ = () =>
@@ -71,5 +72,5 @@ export const policyQ = () =>
     queryFn: () => unwrap(api.GET('/api/memory/policy')),
     retry: false,
     // Hindsight writes the policy in the background; look again while it's pending
-    refetchInterval: (q) => (q.state.data && !q.state.data.content?.trim().startsWith('Generating') ? false : 15_000),
+    refetchInterval: (q) => (q.state.data && !isPendingContent(q.state.data.content) ? false : 15_000),
   })

@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { KIND_META } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
-const KIND_ICON: Record<CitationKind, LucideIcon> = {
+export const KIND_ICON: Record<CitationKind, LucideIcon> = {
   observation: Layers,
   world: FileText,
   experience: CornerDownRight,
