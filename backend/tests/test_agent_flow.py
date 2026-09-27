@@ -213,3 +213,55 @@ def test_hold_and_escalate_count_as_the_same_no_pay_outcome():
     assert not same_outcome("approve", "approve_adjusted") and not same_outcome("approve", "hold")
     assert record_outcome(row, "escalate", "hold", datetime(2026, 3, 25)) == (False, False)
     assert row.level == AutonomyLevel.AUTO and row.streak == 4
+
+
+def test_payable_amount_is_computed_by_code_and_matches_ground_truth():
+    """approve_adjusted amounts come from the 3-way match, not the LLM — and equal what a clerk would pay."""
+    from app.agent.recommender import CaseContext, payable_amount
+    from app.data.generator import generate
+    from app.matching.engine import MatchInput, match_invoice
+
+    ds = generate(20260302, date(2026, 3, 2), 182)
+    vendors = {v["id"]: v for v in ds.vendors}
+    pos = {p["po_number"]: p for p in ds.pos}
+    grns = {g["po_number"]: g for g in ds.grns}
+    checked = 0
+    for inv in ds.invoices:
+        t = inv["truth"]
+        if t["decision"] != "approve_adjusted" or t.get("adjusted_amount") is None:
+            continue
+        res = match_invoice(
+            MatchInput(
+                invoice=inv,
+                vendor=vendors[inv["vendor_id"]],
+                po=pos.get(inv["po_number"]),
+                grn=grns.get(inv["po_number"]),
+            )
+        )
+        ctx = CaseContext(
+            case_id="x",
+            vendor=vendors[inv["vendor_id"]],
+            invoice=inv,
+            issues=res.issues,
+            types=[x.value for x in res.types],
+            primary_type=res.primary_type.value,
+            blocking=res.blocking,
+            amount_at_risk=res.amount_at_risk,
+            sim_date=inv["arrival_date"],
+        )
+        assert payable_amount(ctx) == pytest.approx(t["adjusted_amount"], abs=1.0), inv["id"]
+        checked += 1
+    assert checked >= 10
+
+
+def test_recdraft_drops_unparseable_amounts():
+    d = RecDraft.model_validate(
+        {
+            "action": "approve_adjusted",
+            "confidence": 0.8,
+            "adjusted_amount": "960 Kg",
+            "rationale": "pay received qty",
+            "precedent_found": True,
+        }
+    )
+    assert d.adjusted_amount is None

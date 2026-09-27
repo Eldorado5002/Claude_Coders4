@@ -15,7 +15,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from app.llm.router import LlmUnavailable, get_router, strict_schema
-from app.memory.store import MemoryStore, get_memory
+from app.memory.store import DIRECTIVES, MemoryStore, get_memory
 from app.schemas import Action, Citation, CitationKind, ExceptionType, Issue, Recommendation, RecSource
 
 log = logging.getLogger("precedent.agent")
@@ -27,6 +27,12 @@ CONTROL_ACTION = {
     ExceptionType.NEW_VENDOR: Action.ESCALATE,
 }
 CONTROL_ORDER = list(CONTROL_ACTION)
+DIRECTIVE_FOR = {
+    ExceptionType.BANK_DETAILS_CHANGED: DIRECTIVES[0],
+    ExceptionType.DUPLICATE_INVOICE: DIRECTIVES[1],
+    ExceptionType.NEW_VENDOR: DIRECTIVES[2],
+    ExceptionType.OVER_THRESHOLD: DIRECTIVES[3],
+}
 ANOMALY_CAP = 0.9
 
 
@@ -44,12 +50,15 @@ class RecDraft(BaseModel):
     @field_validator("adjusted_amount", "confidence", mode="before")
     @classmethod
     def _numberish(cls, v):
-        """Models sometimes send 'null', '₹4,200' or '0.9' as strings."""
+        """Models sometimes send 'null', '₹4,200' or '0.9' as strings; anything else (e.g. '960 kg') -> None."""
         if isinstance(v, str):
             s = v.strip().lower().replace("₹", "").replace(",", "").replace("rs.", "").replace("rs", "").strip()
             if s in ("", "null", "none", "n/a", "na"):
                 return None
-            return float(s.rstrip("%")) / (100 if s.endswith("%") else 1)
+            try:
+                return float(s.rstrip("%")) / (100 if s.endswith("%") else 1)
+            except ValueError:
+                return None
         return v
 
     @field_validator("action", mode="before")
@@ -97,6 +106,16 @@ class CaseContext:
 
 def inr(x: float | None) -> str:
     return "—" if x is None else f"₹{x:,.2f}"
+
+
+ADJUSTABLE = {ExceptionType.QUANTITY_VARIANCE, ExceptionType.PRICE_VARIANCE, ExceptionType.TAX_MISMATCH}
+
+
+def payable_amount(ctx: CaseContext) -> float:
+    """Corrected amount to pay: invoice total minus the over-billing the 3-way match measured.
+    Money math is done here, never by the LLM."""
+    over = sum(max(0.0, i.variance_amount or 0.0) for i in ctx.issues if i.type in ADJUSTABLE and not i.blocking)
+    return round(float(ctx.invoice["total"]) - over, 2)
 
 
 def case_brief(ctx: CaseContext) -> str:
@@ -222,8 +241,9 @@ class Recommender:
             else:
                 rationale = f"Hard control: {msg} {rationale}"
             action, confidence, source = forced, 0.99, RecSource.GUARDRAIL
+            citations = await self._control_citations(ctx, control, citations, bank_id if memory_enabled else None)
 
-        adjusted = draft.adjusted_amount if action == Action.APPROVE_ADJUSTED else None
+        adjusted = payable_amount(ctx) if action == Action.APPROVE_ADJUSTED else None
 
         if ctx.anomaly is not None and ctx.anomaly >= ANOMALY_CAP and control is None:
             confidence = min(confidence, 0.6)
@@ -245,6 +265,38 @@ class Recommender:
             latency_ms=latency,
             generated_at=now,
         )
+
+    async def _control_citations(
+        self, ctx: CaseContext, control: ExceptionType, citations: list[Citation], bank_id: str | None
+    ) -> list[Citation]:
+        """A hard control always shows the directive it enforces, plus the precedent it overrode."""
+        name, content = DIRECTIVE_FOR[control]
+        out = [c for c in citations if c.kind == CitationKind.DIRECTIVE and c.text.startswith(name)]
+        if not out:
+            out = [Citation(id=f"directive-{control.value}", kind=CitationKind.DIRECTIVE, text=f"{name}: {content}")]
+        memory = [c for c in citations if c.kind != CitationKind.DIRECTIVE]
+        other_types = [t for t in ctx.types if ExceptionType(t) not in CONTROL_ACTION] or [ctx.primary_type]
+        if bank_id and not memory:
+            try:
+                facts = await self.memory.recall(
+                    bank_id,
+                    f"How does the AP team resolve {', '.join(other_types)} for {ctx.vendor['name']}?",
+                    vendor_id=ctx.vendor["id"],
+                    types=other_types,
+                    strict=True,
+                )
+                memory = [
+                    Citation(
+                        id=str(f.id),
+                        kind=CitationKind(f.type) if f.type in CitationKind._value2member_map_ else CitationKind.WORLD,
+                        text=f.text,
+                        exception_id=f.document_id,
+                    )
+                    for f in facts[:3]
+                ]
+            except Exception as e:  # noqa: BLE001
+                log.warning("precedent recall for control case %s failed: %s", ctx.case_id, e)
+        return out + memory
 
     async def _recall_llm(self, ctx: CaseContext, brief: str, bank_id: str):
         citations: list[Citation] = []
