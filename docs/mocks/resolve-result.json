@@ -1,0 +1,213 @@
+{
+  "exception": {
+    "id": "EXC-0012",
+    "status": "resolved",
+    "primary_type": "freight_charge",
+    "issue_types": [
+      "freight_charge"
+    ],
+    "vendor": {
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36AAECS4821K1Z3",
+      "city": "Hyderabad",
+      "category": "raw_materials"
+    },
+    "invoice_number": "SBST/2526/1231",
+    "invoice_total": 241428.0,
+    "amount_at_risk": 4543.0,
+    "created_at": "2026-03-18T09:30:00",
+    "recommended_action": "approve",
+    "confidence": 0.91,
+    "autonomy_level": "suggest",
+    "blocking": false,
+    "invoice": {
+      "id": "INV-0094",
+      "invoice_number": "SBST/2526/1231",
+      "vendor_id": "V001",
+      "po_number": "PO-2026-0081",
+      "invoice_date": "2026-03-17",
+      "due_date": "2026-05-01",
+      "lines": [
+        {
+          "line_no": 1,
+          "sku": "MS-PL-10",
+          "description": "MS Plate 10mm IS2062 E250",
+          "hsn": "7208",
+          "qty": 2.0,
+          "uom": "MT",
+          "unit_price": 58000.0,
+          "tax_rate": 18.0,
+          "amount": 116000.0
+        },
+        {
+          "line_no": 2,
+          "sku": "MS-ANG-50",
+          "description": "MS Angle 50x50x6mm",
+          "hsn": "7216",
+          "qty": 1.5,
+          "uom": "MT",
+          "unit_price": 56500.0,
+          "tax_rate": 18.0,
+          "amount": 84750.0
+        },
+        {
+          "line_no": 3,
+          "sku": null,
+          "description": "Freight charges - Medchal to Unit 2",
+          "hsn": "996511",
+          "qty": 1.0,
+          "uom": "trip",
+          "unit_price": 3850.0,
+          "tax_rate": 18.0,
+          "amount": 3850.0
+        }
+      ],
+      "subtotal": 204600.0,
+      "tax_total": 36828.0,
+      "total": 241428.0,
+      "currency": "INR",
+      "bank_account": {
+        "bank_name": "HDFC Bank",
+        "account_number": "XXXXXX4521",
+        "ifsc": "HDFC0001234"
+      },
+      "source": "erp"
+    },
+    "purchase_order": {
+      "po_number": "PO-2026-0081",
+      "vendor_id": "V001",
+      "po_date": "2026-03-09",
+      "lines": [
+        {
+          "line_no": 1,
+          "sku": "MS-PL-10",
+          "description": "MS Plate 10mm IS2062 E250",
+          "hsn": "7208",
+          "qty": 2.0,
+          "uom": "MT",
+          "unit_price": 58000.0,
+          "tax_rate": 18.0,
+          "amount": 116000.0
+        },
+        {
+          "line_no": 2,
+          "sku": "MS-ANG-50",
+          "description": "MS Angle 50x50x6mm",
+          "hsn": "7216",
+          "qty": 1.5,
+          "uom": "MT",
+          "unit_price": 56500.0,
+          "tax_rate": 18.0,
+          "amount": 84750.0
+        }
+      ],
+      "subtotal": 200750.0,
+      "tax_total": 36135.0,
+      "total": 236885.0
+    },
+    "goods_receipt": {
+      "grn_number": "GRN-2026-0077",
+      "po_number": "PO-2026-0081",
+      "received_date": "2026-03-16",
+      "lines": [
+        {
+          "line_no": 1,
+          "sku": "MS-PL-10",
+          "description": "MS Plate 10mm IS2062 E250",
+          "qty_received": 2.0,
+          "uom": "MT"
+        },
+        {
+          "line_no": 2,
+          "sku": "MS-ANG-50",
+          "description": "MS Angle 50x50x6mm",
+          "qty_received": 1.5,
+          "uom": "MT"
+        }
+      ]
+    },
+    "vendor_bank_on_file": {
+      "bank_name": "HDFC Bank",
+      "account_number": "XXXXXX4521",
+      "ifsc": "HDFC0001234"
+    },
+    "issues": [
+      {
+        "type": "freight_charge",
+        "message": "Line 3 'Freight charges' (₹3,850 + GST) is not on the purchase order.",
+        "line_no": 3,
+        "expected": 0.0,
+        "actual": 3850.0,
+        "variance_amount": 4543.0,
+        "variance_pct": 2.06,
+        "blocking": false
+      }
+    ],
+    "recommendation": {
+      "action": "approve",
+      "confidence": 0.91,
+      "adjusted_amount": null,
+      "rationale": "Freight of ₹4,200 is on the last line and under the ₹5,000 per-trip cap this vendor has always been approved for (3 precedents). Materials match PO and GRN exactly.",
+      "citations": [
+        {
+          "id": "mem_7f3a91",
+          "kind": "observation",
+          "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
+          "occurred_at": "2026-03-12T11:20:00",
+          "exception_id": "EXC-0007"
+        },
+        {
+          "id": "mem_2c18e0",
+          "kind": "world",
+          "text": "On 2 Mar 2026 Priya approved invoice SBST/2526/1184 from Shree Balaji Steel with a ₹3,850 freight line: 'standing agreement allows freight up to ₹5,000 per trip'.",
+          "occurred_at": "2026-03-02T10:05:00",
+          "exception_id": "EXC-0001"
+        }
+      ],
+      "source": "memory",
+      "anomaly_score": 0.12,
+      "auto_resolved": false,
+      "provider": "hindsight-reflect",
+      "latency_ms": 2140,
+      "generated_at": "2026-03-18T09:30:00"
+    },
+    "resolution": {
+      "decision": "approve",
+      "reason": "Freight under ₹5,000 as per standing agreement with Balaji.",
+      "adjusted_amount": null,
+      "resolved_by": "Priya (AP)",
+      "resolved_at": "2026-03-18T09:34:00",
+      "agent_action": "approve",
+      "agreed_with_agent": true
+    },
+    "autonomy": {
+      "vendor_id": "V001",
+      "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+      "exception_type": "freight_charge",
+      "level": "suggest",
+      "streak": 2,
+      "required_streak": 3,
+      "accepted": 2,
+      "overruled": 1,
+      "auto_resolved": 0,
+      "updated_at": "2026-03-12T11:20:00"
+    }
+  },
+  "memory_id": "EXC-0012",
+  "lesson": "Shree Balaji Steel: freight up to ₹5,000 per trip on the last line is approved.",
+  "autonomy": {
+    "vendor_id": "V001",
+    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+    "exception_type": "freight_charge",
+    "level": "auto",
+    "streak": 3,
+    "required_streak": 3,
+    "accepted": 3,
+    "overruled": 1,
+    "auto_resolved": 0,
+    "updated_at": "2026-03-12T11:20:00"
+  },
+  "promoted": true,
+  "demoted": false
+}

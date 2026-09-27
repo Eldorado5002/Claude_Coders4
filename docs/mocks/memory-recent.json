@@ -1,0 +1,18 @@
+[
+  {
+    "id": "mem_7f3a91",
+    "kind": "observation",
+    "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
+    "vendor_id": "V001",
+    "exception_type": "freight_charge",
+    "occurred_at": "2026-03-12T11:20:00"
+  },
+  {
+    "id": "mem_2c18e0",
+    "kind": "world",
+    "text": "On 2 Mar 2026 Priya approved invoice SBST/2526/1184 from Shree Balaji Steel with a ₹3,850 freight line: 'standing agreement allows freight up to ₹5,000 per trip'.",
+    "vendor_id": "V001",
+    "exception_type": "freight_charge",
+    "occurred_at": "2026-03-02T10:05:00"
+  }
+]

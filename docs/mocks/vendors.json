@@ -1,0 +1,54 @@
+[
+  {
+    "id": "V001",
+    "name": "Shree Balaji Steel Traders Pvt Ltd",
+    "gstin": "36AAECS4821K1Z3",
+    "city": "Hyderabad",
+    "category": "raw_materials",
+    "state": "Telangana",
+    "payment_terms_days": 45,
+    "invoices_count": 14,
+    "exceptions_count": 11,
+    "open_exceptions": 1,
+    "touchless_rate": 0.45
+  },
+  {
+    "id": "V003",
+    "name": "Godavari Polymers LLP",
+    "gstin": "37AAKFG2294Q1Z8",
+    "city": "Rajahmundry",
+    "category": "raw_materials",
+    "state": "Andhra Pradesh",
+    "payment_terms_days": 45,
+    "invoices_count": 12,
+    "exceptions_count": 5,
+    "open_exceptions": 0,
+    "touchless_rate": 0.2
+  },
+  {
+    "id": "V004",
+    "name": "Kaveri Packaging Industries",
+    "gstin": "29AAFFK7310M1ZP",
+    "city": "Bengaluru",
+    "category": "packaging",
+    "state": "Karnataka",
+    "payment_terms_days": 30,
+    "invoices_count": 10,
+    "exceptions_count": 6,
+    "open_exceptions": 1,
+    "touchless_rate": 0.0
+  },
+  {
+    "id": "V005",
+    "name": "Deccan Freight Carriers",
+    "gstin": "36AAJFD8812L1Z6",
+    "city": "Hyderabad",
+    "category": "logistics",
+    "state": "Telangana",
+    "payment_terms_days": 15,
+    "invoices_count": 18,
+    "exceptions_count": 7,
+    "open_exceptions": 1,
+    "touchless_rate": 0.57
+  }
+]

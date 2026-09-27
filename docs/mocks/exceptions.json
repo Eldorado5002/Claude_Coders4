@@ -1,0 +1,120 @@
+{
+  "items": [
+    {
+      "id": "EXC-0012",
+      "status": "open",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36AAECS4821K1Z3",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1231",
+      "invoice_total": 241428.0,
+      "amount_at_risk": 4543.0,
+      "created_at": "2026-03-18T09:30:00",
+      "recommended_action": "approve",
+      "confidence": 0.91,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0013",
+      "status": "open",
+      "primary_type": "tax_mismatch",
+      "issue_types": [
+        "tax_mismatch"
+      ],
+      "vendor": {
+        "id": "V004",
+        "name": "Kaveri Packaging Industries",
+        "gstin": "29AAFFK7310M1ZP",
+        "city": "Bengaluru",
+        "category": "packaging"
+      },
+      "invoice_number": "KPI/26/0419",
+      "invoice_total": 96180.0,
+      "amount_at_risk": 10530.0,
+      "created_at": "2026-03-18T10:02:00",
+      "recommended_action": "hold",
+      "confidence": 0.88,
+      "autonomy_level": "suggest",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0014",
+      "status": "open",
+      "primary_type": "bank_details_changed",
+      "issue_types": [
+        "bank_details_changed"
+      ],
+      "vendor": {
+        "id": "V005",
+        "name": "Deccan Freight Carriers",
+        "gstin": "36AAJFD8812L1Z6",
+        "city": "Hyderabad",
+        "category": "logistics"
+      },
+      "invoice_number": "DFC/0932",
+      "invoice_total": 44625.0,
+      "amount_at_risk": 44625.0,
+      "created_at": "2026-03-18T11:40:00",
+      "recommended_action": "escalate",
+      "confidence": 0.99,
+      "autonomy_level": "locked",
+      "blocking": true
+    },
+    {
+      "id": "EXC-0011",
+      "status": "auto_resolved",
+      "primary_type": "rounding_difference",
+      "issue_types": [
+        "rounding_difference"
+      ],
+      "vendor": {
+        "id": "V005",
+        "name": "Deccan Freight Carriers",
+        "gstin": "36AAJFD8812L1Z6",
+        "city": "Hyderabad",
+        "category": "logistics"
+      },
+      "invoice_number": "DFC/0927",
+      "invoice_total": 31864.0,
+      "amount_at_risk": 4.0,
+      "created_at": "2026-03-17T16:15:00",
+      "recommended_action": "approve",
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false
+    },
+    {
+      "id": "EXC-0010",
+      "status": "resolved",
+      "primary_type": "quantity_variance",
+      "issue_types": [
+        "quantity_variance"
+      ],
+      "vendor": {
+        "id": "V003",
+        "name": "Godavari Polymers LLP",
+        "gstin": "37AAKFG2294Q1Z8",
+        "city": "Rajahmundry",
+        "category": "raw_materials"
+      },
+      "invoice_number": "GP/1123",
+      "invoice_total": 231520.0,
+      "amount_at_risk": 6945.6,
+      "created_at": "2026-03-16T14:00:00",
+      "recommended_action": "approve_adjusted",
+      "confidence": 0.82,
+      "autonomy_level": "suggest",
+      "blocking": false
+    }
+  ],
+  "total": 5
+}

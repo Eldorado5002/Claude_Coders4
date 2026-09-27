@@ -1,0 +1,35 @@
+{
+  "stage": "week3",
+  "sim_date": "2026-03-18",
+  "busy": false,
+  "stages": [
+    {
+      "id": "day1",
+      "label": "Day 1",
+      "description": "Fresh agent, no memory",
+      "sim_date": "2026-03-02",
+      "reached": true
+    },
+    {
+      "id": "week3",
+      "label": "Week 3",
+      "description": "Agent recalls precedents",
+      "sim_date": "2026-03-18",
+      "reached": true
+    },
+    {
+      "id": "week8",
+      "label": "Week 8",
+      "description": "Earned autonomy",
+      "sim_date": "2026-04-22",
+      "reached": false
+    },
+    {
+      "id": "twist",
+      "label": "The twist",
+      "description": "Controls hold",
+      "sim_date": "2026-04-27",
+      "reached": false
+    }
+  ]
+}

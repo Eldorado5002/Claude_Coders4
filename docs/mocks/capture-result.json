@@ -1,0 +1,64 @@
+{
+  "status": "exception",
+  "extracted": {
+    "id": "INV-0301",
+    "invoice_number": "SBST/2526/1231",
+    "vendor_id": "V001",
+    "po_number": "PO-2026-0081",
+    "invoice_date": "2026-03-17",
+    "due_date": "2026-05-01",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "MS-PL-10",
+        "description": "MS Plate 10mm IS2062 E250",
+        "hsn": "7208",
+        "qty": 2.0,
+        "uom": "MT",
+        "unit_price": 58000.0,
+        "tax_rate": 18.0,
+        "amount": 116000.0
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-ANG-50",
+        "description": "MS Angle 50x50x6mm",
+        "hsn": "7216",
+        "qty": 1.5,
+        "uom": "MT",
+        "unit_price": 56500.0,
+        "tax_rate": 18.0,
+        "amount": 84750.0
+      },
+      {
+        "line_no": 3,
+        "sku": null,
+        "description": "Freight charges - Medchal to Unit 2",
+        "hsn": "996511",
+        "qty": 1.0,
+        "uom": "trip",
+        "unit_price": 3850.0,
+        "tax_rate": 18.0,
+        "amount": 3850.0
+      }
+    ],
+    "subtotal": 204600.0,
+    "tax_total": 36828.0,
+    "total": 241428.0,
+    "currency": "INR",
+    "bank_account": {
+      "bank_name": "HDFC Bank",
+      "account_number": "XXXXXX4521",
+      "ifsc": "HDFC0001234"
+    },
+    "source": "capture"
+  },
+  "vendor": {
+    "id": "V001",
+    "name": "Shree Balaji Steel Traders Pvt Ltd",
+    "gstin": "36AAECS4821K1Z3",
+    "city": "Hyderabad",
+    "category": "raw_materials"
+  },
+  "exception_id": "EXC-0140"
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "vendor_id": "V001",
+    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+    "exception_type": "freight_charge",
+    "level": "suggest",
+    "streak": 2,
+    "required_streak": 3,
+    "accepted": 2,
+    "overruled": 1,
+    "auto_resolved": 0,
+    "updated_at": "2026-03-12T11:20:00"
+  },
+  {
+    "vendor_id": "V005",
+    "vendor_name": "Deccan Freight Carriers",
+    "exception_type": "rounding_difference",
+    "level": "auto",
+    "streak": 4,
+    "required_streak": 3,
+    "accepted": 4,
+    "overruled": 0,
+    "auto_resolved": 2,
+    "updated_at": "2026-03-17T16:15:00"
+  },
+  {
+    "vendor_id": "V004",
+    "vendor_name": "Kaveri Packaging Industries",
+    "exception_type": "tax_mismatch",
+    "level": "suggest",
+    "streak": 1,
+    "required_streak": 3,
+    "accepted": 1,
+    "overruled": 1,
+    "auto_resolved": 0,
+    "updated_at": "2026-03-11T12:00:00"
+  },
+  {
+    "vendor_id": "V005",
+    "vendor_name": "Deccan Freight Carriers",
+    "exception_type": "bank_details_changed",
+    "level": "locked",
+    "streak": 0,
+    "required_streak": 3,
+    "accepted": 0,
+    "overruled": 0,
+    "auto_resolved": 0,
+    "updated_at": null
+  }
+]

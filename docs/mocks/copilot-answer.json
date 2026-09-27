@@ -1,0 +1,20 @@
+{
+  "answer": "We approve Shree Balaji Steel's freight line when it is **under ₹5,000 per trip** — this comes from the standing agreement Priya cited on 2 Mar. The one freight charge above the cap (₹7,400 on 30 Mar) was held.",
+  "citations": [
+    {
+      "id": "mem_7f3a91",
+      "kind": "observation",
+      "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
+      "occurred_at": "2026-03-12T11:20:00",
+      "exception_id": "EXC-0007"
+    },
+    {
+      "id": "mem_2c18e0",
+      "kind": "world",
+      "text": "On 2 Mar 2026 Priya approved invoice SBST/2526/1184 from Shree Balaji Steel with a ₹3,850 freight line: 'standing agreement allows freight up to ₹5,000 per trip'.",
+      "occurred_at": "2026-03-02T10:05:00",
+      "exception_id": "EXC-0001"
+    }
+  ],
+  "latency_ms": 3120
+}

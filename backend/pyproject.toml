@@ -1,0 +1,41 @@
+[project]
+name = "precedent-backend"
+version = "0.1.0"
+description = "Precedent - AP exception agent that learns with Hindsight memory"
+requires-python = ">=3.12"
+dependencies = [
+    "faker>=33",
+    "fastapi[standard]>=0.135",
+    "hindsight-client>=0.10.1",
+    "httpx>=0.28",
+    "numpy>=2",
+    "openai>=1.60",
+    "pydantic-settings>=2.6",
+    "python-multipart>=0.0.32",
+    "pywebpush>=2",
+    "scikit-learn>=1.5",
+    "sqlmodel>=0.0.24",
+    "tenacity>=9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.9",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E741", "E501", "UP046"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = ["live: calls real external APIs (Hindsight/LLMs)"]
+addopts = "-m 'not live'"

@@ -1,0 +1,118 @@
+[
+  {
+    "event": "exception.created",
+    "data": {
+      "id": "EXC-0012",
+      "status": "open",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36AAECS4821K1Z3",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/1231",
+      "invoice_total": 241428.0,
+      "amount_at_risk": 4543.0,
+      "created_at": "2026-03-18T09:30:00",
+      "recommended_action": "approve",
+      "confidence": 0.91,
+      "autonomy_level": "suggest",
+      "blocking": false
+    }
+  },
+  {
+    "event": "exception.updated",
+    "data": {
+      "id": "EXC-0011",
+      "status": "auto_resolved",
+      "primary_type": "rounding_difference",
+      "issue_types": [
+        "rounding_difference"
+      ],
+      "vendor": {
+        "id": "V005",
+        "name": "Deccan Freight Carriers",
+        "gstin": "36AAJFD8812L1Z6",
+        "city": "Hyderabad",
+        "category": "logistics"
+      },
+      "invoice_number": "DFC/0927",
+      "invoice_total": 31864.0,
+      "amount_at_risk": 4.0,
+      "created_at": "2026-03-17T16:15:00",
+      "recommended_action": "approve",
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false
+    }
+  },
+  {
+    "event": "memory.retained",
+    "data": {
+      "id": "mem_7f3a91",
+      "kind": "observation",
+      "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
+      "vendor_id": "V001",
+      "exception_type": "freight_charge",
+      "occurred_at": "2026-03-12T11:20:00"
+    }
+  },
+  {
+    "event": "autonomy.changed",
+    "data": {
+      "vendor_id": "V001",
+      "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+      "exception_type": "freight_charge",
+      "level": "suggest",
+      "streak": 2,
+      "required_streak": 3,
+      "accepted": 2,
+      "overruled": 1,
+      "auto_resolved": 0,
+      "updated_at": "2026-03-12T11:20:00"
+    }
+  },
+  {
+    "event": "sim.changed",
+    "data": {
+      "stage": "week3",
+      "sim_date": "2026-03-18",
+      "busy": false,
+      "stages": [
+        {
+          "id": "day1",
+          "label": "Day 1",
+          "description": "Fresh agent, no memory",
+          "sim_date": "2026-03-02",
+          "reached": true
+        },
+        {
+          "id": "week3",
+          "label": "Week 3",
+          "description": "Agent recalls precedents",
+          "sim_date": "2026-03-18",
+          "reached": true
+        },
+        {
+          "id": "week8",
+          "label": "Week 8",
+          "description": "Earned autonomy",
+          "sim_date": "2026-04-22",
+          "reached": false
+        },
+        {
+          "id": "twist",
+          "label": "The twist",
+          "description": "Controls hold",
+          "sim_date": "2026-04-27",
+          "reached": false
+        }
+      ]
+    }
+  }
+]

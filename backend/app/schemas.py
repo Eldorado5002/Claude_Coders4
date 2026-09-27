@@ -1,0 +1,386 @@
+"""API contract. Every request/response shape the frontend sees is defined here.
+
+The frontend generates its TypeScript types from FastAPI's /openapi.json, which is
+built from these models, so renaming a field here is a breaking change for the PWA.
+"""
+
+from datetime import date, datetime
+from enum import StrEnum
+from typing import Generic, Literal, TypeVar
+
+from pydantic import BaseModel, Field
+
+T = TypeVar("T")
+
+
+class ExceptionType(StrEnum):
+    PRICE_VARIANCE = "price_variance"
+    QUANTITY_VARIANCE = "quantity_variance"
+    FREIGHT_CHARGE = "freight_charge"
+    TAX_MISMATCH = "tax_mismatch"
+    ROUNDING_DIFFERENCE = "rounding_difference"
+    MISSING_PO = "missing_po"
+    DUPLICATE_INVOICE = "duplicate_invoice"
+    BANK_DETAILS_CHANGED = "bank_details_changed"
+    NEW_VENDOR = "new_vendor"
+    OVER_THRESHOLD = "over_threshold"
+
+
+# Hard financial controls: never auto-resolved, never approved by the agent.
+HARD_CONTROL_TYPES = frozenset(
+    {
+        ExceptionType.DUPLICATE_INVOICE,
+        ExceptionType.BANK_DETAILS_CHANGED,
+        ExceptionType.NEW_VENDOR,
+        ExceptionType.OVER_THRESHOLD,
+    }
+)
+
+
+class Action(StrEnum):
+    APPROVE = "approve"
+    APPROVE_ADJUSTED = "approve_adjusted"  # pay a corrected amount
+    HOLD = "hold"  # send back to vendor / wait for info
+    REJECT = "reject"
+    ESCALATE = "escalate"  # manager or treasury review
+
+
+class CaseStatus(StrEnum):
+    OPEN = "open"  # waiting for a human decision
+    AUTO_RESOLVED = "auto_resolved"  # resolved by the agent under earned autonomy
+    RESOLVED = "resolved"  # decided by a human
+
+
+class AutonomyLevel(StrEnum):
+    SUGGEST = "suggest"  # agent recommends, human decides
+    AUTO = "auto"  # agent resolves on its own
+    LOCKED = "locked"  # hard-control type, always human
+
+
+class RecSource(StrEnum):
+    MEMORY = "memory"  # grounded in Hindsight precedents
+    NO_MEMORY = "no_memory"  # memory switched off or no precedents yet
+    GUARDRAIL = "guardrail"  # forced by a deterministic hard control
+
+
+class CitationKind(StrEnum):
+    WORLD = "world"
+    EXPERIENCE = "experience"
+    OBSERVATION = "observation"
+    MENTAL_MODEL = "mental_model"
+    DIRECTIVE = "directive"
+
+
+# ---------------------------------------------------------------- documents
+
+
+class LineItem(BaseModel):
+    line_no: int
+    sku: str | None = None
+    description: str
+    hsn: str | None = None
+    qty: float
+    uom: str
+    unit_price: float
+    tax_rate: float = Field(description="GST percent, e.g. 18")
+    amount: float = Field(description="qty × unit_price, before tax")
+
+
+class BankAccount(BaseModel):
+    bank_name: str
+    account_number: str = Field(description="Masked, e.g. XXXXXX4521")
+    ifsc: str
+
+
+class VendorRef(BaseModel):
+    id: str
+    name: str
+    gstin: str
+    city: str
+    category: str
+
+
+class InvoiceDoc(BaseModel):
+    id: str
+    invoice_number: str
+    vendor_id: str
+    po_number: str | None
+    invoice_date: date
+    due_date: date
+    lines: list[LineItem]
+    subtotal: float
+    tax_total: float
+    total: float
+    currency: Literal["INR"] = "INR"
+    bank_account: BankAccount
+    source: Literal["erp", "capture"] = "erp"
+
+
+class PurchaseOrderDoc(BaseModel):
+    po_number: str
+    vendor_id: str
+    po_date: date
+    lines: list[LineItem]
+    subtotal: float
+    tax_total: float
+    total: float
+
+
+class GrnLine(BaseModel):
+    line_no: int
+    sku: str | None = None
+    description: str
+    qty_received: float
+    uom: str
+
+
+class GoodsReceiptDoc(BaseModel):
+    grn_number: str
+    po_number: str
+    received_date: date
+    lines: list[GrnLine]
+
+
+# ---------------------------------------------------------------- exceptions
+
+
+class Issue(BaseModel):
+    type: ExceptionType
+    message: str
+    line_no: int | None = None
+    expected: float | None = None
+    actual: float | None = None
+    variance_amount: float | None = None
+    variance_pct: float | None = None
+    blocking: bool = Field(description="True for hard controls")
+
+
+class Citation(BaseModel):
+    id: str
+    kind: CitationKind
+    text: str
+    occurred_at: datetime | None = None
+    exception_id: str | None = Field(None, description="Case the memory came from, when known")
+
+
+class Recommendation(BaseModel):
+    action: Action
+    confidence: float = Field(ge=0, le=1)
+    adjusted_amount: float | None = None
+    rationale: str
+    citations: list[Citation]
+    source: RecSource
+    anomaly_score: float | None = Field(None, ge=0, le=1, description="0 normal … 1 very unusual for this vendor")
+    auto_resolved: bool
+    provider: str = Field(description="What produced it, e.g. 'hindsight-reflect' or 'groq:openai/gpt-oss-120b'")
+    latency_ms: int
+    generated_at: datetime
+
+
+class Resolution(BaseModel):
+    decision: Action
+    reason: str
+    adjusted_amount: float | None = None
+    resolved_by: str
+    resolved_at: datetime
+    agent_action: Action | None = None
+    agreed_with_agent: bool | None = None
+
+
+class AutonomyState(BaseModel):
+    vendor_id: str
+    vendor_name: str
+    exception_type: ExceptionType
+    level: AutonomyLevel
+    streak: int = Field(description="Consecutive accepted recommendations")
+    required_streak: int
+    accepted: int
+    overruled: int
+    auto_resolved: int
+    updated_at: datetime | None = None
+
+
+class ExceptionSummary(BaseModel):
+    id: str
+    status: CaseStatus
+    primary_type: ExceptionType
+    issue_types: list[ExceptionType]
+    vendor: VendorRef
+    invoice_number: str
+    invoice_total: float
+    amount_at_risk: float = Field(description="Absolute money difference driving the exception")
+    created_at: datetime
+    recommended_action: Action | None = None
+    confidence: float | None = None
+    autonomy_level: AutonomyLevel
+    blocking: bool = Field(description="At least one hard control fired")
+
+
+class ExceptionDetail(ExceptionSummary):
+    invoice: InvoiceDoc
+    purchase_order: PurchaseOrderDoc | None = None
+    goods_receipt: GoodsReceiptDoc | None = None
+    vendor_bank_on_file: BankAccount
+    issues: list[Issue]
+    recommendation: Recommendation | None = None
+    resolution: Resolution | None = None
+    autonomy: AutonomyState
+
+
+class ResolveRequest(BaseModel):
+    decision: Action
+    reason: str = Field(min_length=5, description="Why — this is what the agent learns from")
+    adjusted_amount: float | None = None
+    resolved_by: str = "AP Clerk"
+
+
+class ResolveResult(BaseModel):
+    exception: ExceptionDetail
+    memory_id: str | None = Field(None, description="Hindsight document id of the retained lesson")
+    lesson: str = Field(description="What the agent learned, in one sentence")
+    autonomy: AutonomyState
+    promoted: bool
+    demoted: bool
+
+
+class Page(BaseModel, Generic[T]):
+    items: list[T]
+    total: int
+
+
+# ---------------------------------------------------------------- vendors
+
+
+class VendorSummary(VendorRef):
+    state: str
+    payment_terms_days: int
+    invoices_count: int
+    exceptions_count: int
+    open_exceptions: int
+    touchless_rate: float | None = None
+
+
+class VendorProfile(VendorSummary):
+    bank_account: BankAccount
+    learned: list[Citation] = Field(description="Hindsight observations about this vendor")
+    playbook: str | None = Field(None, description="Hindsight mental model (markdown)")
+    recent: list[ExceptionSummary]
+    autonomy: list[AutonomyState]
+
+
+# ---------------------------------------------------------------- memory feed & copilot
+
+
+class MemoryItem(BaseModel):
+    id: str
+    kind: CitationKind
+    text: str
+    vendor_id: str | None = None
+    exception_type: ExceptionType | None = None
+    occurred_at: datetime | None = None
+
+
+class CopilotRequest(BaseModel):
+    question: str = Field(min_length=3)
+    vendor_id: str | None = None
+
+
+class CopilotAnswer(BaseModel):
+    answer: str = Field(description="Markdown")
+    citations: list[Citation]
+    latency_ms: int
+
+
+# ---------------------------------------------------------------- metrics
+
+
+class WeeklyPoint(BaseModel):
+    week: int
+    week_start: date
+    memory_on: float | None = None
+    memory_off: float | None = None
+
+
+class TypeBreakdown(BaseModel):
+    type: ExceptionType
+    count: int
+    touchless_rate: float
+
+
+class Kpis(BaseModel):
+    touchless_rate: float
+    acceptance_rate: float | None
+    exceptions_total: int
+    auto_resolved: int
+    blocked_by_controls: int
+    false_approvals: int
+    memories: int
+    minutes_saved: float = Field(description="Modelled estimate; see assumptions")
+
+
+class Metrics(BaseModel):
+    kpis: Kpis
+    touchless_by_week: list[WeeklyPoint]
+    acceptance_by_week: list[WeeklyPoint]
+    by_type: list[TypeBreakdown]
+    assumptions: list[str]
+
+
+# ---------------------------------------------------------------- settings, health, demo
+
+
+class Settings(BaseModel):
+    memory_enabled: bool
+    bank_id: str
+    llm_chain: list[str]
+    sim_date: date
+    stage: str
+
+
+class SettingsPatch(BaseModel):
+    memory_enabled: bool | None = None
+
+
+class Health(BaseModel):
+    status: Literal["ok", "degraded"]
+    hindsight: Literal["up", "down"]
+    memory_enabled: bool
+    sim_date: date
+
+
+DemoStageId = Literal["day1", "week3", "week8", "twist"]
+
+
+class DemoStage(BaseModel):
+    id: DemoStageId
+    label: str
+    description: str
+    sim_date: date
+    reached: bool
+
+
+class DemoState(BaseModel):
+    stage: DemoStageId
+    sim_date: date
+    busy: bool
+    stages: list[DemoStage]
+
+
+class AdvanceRequest(BaseModel):
+    stage: DemoStageId
+
+
+class CaptureResult(BaseModel):
+    status: Literal["matched", "exception", "unknown_vendor"]
+    extracted: InvoiceDoc
+    vendor: VendorRef | None = None
+    exception_id: str | None = None
+
+
+class PushSubscription(BaseModel):
+    endpoint: str
+    keys: dict[str, str]
+
+
+class PublicKey(BaseModel):
+    key: str
