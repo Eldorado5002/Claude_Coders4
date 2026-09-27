@@ -1,4 +1,5 @@
-"""Learning-curve chart for the README (light + dark SVG) from data/eval.json.
+"""README charts (light + dark SVG): the learning curve from data/eval.json and the ablation
+study from data/ablation.json.
 
 Run: uv run python -m scripts.make_charts
 """
@@ -6,7 +7,19 @@ Run: uv run python -m scripts.make_charts
 import json
 from pathlib import Path
 
+from app.config import BACKEND_DIR
 from app.services.metrics import EVAL_FILE
+
+ABLATION_FILE = BACKEND_DIR / "data" / "ablation.json"
+ABLATION_WINDOW = "weeks_5_12"
+VARIANT_LABELS = {
+    "no_memory": ("No memory", "the LLM alone"),
+    "rag": ("Vector RAG", "embeddings over past resolutions"),
+    "recall_facts": ("Hindsight recall, facts", "raw facts only"),
+    "recall": ("Hindsight recall", "facts + consolidated observations"),
+    "reflect": ("Hindsight reflect", "agentic reasoning over memory"),
+    "hybrid": ("Precedent (hybrid)", "recall fast path, reflect otherwise"),
+}
 
 OUT = Path(__file__).resolve().parents[2] / "docs" / "assets"
 WINDOW = 4  # rolling weeks (weekly counts are small, so raw weekly rates are noisy)
@@ -167,13 +180,82 @@ def render(mode: str, ev: dict) -> str:
 '''
 
 
+def render_ablation(mode: str, ab: dict) -> str:
+    """One row per variant: accuracy bar, then wrong payments, cost and latency as plain columns."""
+    t = THEMES[mode]
+    stats = ab["windows"][ABLATION_WINDOW]
+    rows = [v for v in VARIANT_LABELS if stats.get(v, {}).get("n")]
+    n_cases = stats[rows[0]]["n"]
+    top, row_h = 108, 50
+    bar_x, bar_w = 300, 330
+    height = top + row_h * len(rows) + 44
+    s = [
+        f'<text x="28" y="36" font-size="15" font-weight="600" fill="{t["text"]}">Which part of memory does the '
+        "work? Same cases, same memory, same LLM</text>",
+        f'<text x="28" y="57" font-size="12.5" fill="{t["text2"]}">Judgement exceptions in weeks 5–12 of a '
+        f"12-week replay ({n_cases} cases, after a month of learning) · only the retrieval differs</text>",
+    ]
+    heads = [
+        (bar_x, "start", "Matches the clerk"),
+        (740, "end", "Wrong pays"),
+        (850, "end", "Cost / case"),
+        (962, "end", "p50 latency"),
+    ]
+    for x, anchor, label in heads:
+        s.append(f'<text x="{x}" y="92" font-size="11.5" text-anchor="{anchor}" fill="{t["muted"]}">{label}</text>')
+    s.append(f'<line x1="28" x2="972" y1="{top - 8}" y2="{top - 8}" stroke="{t["grid"]}" stroke-width="1"/>')
+    for i, v in enumerate(rows):
+        st, (label, sub) = stats[v], VARIANT_LABELS[v]
+        y = top + i * row_h
+        product = v == "hybrid"
+        color = t["on"] if product else t["base"]
+        weight = "700" if product else "600"
+        s.append(f'<text x="28" y="{y + 17}" font-size="13" font-weight="{weight}" fill="{t["text"]}">{label}</text>')
+        s.append(f'<text x="28" y="{y + 34}" font-size="11.5" fill="{t["text2"]}">{sub}</text>')
+        s.append(f'<rect x="{bar_x}" y="{y + 10}" width="{bar_w}" height="18" rx="4" fill="{t["band"]}"/>')
+        w = max(4.0, st["accuracy"] * bar_w)
+        s.append(f'<rect x="{bar_x}" y="{y + 10}" width="{w:.1f}" height="18" rx="4" fill="{color}"/>')
+        s.append(
+            f'<text x="{bar_x + w + 8:.1f}" y="{y + 24}" font-size="12.5" font-weight="{weight}" '
+            f'fill="{t["text"]}">{st["accuracy"]:.0%}</text>'
+        )
+        cost = st["cost_per_case_usd"]
+        cost_txt = f"${cost:.3f}" if cost >= 0.001 else "&lt; $0.001"
+        lat = f"{st['latency_p50_ms'] / 1000:.1f} s"
+        for x, txt in ((740, str(st["false_pay"])), (850, cost_txt), (962, lat)):
+            s.append(f'<text x="{x}" y="{y + 24}" font-size="12.5" text-anchor="end" fill="{t["text"]}">{txt}</text>')
+        if i < len(rows) - 1:
+            s.append(
+                f'<line x1="28" x2="972" y1="{y + row_h - 4}" y2="{y + row_h - 4}" stroke="{t["grid"]}" '
+                'stroke-width="1" stroke-dasharray="2 4"/>'
+            )
+    s.append(
+        f'<text x="28" y="{height - 16}" font-size="11" fill="{t["muted"]}">Wrong pays: recommended paying when '
+        "the clerk would not. Cost includes Hindsight calls, embeddings and LLM tokens. Raw data: "
+        "backend/data/ablation.json</text>"
+    )
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="{height}" viewBox="0 0 1000 {height}" font-family="{FONT}" role="img" aria-labelledby="t d">
+<title id="t">Precedent ablation study</title>
+<desc id="d">Accuracy, wrong payments, cost and latency of six ways to use past decisions, measured on the same cases with the same memory and the same LLM.</desc>
+<rect x="0.5" y="0.5" width="999" height="{height - 1}" rx="12" fill="{t["surface"]}" stroke="{t["border"]}"/>
+{chr(10).join(s)}
+</svg>
+'''
+
+
 def main() -> None:
-    ev = json.loads(EVAL_FILE.read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
+    ev = json.loads(EVAL_FILE.read_text(encoding="utf-8"))
     for mode in THEMES:
         path = OUT / f"learning-curve-{mode}.svg"
         path.write_text(render(mode, ev), encoding="utf-8")
         print("wrote", path)
+    if ABLATION_FILE.exists():
+        ab = json.loads(ABLATION_FILE.read_text(encoding="utf-8"))
+        for mode in THEMES:
+            path = OUT / f"ablation-{mode}.svg"
+            path.write_text(render_ablation(mode, ab), encoding="utf-8")
+            print("wrote", path)
 
 
 if __name__ == "__main__":

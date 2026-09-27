@@ -1,59 +1,99 @@
 {
-  "generated_at": "2026-09-28T01:42:47.649086",
+  "generated_at": "2026-09-28T04:41:59.161140",
   "weeks": [
     {
       "week": 1,
       "week_start": "2026-03-02",
-      "exceptions": 2,
+      "exceptions": 3,
       "touchless_on": 0.0,
       "touchless_off": 0.0,
-      "correct_on": 0.5,
-      "correct_off": 0.0,
+      "correct_on": 0.667,
+      "correct_off": 0.333,
       "false_approvals_on": 0
     },
     {
       "week": 2,
       "week_start": "2026-03-09",
-      "exceptions": 8,
+      "exceptions": 3,
       "touchless_on": 0.0,
       "touchless_off": 0.0,
-      "correct_on": 0.25,
-      "correct_off": 0.125,
+      "correct_on": 0.667,
+      "correct_off": 0.333,
       "false_approvals_on": 0
     },
     {
       "week": 3,
       "week_start": "2026-03-16",
-      "exceptions": 5,
+      "exceptions": 6,
       "touchless_on": 0.0,
       "touchless_off": 0.0,
-      "correct_on": 0.8,
-      "correct_off": 0.4,
+      "correct_on": 0.667,
+      "correct_off": 0.5,
       "false_approvals_on": 0
     },
     {
       "week": 4,
       "week_start": "2026-03-23",
-      "exceptions": 4,
-      "touchless_on": 0.25,
+      "exceptions": 5,
+      "touchless_on": 0.2,
       "touchless_off": 0.0,
-      "correct_on": 0.75,
-      "correct_off": 0.5,
+      "correct_on": 0.6,
+      "correct_off": 0.2,
       "false_approvals_on": 0
     },
     {
       "week": 5,
       "week_start": "2026-03-30",
-      "exceptions": 5,
-      "touchless_on": 0.2,
+      "exceptions": 4,
+      "touchless_on": 0.25,
       "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.2,
+      "correct_on": 0.5,
+      "correct_off": 0.5,
       "false_approvals_on": 0
     },
     {
       "week": 6,
       "week_start": "2026-04-06",
+      "exceptions": 6,
+      "touchless_on": 0.0,
+      "touchless_off": 0.0,
+      "correct_on": 0.667,
+      "correct_off": 0.167,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 7,
+      "week_start": "2026-04-13",
+      "exceptions": 2,
+      "touchless_on": 0.0,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.5,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 8,
+      "week_start": "2026-04-20",
+      "exceptions": 7,
+      "touchless_on": 0.286,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.143,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 9,
+      "week_start": "2026-04-27",
+      "exceptions": 7,
+      "touchless_on": 0.0,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.857,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 10,
+      "week_start": "2026-05-04",
       "exceptions": 5,
       "touchless_on": 0.0,
       "touchless_off": 0.0,
@@ -62,73 +102,33 @@
       "false_approvals_on": 0
     },
     {
-      "week": 7,
-      "week_start": "2026-04-13",
-      "exceptions": 5,
-      "touchless_on": 0.0,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.6,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 8,
-      "week_start": "2026-04-20",
-      "exceptions": 8,
-      "touchless_on": 0.125,
-      "touchless_off": 0.0,
-      "correct_on": 0.875,
-      "correct_off": 0.375,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 9,
-      "week_start": "2026-04-27",
-      "exceptions": 8,
-      "touchless_on": 0.125,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.75,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 10,
-      "week_start": "2026-05-04",
-      "exceptions": 3,
-      "touchless_on": 1.0,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.667,
-      "false_approvals_on": 0
-    },
-    {
       "week": 11,
       "week_start": "2026-05-11",
-      "exceptions": 3,
-      "touchless_on": 0.667,
+      "exceptions": 6,
+      "touchless_on": 0.5,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.5,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 12,
+      "week_start": "2026-05-18",
+      "exceptions": 6,
+      "touchless_on": 0.333,
       "touchless_off": 0.0,
       "correct_on": 1.0,
       "correct_off": 0.333,
       "false_approvals_on": 0
     },
     {
-      "week": 12,
-      "week_start": "2026-05-18",
-      "exceptions": 3,
-      "touchless_on": 0.333,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.667,
-      "false_approvals_on": 0
-    },
-    {
       "week": 13,
       "week_start": "2026-05-25",
-      "exceptions": 10,
+      "exceptions": 5,
       "touchless_on": 0.4,
       "touchless_off": 0.0,
-      "correct_on": 0.9,
-      "correct_off": 0.4,
+      "correct_on": 1.0,
+      "correct_off": 0.2,
       "false_approvals_on": 0
     },
     {
@@ -137,73 +137,53 @@
       "exceptions": 5,
       "touchless_on": 0.2,
       "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.2,
+      "correct_on": 0.6,
+      "correct_off": 0.6,
       "false_approvals_on": 0
     },
     {
       "week": 15,
       "week_start": "2026-06-08",
-      "exceptions": 9,
-      "touchless_on": 0.444,
-      "touchless_off": 0.0,
-      "correct_on": 0.889,
-      "correct_off": 0.333,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 16,
-      "week_start": "2026-06-15",
-      "exceptions": 2,
-      "touchless_on": 0.0,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.0,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 17,
-      "week_start": "2026-06-22",
-      "exceptions": 6,
-      "touchless_on": 0.5,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.667,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 18,
-      "week_start": "2026-06-29",
-      "exceptions": 3,
-      "touchless_on": 0.667,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.333,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 19,
-      "week_start": "2026-07-06",
       "exceptions": 8,
-      "touchless_on": 0.625,
-      "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.375,
-      "false_approvals_on": 0
-    },
-    {
-      "week": 20,
-      "week_start": "2026-07-13",
-      "exceptions": 4,
-      "touchless_on": 0.0,
+      "touchless_on": 0.375,
       "touchless_off": 0.0,
       "correct_on": 1.0,
       "correct_off": 0.5,
       "false_approvals_on": 0
     },
     {
-      "week": 21,
-      "week_start": "2026-07-20",
+      "week": 16,
+      "week_start": "2026-06-15",
+      "exceptions": 8,
+      "touchless_on": 0.0,
+      "touchless_off": 0.0,
+      "correct_on": 0.875,
+      "correct_off": 0.5,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 17,
+      "week_start": "2026-06-22",
+      "exceptions": 4,
+      "touchless_on": 0.5,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.5,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 18,
+      "week_start": "2026-06-29",
+      "exceptions": 4,
+      "touchless_on": 0.75,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.5,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 19,
+      "week_start": "2026-07-06",
       "exceptions": 5,
       "touchless_on": 0.4,
       "touchless_off": 0.0,
@@ -212,64 +192,216 @@
       "false_approvals_on": 0
     },
     {
-      "week": 22,
-      "week_start": "2026-07-27",
-      "exceptions": 6,
+      "week": 20,
+      "week_start": "2026-07-13",
+      "exceptions": 3,
       "touchless_on": 0.333,
       "touchless_off": 0.0,
-      "correct_on": 0.833,
+      "correct_on": 1.0,
       "correct_off": 0.333,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 21,
+      "week_start": "2026-07-20",
+      "exceptions": 8,
+      "touchless_on": 0.25,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.375,
+      "false_approvals_on": 0
+    },
+    {
+      "week": 22,
+      "week_start": "2026-07-27",
+      "exceptions": 8,
+      "touchless_on": 0.375,
+      "touchless_off": 0.0,
+      "correct_on": 1.0,
+      "correct_off": 0.875,
       "false_approvals_on": 0
     },
     {
       "week": 23,
       "week_start": "2026-08-03",
-      "exceptions": 8,
-      "touchless_on": 0.75,
+      "exceptions": 5,
+      "touchless_on": 0.8,
       "touchless_off": 0.0,
       "correct_on": 1.0,
-      "correct_off": 0.125,
+      "correct_off": 0.0,
       "false_approvals_on": 0
     },
     {
       "week": 24,
       "week_start": "2026-08-10",
-      "exceptions": 5,
-      "touchless_on": 0.8,
+      "exceptions": 8,
+      "touchless_on": 0.625,
       "touchless_off": 0.0,
       "correct_on": 1.0,
-      "correct_off": 0.6,
+      "correct_off": 0.375,
       "false_approvals_on": 0
     },
     {
       "week": 25,
       "week_start": "2026-08-17",
       "exceptions": 4,
-      "touchless_on": 0.5,
+      "touchless_on": 1.0,
       "touchless_off": 0.0,
-      "correct_on": 0.75,
-      "correct_off": 0.5,
+      "correct_on": 1.0,
+      "correct_off": 0.75,
       "false_approvals_on": 0
     },
     {
       "week": 26,
       "week_start": "2026-08-24",
-      "exceptions": 6,
-      "touchless_on": 0.667,
+      "exceptions": 9,
+      "touchless_on": 0.556,
       "touchless_off": 0.0,
-      "correct_on": 1.0,
-      "correct_off": 0.167,
+      "correct_on": 0.889,
+      "correct_off": 0.667,
       "false_approvals_on": 0
     }
   ],
   "months_5_6": {
-    "touchless_on": 0.551,
+    "touchless_on": 0.537,
     "touchless_off": 0.0,
-    "correct_on": 0.959,
-    "correct_off": 0.347,
+    "correct_on": 0.981,
+    "correct_off": 0.5,
     "false_approvals_on": 0
   },
-  "summary": "Months 5-6: agent correct 96% with memory vs 35% without; touchless 55% vs 0%; false approvals 0.",
-  "citation_relevance": 0.87,
-  "citation_relevance_note": "weeks 1-8 (Twist snapshot): 131 memories cited across 29 memory-backed recommendations"
+  "citation_relevance": 0.939,
+  "end_of_timeline": {
+    "on": {
+      "kpis": {
+        "touchless_rate": 0.319,
+        "acceptance_rate": 0.847,
+        "exceptions_total": 144,
+        "auto_resolved": 46,
+        "blocked_by_controls": 12,
+        "false_approvals": 0,
+        "memories": 309,
+        "minutes_saved": 820.0,
+        "citation_relevance": 0.939,
+        "lessons_revoked": 0,
+        "msme_open_at_risk": 0,
+        "msme_tax_at_risk": 0.0
+      },
+      "certificate": {
+        "status": "certified",
+        "target_error": 0.05,
+        "confidence_level": 0.95,
+        "threshold": 0.75,
+        "decisions": 73,
+        "errors": 0,
+        "error_upper_bound": 0.0402,
+        "auto_resolutions": 46,
+        "auto_errors": 0,
+        "auto_error_upper_bound": 0.063,
+        "table": [
+          {
+            "threshold": 0.95,
+            "decisions": 66,
+            "errors": 0,
+            "upper_bound": 0.0444,
+            "certified": true
+          },
+          {
+            "threshold": 0.9,
+            "decisions": 72,
+            "errors": 0,
+            "upper_bound": 0.0408,
+            "certified": true
+          },
+          {
+            "threshold": 0.85,
+            "decisions": 73,
+            "errors": 0,
+            "upper_bound": 0.0402,
+            "certified": true
+          },
+          {
+            "threshold": 0.8,
+            "decisions": 73,
+            "errors": 0,
+            "upper_bound": 0.0402,
+            "certified": true
+          },
+          {
+            "threshold": 0.75,
+            "decisions": 73,
+            "errors": 0,
+            "upper_bound": 0.0402,
+            "certified": true
+          }
+        ],
+        "explanation": "Of 73 verified pay recommendations at confidence \u2265 0.75, 0 were wrong. With 95% confidence the true wrong-payment rate is at most 4.0% (target 5%), so auto-approval is allowed at or above 0.75."
+      },
+      "calibration": {
+        "n": 123,
+        "ece": 0.0715,
+        "pooled_accuracy": 0.896,
+        "bins": [
+          {
+            "low": 0.0,
+            "high": 0.5,
+            "n": 9,
+            "stated": 0.406,
+            "actual": 0.364
+          },
+          {
+            "low": 0.5,
+            "high": 0.7,
+            "n": 11,
+            "stated": 0.6,
+            "actual": 0.923
+          },
+          {
+            "low": 0.7,
+            "high": 0.85,
+            "n": 1,
+            "stated": 0.8,
+            "actual": null
+          },
+          {
+            "low": 0.85,
+            "high": 0.95,
+            "n": 17,
+            "stated": 0.891,
+            "actual": 0.789
+          },
+          {
+            "low": 0.95,
+            "high": 1.0,
+            "n": 85,
+            "stated": 0.955,
+            "actual": 0.966
+          }
+        ]
+      },
+      "performance": {
+        "recommendations": 144,
+        "fast_share": 0.583,
+        "latency_p50_ms": 2653,
+        "latency_p95_ms": 9443,
+        "avg_cost_usd": 0.0173,
+        "cost_per_1000_exceptions_usd": 17.3
+      }
+    },
+    "off": {
+      "performance": {
+        "recommendations": 144,
+        "fast_share": 0.0,
+        "latency_p50_ms": 1655,
+        "latency_p95_ms": 1991,
+        "avg_cost_usd": 0.00025,
+        "cost_per_1000_exceptions_usd": 0.25
+      }
+    }
+  },
+  "llm_chain": [
+    "gemini:gemini-3.1-flash-lite",
+    "groq:openai/gpt-oss-120b",
+    "nvidia:nvidia/nemotron-3-super-120b-a12b"
+  ],
+  "summary": "Months 5-6: agent correct 98% with memory vs 50% without; touchless 54% vs 0%; false approvals 0."
 }

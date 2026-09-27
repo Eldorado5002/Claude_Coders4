@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="470" viewBox="0 0 960 470" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
-<title id="t">How an invoice flows through Precedent</title><desc id="d">Invoice in, 3-way match (clean invoices are paid), hard controls (fired controls go to reject or escalate), Hindsight reflect plus anomaly check, earned autonomy decides between auto-resolve and the clerk, and every decision is retained in Hindsight, which feeds the next reflect.</desc>
+<title id="t">How an invoice flows through Precedent</title><desc id="d">Invoice in, 3-way match (clean invoices are paid), hard controls (fired controls go to reject or escalate), Hindsight memory (a recall fast path for routine cases, reflect otherwise) plus an anomaly check, earned autonomy decides between auto-resolve and the clerk, and every decision is retained in Hindsight, which feeds the next recommendation.</desc>
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d7c76"/></marker><marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3987e5"/></marker></defs>
 <rect x="0.5" y="0.5" width="959" height="469" rx="12" fill="#1a1a19" stroke="#2c2c2a"/>
 <rect x="24" y="152" width="160" height="122" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
@@ -20,15 +20,15 @@
 <rect x="400" y="152" width="160" height="122" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
 <text x="480.0" y="191.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Hard controls</text>
 <text x="480.0" y="213.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">duplicate · bank change</text>
-<text x="480.0" y="231.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">new vendor</text>
-<text x="480.0" y="249.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">over ₹5,00,000</text>
+<text x="480.0" y="231.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">GSTIN · e-invoice IRN</text>
+<text x="480.0" y="249.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">new vendor · over ₹5L</text>
 <circle cx="402" cy="154" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
 <text x="402" y="158.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">3</text>
 <path d="M375,213.0 L397,213.0" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
 <rect x="588" y="152" width="160" height="122" rx="10" fill="#15263b" stroke="#3987e5" stroke-width="2"/>
-<text x="668.0" y="191.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Hindsight reflect</text>
-<text x="668.0" y="213.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">precedents, directives</text>
-<text x="668.0" y="231.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">and playbooks</text>
+<text x="668.0" y="191.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Hindsight memory</text>
+<text x="668.0" y="213.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">routine: recall</text>
+<text x="668.0" y="231.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">fast path · else reflect</text>
 <text x="668.0" y="249.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">+ anomaly check</text>
 <circle cx="590" cy="154" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
 <text x="590" y="158.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">4</text>

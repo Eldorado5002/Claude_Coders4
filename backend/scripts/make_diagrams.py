@@ -195,16 +195,17 @@ def pipeline(t: dict) -> str:
         t,
         "How an invoice flows through Precedent",
         "Invoice in, 3-way match (clean invoices are paid), hard controls (fired controls go to reject or escalate), "
-        "Hindsight reflect plus anomaly check, earned autonomy decides between auto-resolve and the clerk, and every "
-        "decision is retained in Hindsight, which feeds the next reflect.",
+        "Hindsight memory (a recall fast path for routine cases, reflect otherwise) plus an anomaly check, earned "
+        "autonomy decides between auto-resolve and the clerk, and every decision is retained in Hindsight, which "
+        "feeds the next recommendation.",
     )
     w, h, y, gap = 160, 122, 152, 28
     xs = [24 + i * (w + gap) for i in range(5)]
     boxes = [
         ("Invoice in", f"ERP feed, or a photo{NL}or PDF read by{NL}Gemini vision", "node"),
         ("3-way match", f"every line checked{NL}against the PO and{NL}goods receipt", "node"),
-        ("Hard controls", f"duplicate · bank change{NL}new vendor{NL}over ₹5,00,000", "node"),
-        ("Hindsight reflect", f"precedents, directives{NL}and playbooks{NL}+ anomaly check", "accent"),
+        ("Hard controls", f"duplicate · bank change{NL}GSTIN · e-invoice IRN{NL}new vendor · over ₹5L", "node"),
+        ("Hindsight memory", f"routine: recall{NL}fast path · else reflect{NL}+ anomaly check", "accent"),
         ("Earned autonomy?", f"yes: auto-resolve{NL}no: clerk decides,{NL}with cited proof", "node"),
     ]
     for i, (title, body, kind) in enumerate(boxes):

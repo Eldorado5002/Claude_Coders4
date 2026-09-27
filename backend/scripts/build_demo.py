@@ -1,33 +1,45 @@
 """Build the demo + evaluation (live Hindsight + LLMs; takes a while, run once).
 
-  1. Memory ON: simulate the 26-week timeline with a fresh bank. At each demo stage
-     (Day 1, Week 3, Week 8, Twist) snapshot the database and clone the bank.
-  2. Memory OFF: replay the same timeline with the same LLMs and no memory.
-  3. Write data/eval.json (weekly learning curve) and restore the Day 1 snapshot.
+  1. Memory ON: simulate the 26-week timeline with a fresh bank (hybrid mode). At each demo
+     stage (Day 1, Week 3, Week 8, Twist) snapshot the database and clone the bank, and have
+     Hindsight write Balaji's vendor wiki page so the demo shows it instantly.
+  2. Memory OFF: replay the same timeline with the same LLM and no memory.
+  3. Write data/eval.json (weekly learning curve, end-of-timeline certificate, calibration,
+     cost and latency) and restore the Day 1 snapshot.
+
+Both runs pin Gemini as the first model so ON and OFF are judged by the same LLM (the app's
+default chain starts with Groq's free tier, whose per-minute token limit would otherwise mix
+models mid-run).
 
 Run: uv run python -m scripts.build_demo [--skip-off]
 """
 
+import os
+
+os.environ.setdefault("LLM_ORDER", "gemini,groq,nvidia")
+
 import argparse
-import asyncio
-import logging
-import time
-from datetime import datetime, timedelta
+import asyncio  # noqa: E402
+import logging  # noqa: E402
+import time  # noqa: E402
+from datetime import datetime, timedelta  # noqa: E402
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, select  # noqa: E402
 
-from app.config import get_settings
-from app.data.seed import seed
-from app.db import get_engine, set_state
-from app.memory.store import get_memory
-from app.models import ExceptionCase, Vendor
-from app.services import demo
-from app.services.cases import get_cases
-from app.services.metrics import citation_relevance, save_eval, weekly
-from app.services.sim import get_sim
+from app.config import get_settings  # noqa: E402
+from app.data.seed import seed  # noqa: E402
+from app.db import get_engine, set_state  # noqa: E402
+from app.memory.store import get_memory  # noqa: E402
+from app.models import ExceptionCase, Vendor  # noqa: E402
+from app.services import demo  # noqa: E402
+from app.services.cases import get_cases  # noqa: E402
+from app.services.metrics import citation_relevance, compute_metrics, performance, save_eval, weekly  # noqa: E402
+from app.services.sim import get_sim  # noqa: E402
 
 log = logging.getLogger("build")
 CITATIONS: dict[str, float | None] = {}
+END: dict[str, dict] = {}
+STORY_VENDOR = "V001"
 T0 = time.time()
 
 
@@ -88,6 +100,13 @@ async def memory_on_run() -> dict[int, dict]:
         else:
             await mem.client.aclone_bank(main, bank, include_data=True, include_bank_config=True)
             await wait_clone(main, bank)
+        if day > 0:
+            try:
+                with Session(get_engine()) as session:
+                    name = session.get(Vendor, STORY_VENDOR).name
+                await mem.vendor_page(bank, STORY_VENDOR, name)  # Hindsight writes it in the background
+            except Exception as e:  # noqa: BLE001
+                say(f"  WARNING vendor wiki for {bank} not started: {e}")
         with Session(get_engine()) as session:
             set_state(session, "stage", stage)
         demo.snapshot(stage, bank)
@@ -95,10 +114,19 @@ async def memory_on_run() -> dict[int, dict]:
 
     say("memory ON -> rest of timeline")
     await sim.advance_to(s.sim_days - 1, leave_last_open=False, on_day=progress)
+    await cases.drain()
+    memories = (await mem.client.alist_memories(main, limit=1)).total or 0
     with Session(get_engine()) as session:
-        cases = session.exec(select(ExceptionCase)).all()
+        rows = session.exec(select(ExceptionCase)).all()
         names = {v.id: v.name for v in session.exec(select(Vendor)).all()}
-        CITATIONS["full_timeline"] = citation_relevance(cases, names)
+        CITATIONS["full_timeline"] = citation_relevance(rows, names)
+        m = compute_metrics(session, memories)
+        END["on"] = {
+            "kpis": m.kpis.model_dump(mode="json"),
+            "certificate": m.certificate.model_dump(mode="json"),
+            "calibration": m.calibration.model_dump(mode="json"),
+            "performance": m.performance.model_dump(mode="json"),
+        }
         return dict(weekly(session))
 
 
@@ -115,6 +143,7 @@ async def memory_off_run() -> dict[int, dict]:
     finally:
         cases.retain_enabled = True
     with Session(get_engine()) as session:
+        END["off"] = {"performance": performance(session.exec(select(ExceptionCase)).all()).model_dump(mode="json")}
         return dict(weekly(session))
 
 
@@ -161,6 +190,8 @@ def summarise(on: dict, off: dict) -> dict:
         "weeks": weeks,
         "months_5_6": m56,
         "citation_relevance": CITATIONS.get("full_timeline"),
+        "end_of_timeline": END,
+        "llm_chain": get_cases().recommender.router.chain,
         "summary": summary,
     }
 
