@@ -3,6 +3,7 @@
 from datetime import date, datetime
 from typing import Any
 
+from pydantic import NaiveDatetime
 from sqlmodel import JSON, Column, Field, SQLModel
 
 
@@ -71,8 +72,9 @@ class ExceptionCase(SQLModel, table=True):
     issues: list[dict[str, Any]] = Field(default_factory=list, sa_column=Column(JSON))
     amount_at_risk: float = 0.0
     blocking: bool = False
-    created_at: datetime
+    created_at: NaiveDatetime  # simulated clock is naive local time
     recommendation: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    rec_variants: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))  # "on"/"off" -> rec
     resolution: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
     memory_enabled_at_rec: bool = True
 
@@ -86,7 +88,7 @@ class Autonomy(SQLModel, table=True):
     accepted: int = 0
     overruled: int = 0
     auto_resolved: int = 0
-    updated_at: datetime | None = None
+    updated_at: NaiveDatetime | None = None
 
 
 class AppState(SQLModel, table=True):
@@ -115,4 +117,4 @@ class PushSub(SQLModel, table=True):
 class LlmCache(SQLModel, table=True):
     key: str = Field(primary_key=True)
     value: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: NaiveDatetime = Field(default_factory=datetime.now)

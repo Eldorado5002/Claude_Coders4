@@ -1,0 +1,269 @@
+"""Recommendation pipeline.
+
+1. Hard controls (already computed by the matching engine) decide the action when they fire.
+2. Memory ON  -> Hindsight reflect() over this vendor's + this exception type's precedents,
+                 with directives and mental models, returning typed output + citations.
+                 If reflect fails -> recall() + LLM router with the recalled precedents.
+3. Memory OFF -> LLM router with only the documents (the stateless-assistant baseline).
+4. The per-vendor anomaly score (IsolationForest) caps confidence on unusual invoices.
+"""
+
+import logging
+from dataclasses import dataclass, field
+from datetime import date, datetime
+
+from pydantic import BaseModel, Field, ValidationError, field_validator
+
+from app.llm.router import LlmUnavailable, get_router, strict_schema
+from app.memory.store import MemoryStore, get_memory
+from app.schemas import Action, Citation, CitationKind, ExceptionType, Issue, Recommendation, RecSource
+
+log = logging.getLogger("precedent.agent")
+
+CONTROL_ACTION = {
+    ExceptionType.DUPLICATE_INVOICE: Action.REJECT,
+    ExceptionType.BANK_DETAILS_CHANGED: Action.ESCALATE,
+    ExceptionType.OVER_THRESHOLD: Action.ESCALATE,
+    ExceptionType.NEW_VENDOR: Action.ESCALATE,
+}
+CONTROL_ORDER = list(CONTROL_ACTION)
+ANOMALY_CAP = 0.9
+
+
+class RecDraft(BaseModel):
+    """What the model must return."""
+
+    action: Action = Field(description="One of approve, approve_adjusted, hold, reject, escalate")
+    confidence: float = Field(ge=0, le=1, description="0-1. Low (<0.5) when no precedent applies.")
+    adjusted_amount: float | None = Field(
+        description="Only for approve_adjusted: the corrected total to pay in rupees. Otherwise null."
+    )
+    rationale: str = Field(description="One or two sentences. Name the precedent and the exact limit or condition.")
+    precedent_found: bool = Field(description="True only if a past decision for this vendor or policy applies.")
+
+    @field_validator("adjusted_amount", "confidence", mode="before")
+    @classmethod
+    def _numberish(cls, v):
+        """Models sometimes send 'null', '₹4,200' or '0.9' as strings."""
+        if isinstance(v, str):
+            s = v.strip().lower().replace("₹", "").replace(",", "").replace("rs.", "").replace("rs", "").strip()
+            if s in ("", "null", "none", "n/a", "na"):
+                return None
+            return float(s.rstrip("%")) / (100 if s.endswith("%") else 1)
+        return v
+
+    @field_validator("action", mode="before")
+    @classmethod
+    def _action(cls, v):
+        if isinstance(v, str):
+            s = v.strip().lower().replace(" ", "_").replace("-", "_")
+            aliases = {
+                "approved": "approve",
+                "approve_with_adjustment": "approve_adjusted",
+                "adjust": "approve_adjusted",
+                "held": "hold",
+                "rejected": "reject",
+                "escalated": "escalate",
+            }
+            return aliases.get(s, s)
+        return v
+
+    @field_validator("precedent_found", mode="before")
+    @classmethod
+    def _boolish(cls, v):
+        if isinstance(v, str):
+            return v.strip().lower() in ("true", "yes", "1")
+        return v
+
+
+@dataclass
+class CaseContext:
+    case_id: str
+    vendor: dict
+    invoice: dict
+    issues: list[Issue]
+    types: list[str]
+    primary_type: str
+    blocking: bool
+    amount_at_risk: float
+    sim_date: date
+    po: dict | None = None
+    grn: dict | None = None
+    anomaly: float | None = None
+    typical_total: float | None = None
+    history_count: int = 0
+    extra: dict = field(default_factory=dict)
+
+
+def inr(x: float | None) -> str:
+    return "—" if x is None else f"₹{x:,.2f}"
+
+
+def case_brief(ctx: CaseContext) -> str:
+    inv, v = ctx.invoice, ctx.vendor
+    lines = "\n".join(
+        f"  {l['line_no']}. {l['description']} | qty {l['qty']:g} {l['uom']} @ {inr(l['unit_price'])} | GST "
+        f"{l['tax_rate']:g}% | {inr(l['amount'])}"
+        for l in inv["lines"]
+    )
+    issues = "\n".join(f"  - [{i.type.value}] {i.message}" for i in ctx.issues)
+    anomaly = (
+        "not enough history"
+        if ctx.anomaly is None
+        else f"{ctx.anomaly:.2f} (more unusual than {ctx.anomaly:.0%} of this vendor's past invoices)"
+    )
+    return (
+        f"Date: {ctx.sim_date:%d %b %Y}\n"
+        f"Vendor: {v['name']} ({v['id']}), {v['category'].replace('_', ' ')}, {v['city']}\n"
+        f"Invoice {inv['invoice_number']} dated {inv['invoice_date']:%d %b %Y}, total {inr(inv['total'])}, "
+        f"PO {inv.get('po_number') or 'none'}\n"
+        f"Invoice lines:\n{lines}\n"
+        f"Exceptions found by 3-way match:\n{issues}\n"
+        f"Amount at risk: {inr(ctx.amount_at_risk)}\n"
+        f"Typical invoice total for this vendor: {inr(ctx.typical_total)} | ML anomaly score: {anomaly}"
+    )
+
+
+QUESTION = (
+    "How should the AP team resolve this exception? Use how the team resolved similar exceptions before — this "
+    "vendor first, then the same exception type — and quote the exact limit or condition they applied. "
+    "Actions: approve (pay as invoiced), approve_adjusted (pay a corrected amount; give it), hold (send back / wait), "
+    "reject, escalate. If no precedent really applies, set precedent_found=false, choose hold or escalate, and keep "
+    "confidence below 0.5."
+)
+
+NO_MEMORY_SYSTEM = (
+    "You are an accounts-payable assistant at an Indian manufacturer. You have NO access to this company's history, "
+    "vendor agreements, rate contracts or past decisions — judge only from the documents shown. Recommend the safest "
+    "reasonable action and say what information is missing."
+)
+
+RECALL_SYSTEM = (
+    "You are Precedent, a careful accounts-payable specialist. Recommend how to resolve an invoice exception using "
+    "ONLY the team's past decisions listed below. Quote exact limits. If none apply, say so and choose hold or "
+    "escalate with low confidence."
+)
+
+
+class Recommender:
+    def __init__(self, memory: MemoryStore | None = None):
+        self.memory = memory or get_memory()
+        self.router = get_router()
+
+    async def recommend(self, ctx: CaseContext, *, memory_enabled: bool, bank_id: str, now: datetime) -> Recommendation:
+        brief = case_brief(ctx)
+        draft: RecDraft | None = None
+        citations: list[Citation] = []
+        provider = ""
+        latency = 0
+        source = RecSource.NO_MEMORY
+
+        if memory_enabled:
+            try:
+                resp, citations, latency = await self.memory.reflect(
+                    bank_id,
+                    f"NEW INVOICE EXCEPTION\n{brief}\n\n{QUESTION}",
+                    vendor_id=ctx.vendor["id"],
+                    types=ctx.types,
+                    response_schema=strict_schema(RecDraft),
+                )
+                draft = RecDraft.model_validate(resp.structured_output or {})
+                provider = "hindsight-reflect"
+            except (ValidationError, Exception) as e:  # noqa: BLE001 — any memory failure falls back
+                log.warning("reflect failed for %s, falling back to recall+LLM: %s", ctx.case_id, e)
+                try:
+                    draft, citations, provider, latency = await self._recall_llm(ctx, brief, bank_id)
+                except LlmUnavailable as e2:
+                    log.error("recall fallback failed too: %s", e2)
+                    draft = RecDraft(
+                        action=Action.HOLD,
+                        confidence=0.2,
+                        adjusted_amount=None,
+                        rationale="Memory and models unavailable — holding for manual review.",
+                        precedent_found=False,
+                    )
+                    citations, provider, latency = [], "rules", 0
+            has_memory_evidence = any(
+                c.kind
+                in (CitationKind.OBSERVATION, CitationKind.WORLD, CitationKind.EXPERIENCE, CitationKind.MENTAL_MODEL)
+                for c in citations
+            )
+            source = RecSource.MEMORY if (draft.precedent_found and has_memory_evidence) else RecSource.NO_MEMORY
+        else:
+            try:
+                res = await self.router.structured(NO_MEMORY_SYSTEM, f"{brief}\n\n{QUESTION}", RecDraft)
+                draft, provider, latency = res.value, res.provider, res.latency_ms
+            except LlmUnavailable as e:
+                log.error("all LLMs unavailable: %s", e)
+                draft = RecDraft(
+                    action=Action.HOLD,
+                    confidence=0.2,
+                    adjusted_amount=None,
+                    rationale="No model available — holding for manual review.",
+                    precedent_found=False,
+                )
+                provider = "rules"
+
+        action, confidence, rationale = draft.action, draft.confidence, draft.rationale.strip()
+
+        control = next((t for t in CONTROL_ORDER if t.value in ctx.types), None)
+        if control is None:
+            # directives apply to every reflect; only show them when a hard control actually fired
+            citations = [c for c in citations if c.kind != CitationKind.DIRECTIVE]
+        if control is not None:
+            forced = CONTROL_ACTION[control]
+            msg = next(i.message for i in ctx.issues if i.type == control)
+            if action != forced:
+                rationale = f"Hard control: {msg} Action forced to {forced.value}. " + (
+                    f"(Memory alone would have suggested {action.value}.)" if memory_enabled else ""
+                )
+            else:
+                rationale = f"Hard control: {msg} {rationale}"
+            action, confidence, source = forced, 0.99, RecSource.GUARDRAIL
+
+        adjusted = draft.adjusted_amount if action == Action.APPROVE_ADJUSTED else None
+
+        if ctx.anomaly is not None and ctx.anomaly >= ANOMALY_CAP and control is None:
+            confidence = min(confidence, 0.6)
+            rationale += (
+                f" ML check: this invoice is more unusual than {ctx.anomaly:.0%} of {ctx.vendor['name']}'s history "
+                f"(typical total {inr(ctx.typical_total)})."
+            )
+
+        return Recommendation(
+            action=action,
+            confidence=round(float(confidence), 2),
+            adjusted_amount=adjusted,
+            rationale=rationale,
+            citations=citations,
+            source=source,
+            anomaly_score=ctx.anomaly,
+            auto_resolved=False,
+            provider=provider,
+            latency_ms=latency,
+            generated_at=now,
+        )
+
+    async def _recall_llm(self, ctx: CaseContext, brief: str, bank_id: str):
+        citations: list[Citation] = []
+        try:
+            facts = await self.memory.recall(
+                bank_id, f"{ctx.vendor['name']} {' '.join(ctx.types)}", vendor_id=ctx.vendor["id"], types=ctx.types
+            )
+            for f in facts[:8]:
+                citations.append(
+                    Citation(
+                        id=str(f.id),
+                        kind=CitationKind(f.type) if f.type in CitationKind._value2member_map_ else CitationKind.WORLD,
+                        text=f.text,
+                        occurred_at=None,
+                        exception_id=f.document_id,
+                    )
+                )
+        except Exception as e:  # noqa: BLE001
+            log.warning("recall failed for %s: %s", ctx.case_id, e)
+        precedents = "\n".join(f"- {c.text}" for c in citations) or "- (no past decisions found)"
+        res = await self.router.structured(
+            RECALL_SYSTEM, f"PAST DECISIONS:\n{precedents}\n\nNEW EXCEPTION:\n{brief}\n\n{QUESTION}", RecDraft
+        )
+        return res.value, citations, f"recall+{res.provider}", res.latency_ms
