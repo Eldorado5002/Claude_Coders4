@@ -49,15 +49,29 @@ def main() -> None:
     vendor = next(v for v in ds.vendors if v["id"] == "V001")
     # a Balaji PO billed after the demo's twist stage
     pos = {p["po_number"]: p for p in ds.pos}
-    later = [i for i in ds.invoices if i["vendor_id"] == "V001" and i["po_number"] and (i["arrival_date"] - s.sim_start).days >= 65]
+    later = [
+        i
+        for i in ds.invoices
+        if i["vendor_id"] == "V001" and i["po_number"] and (i["arrival_date"] - s.sim_start).days >= 65
+    ]
     po = pos[later[0]["po_number"]]
 
     import random
 
     buyer_gstin = make_gstin(random.Random(7), BUYER["state_code"], BUYER["name"], "C")
     lines = [dict(l) for l in po["lines"]]
-    lines.append({"line_no": len(lines) + 1, "description": "Freight charges - Medchal to Unit 2", "hsn": "996511",
-                  "qty": 1, "uom": "Trip", "unit_price": 3700.0, "tax_rate": 18, "amount": 3700.0})
+    lines.append(
+        {
+            "line_no": len(lines) + 1,
+            "description": "Freight charges - Medchal to Unit 2",
+            "hsn": "996511",
+            "qty": 1,
+            "uom": "Trip",
+            "unit_price": 3700.0,
+            "tax_rate": 18,
+            "amount": 3700.0,
+        }
+    )
     taxable = money(sum(l["amount"] for l in lines))
     cgst = sgst = money(taxable * 0.09)
     total = money(taxable + cgst + sgst)
@@ -71,7 +85,12 @@ def main() -> None:
 
     d.text((60, 50), vendor["name"].upper(), font=big, fill=ink)
     d.text((60, 98), "Plot 14, IDA Medchal, Hyderabad, Telangana - 501401", font=r, fill=grey)
-    d.text((60, 126), f"GSTIN: {vendor['gstin']}    State: Telangana (36)    PAN: {vendor['gstin'][2:12]}", font=r, fill=ink)
+    d.text(
+        (60, 126),
+        f"GSTIN: {vendor['gstin']}    State: Telangana (36)    PAN: {vendor['gstin'][2:12]}",
+        font=r,
+        fill=ink,
+    )
     d.text((W - 360, 50), "TAX INVOICE", font=font("arialbd.ttf", 38), fill=(150, 30, 30))
     d.text((W - 360, 98), "Original for Recipient", font=sm, fill=grey)
     d.line((60, 170, W - 60, 170), fill=line_c, width=3)
@@ -80,22 +99,42 @@ def main() -> None:
     d.text((60, 222), BUYER["name"], font=r, fill=ink)
     d.text((60, 250), "Unit 2, Phase II, IDA Cherlapally, Hyderabad, Telangana - 500051", font=sm, fill=grey)
     d.text((60, 276), f"GSTIN: {buyer_gstin}", font=sm, fill=ink)
-    meta = [("Invoice No.", inv_no), ("Invoice Date", inv_date.strftime("%d-%m-%Y")), ("Buyer PO No.", po["po_number"]),
-            ("Place of Supply", "Telangana (36)"), ("Payment Terms", "45 days")]
+    meta = [
+        ("Invoice No.", inv_no),
+        ("Invoice Date", inv_date.strftime("%d-%m-%Y")),
+        ("Buyer PO No.", po["po_number"]),
+        ("Place of Supply", "Telangana (36)"),
+        ("Payment Terms", "45 days"),
+    ]
     for i, (k, v) in enumerate(meta):
         d.text((W - 470, 190 + i * 30), f"{k}:", font=sm, fill=grey)
         d.text((W - 300, 190 + i * 30), v, font=b if k == "Invoice No." else r, fill=ink)
     d.line((60, 350, W - 60, 350), fill=line_c, width=2)
 
-    cols = [(60, "#"), (100, "Description of Goods / Services"), (560, "HSN/SAC"), (680, "Qty"), (770, "Unit"),
-            (860, "Rate (Rs)"), (1010, "Taxable (Rs)")]
+    cols = [
+        (60, "#"),
+        (100, "Description of Goods / Services"),
+        (560, "HSN/SAC"),
+        (680, "Qty"),
+        (770, "Unit"),
+        (860, "Rate (Rs)"),
+        (1010, "Taxable (Rs)"),
+    ]
     y = 362
     d.rectangle((60, y - 4, W - 60, y + 30), fill=(232, 232, 226))
     for x, t in cols:
         d.text((x + 4, y), t, font=b, fill=ink)
     y += 44
     for l in lines:
-        row = [str(l["line_no"]), l["description"], l["hsn"], f"{l['qty']:g}", l["uom"], inr(l["unit_price"]), inr(l["amount"])]
+        row = [
+            str(l["line_no"]),
+            l["description"],
+            l["hsn"],
+            f"{l['qty']:g}",
+            l["uom"],
+            inr(l["unit_price"]),
+            inr(l["amount"]),
+        ]
         for (x, _), t in zip(cols, row, strict=True):
             d.text((x + 4, y), t, font=r, fill=ink)
         y += 40
@@ -113,7 +152,12 @@ def main() -> None:
     y += 90
     acct_last4 = vendor["account_number"][-4:]
     d.text((60, y), "Bank Details for Payment", font=b, fill=ink)
-    d.text((60, y + 34), f"Bank: {vendor['bank_name']}   A/c No: 50200011{acct_last4}   IFSC: {vendor['ifsc']}", font=r, fill=ink)
+    d.text(
+        (60, y + 34),
+        f"Bank: {vendor['bank_name']}   A/c No: 50200011{acct_last4}   IFSC: {vendor['ifsc']}",
+        font=r,
+        fill=ink,
+    )
     d.text((60, y + 64), "Freight billed separately as per standing arrangement. E. & O.E.", font=sm, fill=grey)
     d.text((W - 420, y + 150), f"For {vendor['name'].split(' Pvt')[0]}", font=r, fill=ink)
     d.text((W - 420, y + 230), "Authorised Signatory", font=sm, fill=grey)

@@ -185,3 +185,31 @@ def test_resolve_twice_conflicts(client):
     again = client.post(f"/api/exceptions/{cid}/resolve", json={"decision": "approve", "reason": "Changed my mind."})
     assert again.status_code == 409
     assert client.get(f"/api/exceptions/{cid}").json()["status"] == CaseStatus.RESOLVED
+
+
+def test_demo_snapshot_restore_roundtrip(client, env):
+    from app.services import demo
+
+    open_before = client.get("/api/exceptions", params={"status": "open"}).json()
+    cid = open_before["items"][0]["id"]
+    demo.snapshot("day1", "test-bank-day1")
+    client.post(f"/api/exceptions/{cid}/resolve", json={"decision": "approve", "reason": "Freight within the cap."})
+    assert client.get("/api/exceptions", params={"status": "open"}).json()["total"] == 0
+
+    state = client.post("/api/demo/reset").json()
+    assert state["stage"] == "day1"
+    after = client.get("/api/exceptions", params={"status": "open"}).json()
+    assert [x["id"] for x in after["items"]] == [cid]
+    assert client.get("/api/settings").json()["bank_id"] == "test-bank-day1"
+    row = client.get("/api/autonomy").json()
+    assert all(r["accepted"] == 0 and r["overruled"] == 0 for r in row)
+
+
+def test_hold_and_escalate_count_as_the_same_no_pay_outcome():
+    from app.agent.autonomy import same_outcome
+
+    row = Autonomy(id="V1:freight_charge", vendor_id="V1", exception_type="freight_charge", level="auto", streak=3)
+    assert same_outcome("escalate", "hold") and same_outcome("reject", "hold")
+    assert not same_outcome("approve", "approve_adjusted") and not same_outcome("approve", "hold")
+    assert record_outcome(row, "escalate", "hold", datetime(2026, 3, 25)) == (False, False)
+    assert row.level == AutonomyLevel.AUTO and row.streak == 4

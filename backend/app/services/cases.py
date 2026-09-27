@@ -6,7 +6,14 @@ from datetime import date, datetime, time, timedelta
 
 from sqlmodel import Session, col, select
 
-from app.agent.autonomy import approved_envelope, can_auto_resolve, get_or_create, record_outcome, to_state
+from app.agent.autonomy import (
+    approved_envelope,
+    can_auto_resolve,
+    get_or_create,
+    record_outcome,
+    same_outcome,
+    to_state,
+)
 from app.agent.recommender import CaseContext, Recommender, inr
 from app.config import get_settings
 from app.db import get_engine, get_state, set_state
@@ -422,7 +429,7 @@ class CaseService:
                     resolved_by=req.resolved_by,
                     resolved_at=when,
                     agent_action=Action(agent_action) if agent_action else None,
-                    agreed_with_agent=(agent_action == req.decision) if agent_action else None,
+                    agreed_with_agent=same_outcome(agent_action, req.decision) if agent_action else None,
                 ).model_dump(mode="json")
 
                 row = get_or_create(session, case.vendor_id, case.primary_type)

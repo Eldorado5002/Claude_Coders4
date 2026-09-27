@@ -2,6 +2,8 @@
 
 suggest → auto after `required_streak` consecutive accepted recommendations.
 Any overrule drops it back to suggest. Hard-control types are locked forever.
+"Accepted" means the same payment outcome: pay in full, pay a corrected amount, or don't
+pay (hold / escalate / reject are all "don't pay" — they differ in workflow, not money).
 Auto-resolution also needs: memory-grounded recommendation, high confidence, no
 blocking control, a normal anomaly score, and (for money-out actions) an amount
 inside the envelope humans have already approved for this vendor × type.
@@ -18,6 +20,17 @@ from app.schemas import HARD_CONTROL_TYPES, Action, AutonomyLevel, AutonomyState
 AUTO_ACTIONS = {Action.APPROVE, Action.APPROVE_ADJUSTED, Action.HOLD}
 MONEY_OUT = {Action.APPROVE, Action.APPROVE_ADJUSTED}
 ANOMALY_BLOCK = 0.9
+OUTCOME = {
+    Action.APPROVE: "pay",
+    Action.APPROVE_ADJUSTED: "pay_adjusted",
+    Action.HOLD: "no_pay",
+    Action.ESCALATE: "no_pay",
+    Action.REJECT: "no_pay",
+}
+
+
+def same_outcome(a: str | None, b: str | None) -> bool:
+    return a is not None and b is not None and OUTCOME[Action(a)] == OUTCOME[Action(b)]
 
 
 def autonomy_id(vendor_id: str, exc_type: str) -> str:
@@ -77,7 +90,7 @@ def record_outcome(row: Autonomy, agent_action: str | None, human_action: str, w
     row.updated_at = when
     if agent_action is None:
         return promoted, demoted
-    if agent_action == human_action:
+    if same_outcome(agent_action, human_action):
         row.accepted += 1
         row.streak += 1
         if row.level == AutonomyLevel.SUGGEST and row.streak >= required:

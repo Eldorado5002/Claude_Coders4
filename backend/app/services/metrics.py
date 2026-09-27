@@ -8,6 +8,7 @@ from pathlib import Path
 
 from sqlmodel import Session, select
 
+from app.agent.autonomy import same_outcome
 from app.config import BACKEND_DIR, get_settings
 from app.models import ExceptionCase, Invoice
 from app.schemas import Action, ExceptionType, Kpis, Metrics, TypeBreakdown, WeeklyPoint
@@ -23,9 +24,9 @@ def case_outcome(case: ExceptionCase, truth: dict) -> dict:
     touchless = case.status == "auto_resolved"
     res = case.resolution or {}
     decided = case.status == "resolved" and bool(rec) and res.get("resolved_by", "") != "Precedent (auto)"
-    agreed = decided and rec.get("action") == res.get("decision")
+    agreed = decided and same_outcome(rec.get("action"), res.get("decision"))
     false_approval = was_auto and rec.get("action") in MONEY_OUT and truth.get("decision") not in MONEY_OUT
-    correct = rec.get("action") == truth.get("decision")
+    correct = same_outcome(rec.get("action"), truth.get("decision"))
     return {
         "touchless": touchless,
         "was_auto": was_auto,
@@ -128,11 +129,11 @@ def compute_metrics(session: Session, memories: int) -> Metrics:
     ]
     assumptions = [
         "Touchless = exceptions the agent resolved on its own under earned autonomy (no human action).",
-        "Acceptance = the clerk's decision matched the agent's recommendation.",
+        "Acceptance = the clerk's decision had the same payment outcome as the agent's recommendation (pay in full / pay adjusted / don't pay).",
         f"Minutes saved assumes {MANUAL_MIN:g} min per manual exception and {CONFIRM_MIN:g} min to confirm an "
         "accepted recommendation.",
         "Learning curve: replay of the full 26-week timeline; 'correct' = recommendation matched the ground-truth "
-        "decision. Memory OFF uses the same LLM with no Hindsight memory.",
+        "payment outcome. Memory OFF uses the same LLM with no Hindsight memory.",
     ]
     if ev:
         assumptions.append(f"Replay evaluation run on {ev.get('generated_at', '')[:10]}: {ev.get('summary', '')}")

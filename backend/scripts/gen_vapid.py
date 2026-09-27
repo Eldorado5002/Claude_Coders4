@@ -25,8 +25,9 @@ def main(force: bool) -> None:
         return
     key = ec.generate_private_key(ec.SECP256R1())
     private = b64url(key.private_numbers().private_value.to_bytes(32, "big"))
-    public = b64url(key.public_key().public_bytes(serialization.Encoding.X962,
-                                                  serialization.PublicFormat.UncompressedPoint))
+    public = b64url(
+        key.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+    )
     updates = {"VAPID_PUBLIC_KEY": public, "VAPID_PRIVATE_KEY": private}
     out, seen = [], set()
     for l in lines:

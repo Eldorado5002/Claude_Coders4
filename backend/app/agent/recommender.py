@@ -127,9 +127,11 @@ def case_brief(ctx: CaseContext) -> str:
 QUESTION = (
     "How should the AP team resolve this exception? Use how the team resolved similar exceptions before — this "
     "vendor first, then the same exception type — and quote the exact limit or condition they applied. "
-    "Actions: approve (pay as invoiced), approve_adjusted (pay a corrected amount; give it), hold (send back / wait), "
-    "reject, escalate. If no precedent really applies, set precedent_found=false, choose hold or escalate, and keep "
-    "confidence below 0.5."
+    "Actions: approve = pay as invoiced; approve_adjusted = pay a corrected amount (give it); hold = don't pay yet — "
+    "send back to the vendor for justification, a revised invoice or missing goods (use this when a known limit or "
+    "agreement is exceeded); reject = never pay (e.g. duplicate); escalate = needs a manager or treasury (bank "
+    "changes, approval limits, new vendors, suspected fraud). If no precedent really applies, set "
+    "precedent_found=false, choose hold or escalate, and keep confidence below 0.5."
 )
 
 NO_MEMORY_SYSTEM = (

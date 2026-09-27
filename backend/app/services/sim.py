@@ -12,6 +12,7 @@ from datetime import timedelta
 
 from sqlmodel import Session, col, select
 
+from app.agent.autonomy import same_outcome
 from app.config import get_settings
 from app.db import get_engine, get_state, set_state
 from app.models import ExceptionCase, Invoice
@@ -58,7 +59,7 @@ class Simulator:
             for c in rows:
                 truth = self._truth(session, c)
                 if c.status == CaseStatus.AUTO_RESOLVED:
-                    if c.resolution and c.resolution.get("decision") == truth["decision"]:
+                    if c.resolution and same_outcome(c.resolution.get("decision"), truth["decision"]):
                         continue  # audit passed
                     reason = f"Audit override: {truth['reason']}"
                 else:
