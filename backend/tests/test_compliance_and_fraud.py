@@ -218,3 +218,14 @@ def test_risk_benford_and_compliance_endpoints(env):
 
         kpis = client.get("/api/metrics").json()["kpis"]
         assert "msme_open_at_risk" in kpis and "msme_tax_at_risk" in kpis
+
+
+def test_captured_dates_are_parsed_with_the_locale():
+    from app.services.capture import parse_invoice_date
+
+    # the model said November 4th; an Indian invoice printing 04/11/2026 means 4 November, a US one 11 April
+    assert parse_invoice_date("04/11/2026", "2026-11-04") == date(2026, 11, 4)
+    assert parse_invoice_date("04/11/2026", "2026-11-04", day_first=False) == date(2026, 4, 11)
+    assert parse_invoice_date("25/03/26", "2026-03-25", day_first=False) == date(2026, 3, 25)  # unambiguous
+    assert parse_invoice_date("4 Nov 2026", "2026-11-04") == date(2026, 11, 4)  # words: trust the model
+    assert parse_invoice_date(None, "not a date") is None

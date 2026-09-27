@@ -1,0 +1,154 @@
+{
+  "dataset": "katanaml-org/invoices-donut-data-v1 (validation split)",
+  "source": "https://huggingface.co/datasets/katanaml-org/invoices-donut-data-v1",
+  "model": "gemini-3.1-flash-lite",
+  "system_prompt": "You extract data from supplier invoices. Read the document carefully and return every field exactly as printed. vendor_name is the seller's company name only, without its address. Dates on these invoices are printed MM/DD/YYYY; return them as ISO YYYY-MM-DD. Amounts are plain numbers: drop currency symbols and thousands separators, and read a decimal comma as a decimal point (889,20 -> 889.20). The bank account is the IBAN if one is printed. If a field is not printed, use null.",
+  "invoices": 50,
+  "extracted": 50,
+  "note": "Two rows have flattened ground truth that labels only the first line item; their header fields and totals are scored, their line items are not.",
+  "failed": 0,
+  "fields": {
+    "invoice_number": {
+      "correct": 50,
+      "total": 50,
+      "accuracy": 1.0
+    },
+    "invoice_date": {
+      "correct": 50,
+      "total": 50,
+      "accuracy": 1.0
+    },
+    "vendor_name": {
+      "correct": 50,
+      "total": 50,
+      "accuracy": 1.0
+    },
+    "total": {
+      "correct": 50,
+      "total": 50,
+      "accuracy": 1.0
+    },
+    "bank_account": {
+      "correct": 39,
+      "total": 50,
+      "accuracy": 0.78,
+      "label_errors": 11,
+      "adjudicated_accuracy": 1.0,
+      "adjudication": "When the extracted IBAN passes the ISO 13616 mod-97 checksum and the dataset's label fails it, the label is wrong (an OCR slip such as S read as 5, or a repeated digit run); we count those as correct."
+    },
+    "line_count": {
+      "correct": 48,
+      "total": 48,
+      "accuracy": 1.0
+    },
+    "lines": {
+      "correct": 194,
+      "total": 196,
+      "accuracy": 0.9898
+    },
+    "invoice_date_model_iso": {
+      "correct": 43,
+      "total": 50,
+      "accuracy": 0.86
+    }
+  },
+  "all_key_fields_correct": {
+    "fields": [
+      "invoice_number",
+      "invoice_date",
+      "vendor_name",
+      "total"
+    ],
+    "invoices": 50,
+    "rate": 1.0
+  },
+  "latency_ms": {
+    "p50": 2939,
+    "p95": 3508,
+    "mean": 2927
+  },
+  "cost_usd": {
+    "total": 0.05315,
+    "per_invoice": 0.001063
+  },
+  "misses": [
+    {
+      "index": 4,
+      "bank_account": {
+        "expected": "GB27XRO22702702939702011",
+        "got": "GB27XROJ22702939702011"
+      }
+    },
+    {
+      "index": 11,
+      "bank_account": {
+        "expected": "GB135MWG74801940420584",
+        "got": "GB13SMWG74801940420584"
+      }
+    },
+    {
+      "index": 16,
+      "bank_account": {
+        "expected": "GB21ZEZG695359535709532307",
+        "got": "GB21ZEZG69535709532307"
+      }
+    },
+    {
+      "index": 21,
+      "bank_account": {
+        "expected": "GB69VHQ531668424046807",
+        "got": "GB69VHQS31668424046807"
+      }
+    },
+    {
+      "index": 23,
+      "bank_account": {
+        "expected": "GB60LA0W81233191361598",
+        "got": "GB60LAOW81233191361598"
+      }
+    },
+    {
+      "index": 35,
+      "bank_account": {
+        "expected": "GB50QA5L35790297004591",
+        "got": "GB50QASL35790297004591"
+      }
+    },
+    {
+      "index": 38,
+      "bank_account": {
+        "expected": "GB89DNYK55635635059269556",
+        "got": "GB89DNYK55635059269556"
+      }
+    },
+    {
+      "index": 41,
+      "bank_account": {
+        "expected": "GB63BMAU124512451382016568",
+        "got": "GB63BMAU12451382016568"
+      }
+    },
+    {
+      "index": 42,
+      "bank_account": {
+        "expected": "GB53QIPA7131313865022785",
+        "got": "GB53QIPA71313865022785"
+      }
+    },
+    {
+      "index": 45,
+      "bank_account": {
+        "expected": "GB020NNL63005814637467",
+        "got": "GB02ONNL63005814637467"
+      }
+    },
+    {
+      "index": 47,
+      "bank_account": {
+        "expected": "GB490KCD66731511692442",
+        "got": "GB49OKCD66731511692442"
+      }
+    }
+  ],
+  "errors": []
+}

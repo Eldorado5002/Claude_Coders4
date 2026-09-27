@@ -29,6 +29,7 @@ class CapturedInvoice(BaseModel):
     vendor_name: str
     vendor_gstin: str | None = Field(description="Supplier GSTIN (15 chars) if printed, else null")
     invoice_number: str
+    invoice_date_printed: str | None = Field(description="The invoice date exactly as printed, e.g. 04/11/2026")
     invoice_date: str = Field(description="ISO date YYYY-MM-DD")
     po_number: str | None = Field(description="Buyer PO number if printed, else null")
     lines: list[CapturedLine]
@@ -43,6 +44,30 @@ SYSTEM = (
     "You extract data from Indian GST tax invoices. Read the document carefully and return every field exactly as "
     "printed. Amounts are in rupees without symbols or commas. If a field is not printed, use null."
 )
+
+
+DAY_FIRST = True  # Indian invoices print DD/MM/YYYY
+NUMERIC_DATE = re.compile(r"^\s*(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{2,4})\s*$")
+
+
+def parse_invoice_date(printed: str | None, iso: str, *, day_first: bool = DAY_FIRST) -> date | None:
+    """The model reads the date; code decides what it means. An all-numeric date such as 04/11/2026 is
+    ambiguous and vision models apply whichever order they favour, whatever the prompt says, so we parse
+    it with the locale. Anything else (e.g. '4 Nov 2026') falls back to the model's ISO reading."""
+    m = NUMERIC_DATE.match(printed or "")
+    if m:
+        a, b, y = (int(g) for g in m.groups())
+        day, month = (a, b) if day_first else (b, a)
+        if month > 12 >= day:  # the printed numbers themselves settle it
+            day, month = month, day
+        try:
+            return date(y + 2000 if y < 100 else y, month, day)
+        except ValueError:
+            pass
+    try:
+        return date.fromisoformat(iso[:10])
+    except ValueError:
+        return None
 
 
 def _match_vendor(session: Session, cap: CapturedInvoice) -> Vendor | None:
@@ -96,10 +121,7 @@ async def capture_invoice(data: bytes, mime: str) -> CaptureResult:
                 if SequenceMatcher(None, best["description"].lower(), l["description"].lower()).ratio() > 0.6:
                     l["sku"] = best["sku"]
         sub, tax, _ = totals(lines)
-        try:
-            inv_date = date.fromisoformat(cap.invoice_date[:10])
-        except ValueError:
-            inv_date = today
+        inv_date = parse_invoice_date(cap.invoice_date_printed, cap.invoice_date) or today
         count = len(session.exec(select(Invoice).where(col(Invoice.id).like("INV-C%"))).all())
         inv = Invoice(
             id=f"INV-C{count + 1:03d}",
