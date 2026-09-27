@@ -2,8 +2,8 @@
   {
     "event": "exception.created",
     "data": {
-      "id": "EXC-0012",
-      "status": "open",
+      "id": "EXC-0034",
+      "status": "auto_resolved",
       "primary_type": "freight_charge",
       "issue_types": [
         "freight_charge"
@@ -11,55 +11,57 @@
       "vendor": {
         "id": "V001",
         "name": "Shree Balaji Steel Traders Pvt Ltd",
-        "gstin": "36AAECS4821K1Z3",
+        "gstin": "36ASICS1238O1ZX",
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1231",
-      "invoice_total": 241428.0,
-      "amount_at_risk": 4543.0,
-      "created_at": "2026-03-18T09:30:00",
+      "invoice_number": "SBST/2627/1162",
+      "invoice_total": 69101.32,
+      "amount_at_risk": 4248.0,
+      "created_at": "2026-04-22T09:00:00",
       "recommended_action": "approve",
-      "confidence": 0.91,
-      "autonomy_level": "suggest",
-      "blocking": false
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
     }
   },
   {
     "event": "exception.updated",
     "data": {
-      "id": "EXC-0011",
+      "id": "EXC-0034",
       "status": "auto_resolved",
-      "primary_type": "rounding_difference",
+      "primary_type": "freight_charge",
       "issue_types": [
-        "rounding_difference"
+        "freight_charge"
       ],
       "vendor": {
-        "id": "V005",
-        "name": "Deccan Freight Carriers",
-        "gstin": "36AAJFD8812L1Z6",
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
         "city": "Hyderabad",
-        "category": "logistics"
+        "category": "raw_materials"
       },
-      "invoice_number": "DFC/0927",
-      "invoice_total": 31864.0,
-      "amount_at_risk": 4.0,
-      "created_at": "2026-03-17T16:15:00",
+      "invoice_number": "SBST/2627/1162",
+      "invoice_total": 69101.32,
+      "amount_at_risk": 4248.0,
+      "created_at": "2026-04-22T09:00:00",
       "recommended_action": "approve",
       "confidence": 0.95,
       "autonomy_level": "auto",
-      "blocking": false
+      "blocking": false,
+      "msme_days_left": null
     }
   },
   {
     "event": "memory.retained",
     "data": {
-      "id": "mem_7f3a91",
-      "kind": "observation",
-      "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
+      "id": "bd9c095a-71fb-4be1-9230-7de36c5dc32f",
+      "kind": "experience",
+      "text": "Precedent (AP agent) approved invoice SBST/2627/1162 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-04-22 | Involving: Precedent (AP agent), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,600.00 is within the ₹5,000.00 per trip agreement limit.",
       "vendor_id": "V001",
       "exception_type": "freight_charge",
-      "occurred_at": "2026-03-12T11:20:00"
+      "occurred_at": "2026-04-22T09:02:05Z"
     }
   },
   {
@@ -68,20 +70,20 @@
       "vendor_id": "V001",
       "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
       "exception_type": "freight_charge",
-      "level": "suggest",
-      "streak": 2,
+      "level": "auto",
+      "streak": 4,
       "required_streak": 3,
-      "accepted": 2,
+      "accepted": 4,
       "overruled": 1,
-      "auto_resolved": 0,
-      "updated_at": "2026-03-12T11:20:00"
+      "auto_resolved": 3,
+      "updated_at": "2026-04-22T09:02:05"
     }
   },
   {
     "event": "sim.changed",
     "data": {
-      "stage": "week3",
-      "sim_date": "2026-03-18",
+      "stage": "twist",
+      "sim_date": "2026-04-27",
       "busy": false,
       "stages": [
         {
@@ -103,14 +105,14 @@
           "label": "Week 8",
           "description": "Earned autonomy",
           "sim_date": "2026-04-22",
-          "reached": false
+          "reached": true
         },
         {
           "id": "twist",
           "label": "The twist",
           "description": "Controls hold",
           "sim_date": "2026-04-27",
-          "reached": false
+          "reached": true
         }
       ]
     }
@@ -118,23 +120,23 @@
   {
     "event": "memory.revoked",
     "data": {
-      "case_id": "EXC-0042",
+      "case_id": "EXC-0034",
       "vendor": {
-        "id": "V017",
-        "name": "Indus Logistics & Warehousing",
-        "gstin": "27ZCCCI8712C1Z0",
-        "city": "Nagpur",
-        "category": "logistics"
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
       },
       "exception_type": "freight_charge",
       "decision": "approve",
-      "reason": "Fuel surcharge of 4.7% is within the 6% allowed in the Indus rate contract.",
-      "taught_by": "Rahul (AP)",
-      "taught_at": "2026-04-24T11:40:00",
-      "auto": false,
+      "reason": "Auto-resolved under earned autonomy. The freight charge of ₹3,600.00 is well within the standing agreement limit of ₹5,000.00 per trip for Shree Balaji Steel Traders Pvt Ltd (V001), consistent with multiple past approvals for this vendor.",
+      "taught_by": "Precedent (auto)",
+      "taught_at": "2026-04-22T09:02:05",
+      "auto": true,
       "revoked": true,
-      "revoked_by": "Sneha (AP Lead)",
-      "revoke_reason": "Wrong: freight is capped at Rs 5,000 per trip."
+      "revoked_by": "Meera (AP lead)",
+      "revoke_reason": null
     }
   }
 ]

@@ -11,7 +11,7 @@
 
 *Built on **Hindsight** agent memory · HackwithHyderabad 3.0 · Team **Claude_Coders4***
 
-**With memory, its recommendations match the AP clerk 96% of the time. Without memory, 35%.**
+**With memory, its recommendations match the AP clerk 98% of the time. Without memory, 50%.**
 
 </div>
 
@@ -26,10 +26,10 @@ Finance teams solve the same invoice problems again and again. The know-how sits
 Precedent checks every invoice, recalls how the team handled similar cases before using Hindsight memory, recommends a decision **with the past cases as proof**, and learns from every decision a human makes.
 
 ### The twist
-It **earns autonomy**. Once it has been right often enough for a vendor, it resolves those invoices on its own. Hard financial controls stay in code, where memory can never override them.
+It **earns autonomy**, and it has to **prove it statistically**. Once it has been right often enough for a vendor, it resolves those invoices on its own, but only at a confidence level where the evidence guarantees fewer than 5% wrong payments. Hard financial controls stay in code, where memory can never override them.
 
 ### The proof
-We replayed 26 weeks of invoices. With memory, our agent matched the clerk's decision **96%** of the time, against **35%** without it. It resolved **55%** of exceptions by itself and made **zero** wrong payments.
+We replayed 26 weeks of invoices. With memory, our agent matched the clerk's decision **98%** of the time, against **50%** without it. It resolved **54%** of exceptions by itself and made **zero** wrong payments.
 
 ## Contents
 
@@ -37,7 +37,7 @@ We replayed 26 weeks of invoices. With memory, our agent matched the clerk's dec
 |---|---|---|
 | 1. [The problem](#the-problem) | 6. [How it works](#how-it-works) | 10. [Run it yourself](#run-it-yourself) |
 | 2. [What Precedent does](#what-precedent-does) | 7. [Every Hindsight feature we use](#every-hindsight-feature-we-use) | 11. [Tech stack](#tech-stack) |
-| 3. [Memory is the star](#memory-is-the-star) | 8. [Safety and trust](#safety-and-trust) | 12. [What's next](#whats-next) |
+| 3. [Memory is the star](#memory-is-the-star) | 8. [Safety, fraud and compliance](#safety-fraud-and-compliance) | 12. [What's next](#whats-next) |
 | 4. [Results](#results) | 9. [Highlights at a glance](#highlights-at-a-glance) | 13. [Team](#team) |
 | 5. [The demo in five acts](#the-demo-in-five-acts) | | |
 
@@ -65,7 +65,7 @@ None of this is written down. When Priya is on leave or changes jobs, the knowle
 - **Invoice-reading (OCR) tools** read the invoice but don't know how exceptions are resolved.
 - **Chat assistants** are stateless: every decision is forgotten as soon as it's made.
 
-The cost is real: slow payments, missed early-payment discounts, inconsistent decisions, and exposure to **duplicate payments and bank-detail fraud**.
+The cost is real: slow payments, missed early-payment discounts, inconsistent decisions, exposure to **duplicate payments and bank-detail fraud**, and in India, **lost tax deductions** when small suppliers are paid late under Section 43B(h).
 
 ## What Precedent does
 
@@ -76,27 +76,27 @@ We built an agent that works alongside Priya in a simple loop:
   <img alt="The Precedent loop: invoice arrives, 3-way match, recall precedent from Hindsight, recommend with proof, the clerk or the agent decides, and the decision becomes memory for the next recall." src="docs/assets/diagram-loop-light.svg">
 </picture>
 
-1. **Match.** Every invoice is checked line by line against its PO and goods receipt. Mismatches become exceptions, sorted into 10 types: price, quantity, freight, GST, rounding, missing PO, and four fraud and approval controls.
+1. **Match.** Every invoice is checked line by line against its PO and goods receipt. Mismatches become exceptions, sorted into 12 types: price, quantity, freight, GST, rounding, missing PO, and six fraud, compliance and approval controls.
 2. **Recall.** For each exception, Precedent asks Hindsight: *how did our team resolve this vendor's cases, and this type of exception, before?*
 3. **Recommend.** It proposes **approve**, **approve a corrected amount**, **hold**, **reject** or **escalate**, with a confidence score and the exact memories it relied on.
 4. **Learn.** Priya approves in one click, or corrects it and says why. That decision goes back into memory, so the next similar case is handled better.
 
-**Earned autonomy.** Every *vendor × exception type* pair starts in *suggest* mode. After **3 correct recommendations in a row** it is promoted to **auto**, and Precedent resolves those cases by itself. **A single mistake** demotes it again. We also cap autonomy: the agent never pays more than a human has already approved for that pair.
+**Earned autonomy, with a certificate.** Every *vendor × exception type* pair starts in *suggest* mode. After **3 correct recommendations in a row** it is promoted to **auto**, and **a single mistake** demotes it again. The agent never pays more than a human has already approved for that pair. On top of that, a statistical **autonomy certificate** decides how sure a payment recommendation must be before it may be automatic: it uses an exact Clopper–Pearson bound so that, with 95% confidence, fewer than 5% of automatic payments are wrong. Until there is enough evidence, only recommendations at confidence 0.95 or higher qualify.
 
 > [!IMPORTANT]
-> **Memory can never override a hard control.** Duplicate invoices, bank-account changes, first-time vendors and invoices over ₹5,00,000 are caught by plain code *before* any AI runs, and they always go to a human.
+> **Memory can never override a hard control.** Duplicate invoices (including reformatted or resubmitted invoice numbers), bank-account changes, a GSTIN that fails its checksum or doesn't match the vendor, a missing e-invoice IRN, first-time vendors and invoices over ₹5,00,000 are caught by plain code *before* any AI runs, and they always go to a human.
 
 ## Memory is the star
 
-The quickest way to see what memory adds is to ask our agent about the same invoice twice: once without memory, once with it. These are **real outputs**, copied from our runs.
+The quickest way to see what memory adds is to ask our agent about the same invoice twice: once without memory, once with it. These are **real outputs** from the Week 3 snapshot of our demo.
 
 > **An invoice from Shree Balaji Steel** has a ₹4,200 freight line that isn't on the purchase order. Everything else matches.
 
 | | Memory OFF (same LLM, no Hindsight) | Memory ON (Hindsight) |
 |---|---|---|
-| **Recommendation** | **Hold** · confidence 0.40 | **Approve** · confidence 1.00 |
-| **Reasoning** | *"No prior precedent for freight charges not on PO; safest is to hold pending clarification."* | *"Precedents for Shree Balaji Steel Traders Pvt Ltd show that freight charges are approved when under the established cap of ₹5,000.00 per trip. The current charge of ₹4,200.00 falls within this threshold."* |
-| **Evidence shown to the clerk** | None | 1 consolidated **observation** + 3 past approvals by Priya and Arjun |
+| **Recommendation** | **Hold** · confidence 0.40 | **Approve** · confidence 0.95 |
+| **Reasoning** | *"The freight charge is not present on the purchase order, and there is no established precedent or contract terms provided to authorize unlisted charges."* | *"The team has a consistent precedent for Shree Balaji Steel Traders Pvt Ltd (V001) to approve freight charges that are ₹5,000 or less per trip, even when not on the purchase order. The current freight charge of ₹4,200.00 is within this ₹5,000.00 cap."* |
+| **Evidence shown to the clerk** | None | 1 consolidated **observation**, 4 past decisions by Priya, Arjun and Sneha, and 3 records of the agent's own track record |
 
 ### Watch it learn one vendor's rules
 
@@ -104,29 +104,76 @@ Here's how our agent picked up **Shree Balaji Steel**'s freight habit during the
 
 | Day | Freight line | What the agent did | Outcome |
 |---|---|---|---|
-| 0 | ₹3,850 | *Hold* (no memory yet, confidence 0.40) | Priya overruled it: *"our agreement covers freight up to ₹5,000 per trip"*, and that went into memory |
-| 5 · 10 · 16 | ₹4,100 · ₹2,900 · ₹4,200 | *Approve* (confidence 1.00), citing Priya's decision | Accepted 3 times in a row, so it was **promoted to auto** |
-| **23** | **₹7,400** | **Auto-hold**, because it's over the ₹5,000 cap | It learned the *limit*, not just "approve freight" |
-| 30 | ₹3,300 | **Auto-approve** | Resolved with no human touch |
-| 44 | ₹4,650 | *Approve*, but **not** automatically | Higher than any amount a human had approved, so a human confirmed it |
+| 0 | ₹3,850 | *Hold* (no memory yet, confidence 0.30) | Priya overruled it: *"our agreement covers freight up to ₹5,000 per trip"*, and that went into memory |
+| 5 · 10 · 16 | ₹4,100 · ₹2,900 · ₹4,200 | *Approve* (1.00 · 1.00 · 0.95), citing Priya's decision | Accepted 3 times in a row, so it was **promoted to auto** |
+| **23** | **₹7,400** | **Auto-hold** (0.90), because it's over the ₹5,000 cap | It learned the *limit*, not just "approve freight" |
+| 30 · 51 | ₹3,300 · ₹3,600 | **Auto-approve** | Resolved with no human touch |
+| 44 | ₹4,650 | *Approve* (0.95), but **not** automatically | Higher than any amount a human had approved, so a human confirmed it |
 
 We never wrote a rule for "freight up to ₹5,000". The agent learned it from one sentence a clerk typed, applied it in both directions (approve under the cap, hold over it), and stayed within the amounts humans had signed off.
 
 ## Results
 
-To measure this properly, we replayed **26 weeks** of invoices (**266 invoices, 140 exceptions, 25 vendors**) twice: once with Hindsight memory, and once with the **same LLM and no memory**. Months 1–4 build up memory, and months 5–6 are the measurement window.
+To measure this properly, we replayed **26 weeks** of invoices (**576 invoices, 144 exceptions, 25 vendors**) twice: once with Hindsight memory, and once with the **same LLM and no memory**. Months 1–4 build up memory, and months 5–6 are the measurement window.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/learning-curve-dark.svg">
-  <img alt="Learning curve: recommendations matching the clerk rise to 96% with memory versus 35% without, and the share of exceptions the agent resolves on its own rises from 0% to an average of 55% in months 5–6." src="docs/assets/learning-curve-light.svg">
+  <img alt="Learning curve: recommendations matching the clerk rise to 98% with memory versus 50% without in months 5–6, and the share of exceptions the agent resolves on its own rises from 0% to an average of 54% in months 5–6." src="docs/assets/learning-curve-light.svg">
 </picture>
 
 | Months 5–6 | Memory ON | Memory OFF |
 |---|:---:|:---:|
-| Recommendation matches the clerk's decision | **96%** | 35% |
-| Exceptions resolved by the agent on its own | **55%** | 0% |
+| Recommendation matches the clerk's decision | **98%** | 50% |
+| Exceptions resolved by the agent on its own | **54%** | 0% |
 | Money wrongly approved by the agent | **0** | — |
-| Cited memories that are about the same vendor or exception type | **87%** | — |
+| Cited memories that are about the same vendor or exception type | **94%** | — |
+
+### Trust you can check
+
+By the end of the 26 weeks, the agent had earned more than good numbers. It had earned a guarantee.
+
+| Over the full 26 weeks | Result |
+|---|---|
+| **Autonomy certificate** | **Certified** at confidence ≥ 0.75: 73 human-verified payment recommendations, 0 wrong. With 95% confidence the true wrong-payment rate is at most **4.0%** (target 5%) |
+| **Automatic resolutions** | 46, all audited, 0 wrong |
+| **Calibration** | Stated confidence is close to real accuracy: expected calibration error **0.07** over 123 decisions. Every recommendation carries both numbers |
+| **Cost** | **$17 per 1,000 exceptions** with memory ($0.25 without); 58% of cases take the fast path |
+| **Speed** | Median recommendation in **2.7 s** (95th percentile 9.4 s) |
+| **Time saved** | About **820 clerk-minutes** across 144 exceptions |
+
+### Which part of memory does the work?
+
+We wanted to know *why* memory helps, so we ran an ablation study. For 12 simulated weeks, every exception was answered six ways, all reading **the same memory at the same moment with the same LLM**. Only the way past decisions are retrieved differs.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ablation-dark.svg">
+  <img alt="Ablation study on 36 judgement exceptions in weeks 5 to 12: no memory 31 percent, vector RAG 92, Hindsight recall of facts 86, Hindsight recall with observations 83, Hindsight reflect 92, and Precedent's hybrid 83. Only recall with observations made a wrong payment; reflect costs 5 cents per case and hybrid 2.8 cents." src="docs/assets/ablation-light.svg">
+</picture>
+
+What we learned, stated plainly:
+
+- **Having memory is what matters most.** Every way of using past decisions lifts accuracy from about a third to 83–92%.
+- **Nearly every mistake is a cautious one.** Across six variants and 318 answers there was one wrong payment (plain recall, without a reasoning step). Everything else was an unnecessary hold, which costs a human a minute, not money.
+- **`reflect` is the most accurate and the most expensive.** It reasons over memory, directives and mental models, at $0.05 and about 7 seconds per case.
+- **Our hybrid trades a little accuracy for cost.** Routine cases take a recall fast path (about $0.001), and unfamiliar or uncertain ones escalate to `reflect`. It paid for that with three extra holds out of 36, and its cost falls as the agent learns: $0.021 per case by weeks 9–12.
+- **A plain vector store over the same lessons is a strong baseline** on our data. Hindsight earns its place through what raw retrieval doesn't give us: consolidated beliefs with their history, directives enforced inside reasoning, time-anchored recall, a self-writing vendor wiki, and lessons we can forget on request.
+
+Differences of one to three cases between the memory variants are within run-to-run noise (we ran the study twice, before and after a prompt fix, and their order changed); the gap to no memory did not.
+
+### Reading real invoices
+
+Invoice capture is only useful if it reads documents correctly, so we tested it on **50 real scanned invoices we didn't make** (the [katanaml invoices dataset](https://huggingface.co/datasets/katanaml-org/invoices-donut-data-v1) on Hugging Face, validation split). Same model, same schema as the app.
+
+| Field | Correct |
+|---|---|
+| Invoice number | **50 / 50** |
+| Invoice date | **50 / 50** |
+| Seller name | **50 / 50** |
+| Grand total | **50 / 50** |
+| Bank account (IBAN) | **50 / 50** |
+| Line items (quantity, unit price, tax rate) | **194 / 196** |
+
+Two findings changed our code. The model misread 7 ambiguous dates such as *04/11/2021* whatever the prompt said, so the app now extracts the date as printed and **parses it in code with the locale** (day-first for Indian invoices). And 11 of the dataset's own IBAN labels were wrong: they fail the ISO 13616 checksum while our readings pass it. Each invoice takes about 3 seconds and costs about $0.001.
 
 <details>
 <summary><b>How we measured this</b></summary>
@@ -137,10 +184,13 @@ We want these numbers to be easy to trust, so here is exactly how we got them:
 
 - **"Matches"** means the same *payment outcome* as the clerk: pay in full, pay a corrected amount, or don't pay. Hold, escalate and reject all mean "don't pay"; they differ in workflow, not money.
 - **The clerk is simulated.** It follows each invoice's ground-truth decision from our dataset generator. The agent **never sees** that ground truth; it only sees the documents and its memory.
-- **Memory OFF resolves 0% on its own by design**, because autonomy requires memory-backed recommendations. The like-for-like comparison is therefore **96% vs 35%**.
-- **Citation relevance (87%)** is measured over the 131 memories cited in weeks 1–8: the share that mention the same vendor or the same exception type.
+- **Same model for both runs.** The evaluation pins Gemini `3.1-flash-lite` as the first model so memory ON and OFF are judged by the same LLM.
+- **Memory OFF resolves 0% on its own by design**, because autonomy requires memory-backed recommendations. The like-for-like comparison is therefore **98% vs 50%**.
+- **Citation relevance (94%)** is the share of cited memories that mention the same vendor or the same exception type.
 - **Money wrongly approved** counts auto-resolutions that paid out when the correct decision was not to pay. Every auto-resolution is audited during the replay.
-- **It's reproducible.** `uv run python -m scripts.build_demo` rebuilds the whole run, and the raw numbers are in [`backend/data/eval.json`](backend/data/eval.json).
+- **The certificate** counts memory-backed payment recommendations whose outcome a human verified (a clerk's decision, or a passed audit), and tests confidence thresholds from 0.95 downwards in a fixed order ("learn then test"), so trying several thresholds doesn't inflate the error rate.
+- **The ablation** uses a separate database and memory bank. The product agent (hybrid) runs live and the clerk teaches it; five shadow variants answer every exception before it is decided and never write anything. Hard-control cases are decided in code for every variant, so the comparison uses judgement cases only: 53 over the 12 weeks, of which the chart shows the 36 from week 5 on, once memory has something to recall.
+- **It's reproducible.** `uv run python -m scripts.build_demo`, `scripts.ablation` and `scripts.eval_capture` rebuild everything. The raw results are in [`eval.json`](backend/data/eval.json), [`ablation.json`](backend/data/ablation.json) and [`capture_eval.json`](backend/data/capture_eval.json).
 
 </details>
 
@@ -151,14 +201,14 @@ Our live demo tells the story in five short acts. It runs on a simulated calenda
 | Act | What you'll see |
 |---|---|
 | **1**&nbsp;·&nbsp;**Day&nbsp;1** | A brand-new agent. Balaji's invoice has an unexpected ₹3,850 freight line. With no memory, the agent can only say *hold*. Priya approves it and types why. |
-| **2**&nbsp;·&nbsp;**Week&nbsp;3** | A similar invoice arrives. The agent says **approve (1.00)**, quotes the ₹5,000 cap and shows Priya's decision as proof. One click, and Balaji × freight is **promoted to autonomous**. Switch memory **off** and the same invoice drops back to a generic *hold*. |
-| **3**&nbsp;·&nbsp;**Week&nbsp;8** | Balaji's freight invoices now resolve themselves. Four vendor × exception pairs have earned autonomy, and the dashboard shows the learning curve. |
+| **2**&nbsp;·&nbsp;**Week&nbsp;3** | A similar invoice arrives. The agent says **approve (0.95)**, quotes the ₹5,000 cap and shows Priya's decision as proof, in about 2 seconds for a tenth of a cent. One click, and Balaji × freight is **promoted to autonomous**. Switch memory **off** and the same invoice drops back to a generic *hold*. |
+| **3**&nbsp;·&nbsp;**Week&nbsp;8** | Balaji's freight invoices now resolve themselves, and three vendor × exception pairs have earned autonomy. Balaji's profile shows what the agent **believes** about the vendor, how many memories back each belief, and a **vendor wiki page** that Hindsight writes and keeps up to date. |
 | **4**&nbsp;·&nbsp;**The&nbsp;twist** | An invoice that looks routine asks for payment to a **new bank account**, and another is a **resubmitted duplicate**. Despite strong precedent, the hard controls escalate and reject them, citing the rule they enforce and the precedent they overrode. |
-| **5**&nbsp;·&nbsp;**Snap&nbsp;a&nbsp;photo** | We photograph a paper invoice. Gemini vision reads it, it's matched against the PO, and it's **auto-resolved in about 14 seconds**. Upload the same photo again and it's caught as a **duplicate**. |
+| **5**&nbsp;·&nbsp;**Snap&nbsp;a&nbsp;photo** | We photograph a paper invoice. Gemini vision reads it, it's matched against the PO, and it's **auto-resolved in about 11 seconds**. The same invoice without its e-invoice IRN is **held**, one with a tampered GSTIN is **escalated**, and uploading the first photo again is caught as a **duplicate**. |
 
 <p align="center">
   <img src="docs/samples/invoice-balaji-freight.png" alt="Sample GST tax invoice from Shree Balaji Steel used in the photo-capture demo" width="420"/>
-  <br/><sub>The invoice we use in Act 5: a realistic GST tax invoice with a real-format GSTIN, CGST/SGST split and bank details.</sub>
+  <br/><sub>The invoice we use in Act 5: a realistic GST tax invoice with a real-format GSTIN, an e-invoice IRN, a CGST/SGST split and bank details.</sub>
 </p>
 
 ## How it works
@@ -167,7 +217,7 @@ Under the hood, every invoice takes this path:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/diagram-pipeline-dark.svg">
-  <img alt="How an invoice flows: invoice in, 3-way match (clean invoices are paid), hard controls (fired controls go to a human), Hindsight reflect with an anomaly check, earned autonomy, and every decision retained in Hindsight to feed the next one." src="docs/assets/diagram-pipeline-light.svg">
+  <img alt="How an invoice flows: invoice in, 3-way match (clean invoices are paid), hard controls (fired controls go to a human), Hindsight memory with a recall fast path for routine cases and reflect otherwise, plus an anomaly check, earned autonomy, and every decision retained in Hindsight to feed the next one." src="docs/assets/diagram-pipeline-light.svg">
 </picture>
 
 ### The learning loop, step by step
@@ -181,9 +231,11 @@ Under the hood, every invoice takes this path:
 
 | Decision | Why it matters |
 |---|---|
-| **Plain code runs the workflow; AI only answers questions** | Matching, controls, autonomy and money arithmetic are deterministic and tested. The language models only ever return schema-validated JSON. |
-| **Strict JSON, a repair retry, and three-provider failover** | Groq `gpt-oss-120b` → Gemini `3.1-flash-lite` → NVIDIA `nemotron-3-super`. Bad JSON gets one repair attempt; a rate limit or outage moves to the next provider. We saw this work for real when Groq's free tier hit its limit during our evaluation. |
+| **Plain code runs the workflow; AI only answers questions** | Matching, controls, autonomy, statistics and money arithmetic are deterministic and tested. The language models only ever return schema-validated JSON. |
+| **Three routes, cheapest first** | A hard control decides in code with no model call. A routine vendor × type pair takes the **fast path**: Hindsight `recall` anchored at the invoice date, then one LLM call (about $0.001). Everything else, and any fast answer that is ungrounded or unsure, goes to Hindsight `reflect` ($0.05). |
+| **Strict JSON, a repair retry, and three-provider failover** | Groq `gpt-oss-120b` → Gemini `3.1-flash-lite` → NVIDIA `nemotron-3-super`. Bad JSON gets one repair attempt; a rate limit or outage moves to the next provider. |
 | **Money is calculated in code, never by the model** | Corrected payable amounts come from the 3-way match. They match the clerk's amount within ₹1 on every adjusted case in our dataset. |
+| **Confidence is measured, not trusted** | Every recommendation shows its stated confidence and a calibrated one (how often past recommendations at that confidence were right). |
 | **Graceful degradation** | If `reflect()` fails, we fall back to `recall()` + an LLM. If Hindsight is down, we fall back to the LLM alone, and `/api/health` reports it so the app can show a banner. |
 | **Recommendations cached per case and memory mode** | Switching memory on and off in the demo is instant, and we never pay twice for the same answer. |
 | **Live updates** | Server-Sent Events push new exceptions, auto-resolutions, lessons and autonomy promotions to the app the moment they happen. |
@@ -199,27 +251,44 @@ Memory isn't a bolt-on for us; it's the core of the product. Here's every Hindsi
 | **Tags + `document_id`** | `vendor:V001`, `exc:freight_charge` and `decision:approve` scope every read; one document per case means any lesson can be removed on its own | [`memory/store.py`](backend/app/memory/store.py) |
 | **`reflect()` + `response_schema`** | Returns a typed recommendation, not free text | [`agent/recommender.py`](backend/app/agent/recommender.py) |
 | **`based_on` (include facts)** | The exact memories, playbooks and directives used, shown to the clerk as proof | [`memory/store.py`](backend/app/memory/store.py) |
+| **`recall()` with `query_timestamp`** | The fast path for routine cases, anchored at the invoice's date; also the fallback path and the precedent a hard control overrode | [`agent/recommender.py`](backend/app/agent/recommender.py) |
 | **World + experience facts** | What the team did, *and* the agent's own track record ("recommended hold, was overruled") | automatic from `retain()` |
 | **Observations** | Consolidated vendor habits, like *"Balaji freight is approved under ₹5,000 per trip"*, shown on the vendor profile | [`api/routes.py`](backend/app/api/routes.py) |
-| **Directives** | 5 hard rules applied inside every `reflect()`: bank changes, duplicates, new vendors, the approval limit, and rules for evidence | [`memory/store.py`](backend/app/memory/store.py) |
-| **Mental models** | A playbook for each vendor and a team-wide policy, refreshed as memory grows | [`memory/store.py`](backend/app/memory/store.py) |
+| **Observation history** | A **beliefs timeline**: what the agent believes about a vendor, how many memories back it, and which new facts changed it | [`memory/store.py`](backend/app/memory/store.py) |
+| **Knowledge Pages** | A **vendor wiki** that Hindsight writes from the team's lessons and rewrites as they change | [`memory/store.py`](backend/app/memory/store.py) |
+| **Directives** | 7 hard rules applied inside every `reflect()`: bank changes, duplicates, new vendors, the approval limit, e-invoicing, supplier GSTIN, and rules for evidence | [`memory/store.py`](backend/app/memory/store.py) |
+| **Mental models** | A team-wide policy, plus a vendor playbook until that vendor's wiki page exists, refreshed as memory grows | [`memory/store.py`](backend/app/memory/store.py) |
 | **Disposition + entity labels** | A sceptical, literal finance persona, plus a controlled vocabulary of exception types and decisions | [`memory/store.py`](backend/app/memory/store.py) |
-| **`recall()`** | The fallback path, vendor profiles, and the precedent a hard control overrode | [`agent/recommender.py`](backend/app/agent/recommender.py) |
 | **`clone_bank`** | Frozen memory snapshots for each demo act | [`scripts/build_demo.py`](backend/scripts/build_demo.py) |
 | **Documents API (`delete_document`)** | Forgetting a wrong lesson completely | [`memory/store.py`](backend/app/memory/store.py) |
 
 We've written up the full memory design, with examples, in **[`docs/HINDSIGHT.md`](docs/HINDSIGHT.md)**.
 
-## Safety and trust
+## Safety, fraud and compliance
 
-An agent that approves payments has to stay safe even when someone teaches it the wrong thing. We built six layers of protection:
+An agent that approves payments has to stay safe even when someone teaches it the wrong thing, and it has to follow Indian tax rules. Here is what we built.
 
-1. **Hard controls are code.** Duplicates, bank-detail changes, first-time vendors and invoices over ₹5,00,000 are always escalated or rejected, whatever memory says.
-2. **Autonomy stays inside proven limits.** The agent only pays automatically up to the largest amount a human has already approved for that vendor and exception type.
-3. **Unusual invoices slow it down.** A per-vendor **IsolationForest** model flags invoices that don't look like the vendor's history. Confidence drops, and autonomy is blocked for that invoice.
-4. **Every lesson is attributed and reversible.** The lessons list shows who taught what. `POST /api/lessons/{id}/revoke` deletes the lesson from Hindsight (we tested it live: 2 extracted facts went to 0), resets that vendor × type to *suggest*, and discards recommendations built on it.
-5. **Personal data never reaches memory.** Phone numbers, bank account numbers, PAN, Aadhaar, card numbers, emails and UPI IDs are redacted before anything is stored. GSTINs, IFSC codes and invoice numbers are kept, because the business needs them.
-6. **Auto-resolutions are audited.** If an audit disagrees with the agent, that pair is demoted immediately.
+**Seven layers of protection**
+
+1. **Hard controls are code.** Six controls always escalate, hold or reject, whatever memory says: duplicates, bank-detail changes, invalid GSTINs, missing e-invoice IRNs, first-time vendors and invoices over ₹5,00,000.
+2. **Autonomy is certified.** Automatic payment needs an earned per-vendor streak *and* a confidence level the statistics support. If the observed wrong-payment rate ever exceeds the target, auto-approval pauses by itself.
+3. **Autonomy stays inside proven limits.** The agent only pays automatically up to the largest amount a human has already approved for that vendor and exception type.
+4. **Unusual invoices slow it down.** A per-vendor **IsolationForest** model flags invoices that don't look like the vendor's history. Confidence drops, and autonomy is blocked for that invoice.
+5. **Every lesson is attributed and reversible.** The lessons list shows who taught what. `POST /api/lessons/{id}/revoke` deletes the lesson from Hindsight (tested live: 2 extracted facts went to 0), resets that vendor × type to *suggest*, and discards recommendations built on it.
+6. **Personal data never reaches memory.** Phone numbers, bank account numbers, PAN, Aadhaar, card numbers, emails and UPI IDs are redacted before anything is stored. GSTINs, IFSC codes and invoice numbers are kept, because the business needs them.
+7. **Auto-resolutions are audited.** If an audit disagrees with the agent, that pair is demoted immediately.
+
+**Fraud checks**
+
+- **Fuzzy duplicates.** The same invoice resubmitted as `SBST-2526-612` instead of `SBST/2526/0612`, with a `-R` suffix, or with two digits transposed, is caught when it bills the same PO for the same amount. There are zero false alarms across our 576 invoices.
+- **Benford's law.** First-digit analysis of every line amount, for the whole portfolio and per vendor, graded with Nigrini's thresholds.
+- **Vendor risk score** (0–100) combining bank changes, duplicates, identity problems, anomalies, exception rate and Benford deviation, with the reasons spelled out.
+
+**Built for Indian AP**
+
+- **MSME payments, Section 43B(h).** For micro and small suppliers registered on Udyam, Precedent tracks the 15-day deadline (45 days with a written agreement) from the day goods were accepted. It shows the days left and the tax deduction at stake, and can sort the queue by deadline. Any recommendation to hold or escalate warns about the deadline.
+- **GST e-invoicing.** Suppliers above ₹5 crore turnover must issue invoices with an IRN. Without one it isn't a valid tax invoice, so it is held.
+- **GSTIN validation.** The printed GSTIN is checked against its mod-36 checksum and the vendor master. A mismatch is treated as possible impersonation.
 
 ## Highlights at a glance
 
@@ -227,17 +296,17 @@ If you only have a minute, here's how we'd sum up what we delivered in each area
 
 | Criterion | Evidence |
 |---|---|
-| **Innovation** | Not another chatbot: an agent that **earns autonomy** per vendor and exception type, capped by amounts humans have already approved · a problem most teams won't pick (AP exception handling, a real finance function) · **a photo of a paper invoice, auto-resolved in about 14 seconds** · memory that learns *limits*, not just approvals (the ₹7,400 auto-hold) |
-| **Use of Hindsight Memory** | Memory *is* the product: **96% vs 35%** with and without it · 13 Hindsight features in use (see the table above), from `reflect` with typed output and `based_on` citations to observations, directives, mental models, `clone_bank` and document deletion · the agent visibly improves: *hold* on Day 1, *approve* with proof in Week 3, autonomous by Week 8 · full write-up in [`docs/HINDSIGHT.md`](docs/HINDSIGHT.md) |
-| **Technical Implementation** | About 5,000 lines of typed Python · **26 automated tests**, including one that checks the matcher against all 266 invoices, regression tests for the bugs we found in live runs, and a fake memory and LLM so the tests cost nothing · deterministic controls before any AI · three-provider LLM failover, proven under a real rate limit · money calculated in code · graceful degradation · a reproducible evaluation |
-| **User Experience** | Every recommendation explains itself with cited precedents · one-click approve, or correct it with a reason · live updates over SSE · instant demo acts and an instant memory on/off switch · invoice photo capture · push notifications for blocked and auto-resolved invoices |
-| **Real-world Impact** | Solves an everyday finance problem that companies already pay to fix, clearing the *"would someone pay $50/month?"* test · keeps institutional knowledge when staff leave · catches duplicates and bank-detail fraud · built for India from day one (GSTIN, GST 2.0 rates, HSN codes, INR) · a natural path to adoption as an ERP add-on for shared-services finance teams |
+| **Innovation** | Not another chatbot: an agent that **earns autonomy** per vendor and exception type, and must **prove it statistically** before paying on its own · learns *limits*, not just approvals (the ₹7,400 auto-hold) · **a photo of a paper invoice, auto-resolved in about 11 seconds** · built for Indian AP: MSME 43B(h) deadlines, e-invoice IRNs, GSTIN checks |
+| **Use of Hindsight Memory** | Memory *is* the product: **98% vs 50%** with and without it · 15 Hindsight features in use, from `reflect` with typed output and `based_on` citations to observation history, Knowledge Pages, time-anchored `recall`, directives, `clone_bank` and document deletion · an **ablation study** showing which part of memory does the work · full write-up in [`docs/HINDSIGHT.md`](docs/HINDSIGHT.md) |
+| **Technical Implementation** | About 9,500 lines of typed Python · **50 automated tests**, including one that checks the matcher against all 576 invoices, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · capture tested on 50 real invoices · three reproducible evaluations · cost-aware routing, three-provider failover, money in code |
+| **User Experience** | Every recommendation explains itself with cited precedents and a calibrated confidence · one-click approve, or correct it with a reason · a beliefs timeline and a vendor wiki that write themselves · live updates over SSE · instant demo acts and memory switch · invoice photo capture · push notifications |
+| **Real-world Impact** | Solves an everyday finance problem that companies already pay to fix · about **$17 per 1,000 exceptions** in AI and memory costs · keeps institutional knowledge when staff leave · catches duplicates and bank-detail fraud · protects MSME tax deductions · a natural path to adoption as an ERP add-on for shared-services finance teams |
 
 ## Run it yourself
 
 Want to try it? Here's how to run Precedent on your own machine.
 
-**You'll need:** Python 3.12, [uv](https://docs.astral.sh/uv/), a Hindsight Cloud API key, and at least one LLM key (Groq, Gemini or NVIDIA).
+**You'll need:** Python 3.12, [uv](https://docs.astral.sh/uv/), a Hindsight Cloud API key, and at least one LLM key (Groq, Gemini or NVIDIA). Invoice capture needs Gemini.
 
 ```bash
 cd backend
@@ -255,25 +324,31 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 
 | Command | What it does |
 |---|---|
-| `uv run pytest` | Runs the 26 offline tests (no network, no cost) |
+| `uv run pytest` | Runs the 50 offline tests (no network, no cost) |
 | `uv run python -m scripts.smoke --days 10` | A live smoke test against Hindsight and the LLMs |
 | `uv run python -m scripts.build_demo` | Rebuilds every demo snapshot and the memory ON/OFF evaluation (about 20 minutes, live APIs) |
-| `uv run python -m scripts.gen_vapid` | Creates push-notification keys |
-| `uv run python -m scripts.make_charts` | Redraws the learning-curve chart from the evaluation |
+| `uv run python -m scripts.ablation` | Runs the ablation study in its own database and memory bank (about 15 minutes) |
+| `uv run python -m scripts.eval_capture` | Measures capture accuracy on 50 real invoices from Hugging Face |
+| `uv run python -m scripts.calibrate_bpi` | Re-derives the dataset calibration from the BPI Challenge 2019 log |
+| `uv run python -m scripts.make_mocks` | Regenerates the API mocks from the running app |
+| `uv run python -m scripts.make_charts` | Redraws the learning-curve and ablation charts |
 | `uv run python -m scripts.make_diagrams` | Redraws the README diagrams |
+| `uv run python -m scripts.gen_vapid` | Creates push-notification keys |
 
 <details>
-<summary><b>API overview (22 endpoints)</b></summary>
+<summary><b>API overview (29 endpoints)</b></summary>
 
 <br/>
 
-The full contract, with a mock response for every endpoint, is in [`docs/api-contract.md`](docs/api-contract.md) and [`docs/mocks/`](docs/mocks/).
+The full contract, with a real captured response for every endpoint, is in [`docs/api-contract.md`](docs/api-contract.md) and [`docs/mocks/`](docs/mocks/).
 
 | Area | Endpoints |
 |---|---|
-| Exceptions | `GET /api/exceptions` · `GET /api/exceptions/{id}` · `POST /api/exceptions/{id}/recommend` · `POST /api/exceptions/{id}/resolve` |
+| Exceptions | `GET /api/exceptions` (sort by newest, MSME deadline or amount) · `GET /api/exceptions/{id}` · `POST /api/exceptions/{id}/recommend` · `POST /api/exceptions/{id}/resolve` |
 | Memory | `GET /api/memory/recent` · `GET /api/memory/policy` · `GET /api/lessons` · `POST /api/lessons/{id}/revoke` · `POST /api/copilot/ask` |
-| Vendors and autonomy | `GET /api/vendors` · `GET /api/vendors/{id}` · `GET /api/autonomy` |
+| Vendors | `GET /api/vendors` · `GET /api/vendors/{id}` · `GET /api/vendors/{id}/beliefs` · `GET /api/knowledge` · `GET /api/knowledge/{page_id}` |
+| Autonomy | `GET /api/autonomy` · `GET /api/autonomy/certificate` |
+| Fraud and risk | `GET /api/risk` · `GET /api/benford` |
 | Capture | `POST /api/invoices/capture` (photo or PDF) |
 | Dashboard | `GET /api/metrics` |
 | Demo | `GET /api/demo/state` · `POST /api/demo/advance` · `POST /api/demo/reset` |
@@ -282,19 +357,21 @@ The full contract, with a mock response for every endpoint, is in [`docs/api-con
 </details>
 
 <details>
-<summary><b>The data: synthetic, but built to look real</b></summary>
+<summary><b>The data: synthetic, calibrated on a real purchase-to-pay log</b></summary>
 
 <br/>
 
-We generate the data from a fixed seed, so every run is identical:
+We generate the data from a fixed seed, so every run is identical, and we calibrated it on the **BPI Challenge 2019** event log: 1.6 million events and 251,734 purchase-order items from a real multinational's purchase-to-pay process.
 
-- **25 vendors across 8 Indian states**, with valid, checksummed **GSTINs**, IFSC codes and masked bank accounts
+- **25 vendors across 8 Indian states**, with valid, checksummed **GSTINs**, IFSC codes and masked bank accounts. **10 are MSMEs** with Udyam numbers and **12 issue GST e-invoices** with IRNs
 - **Real HSN/SAC codes** and **GST 2.0 rates** (5% / 18%)
-- **233 purchase orders and goods receipts** and **266 invoices** over 26 weeks (March–August 2026)
+- **541 purchase orders and goods receipts** and **576 invoices** over 26 weeks (March–August 2026), of which **144 (25%) are exceptions**
+- **Calibrated timing and volume.** PO-to-goods-receipt and goods-receipt-to-invoice delays follow the real log's distribution (medians of 9 and 26 days), and invoice volume follows its vendor concentration (the top 20% of vendors carry 92% of items). Line amounts pass Benford's test (MAD 0.0088, "acceptable"; the real log scores 0.0048)
+- **Exception rate.** The real log's closest proxy (changed prices or quantities, cancelled invoices) is 13%. We use 25% on purpose, so the replay has enough exceptions to learn from
 - **Recurring vendor habits:** separate freight lines, price-escalation clauses, monsoon transit loss, partial shipments billed in full, the old GST rate still being charged, no-PO utility bills, fuel surcharges
-- **Traps:** duplicate submissions, bank-account-change fraud attempts, a first-time vendor, and invoices over the approval limit
+- **Traps:** exact and fuzzy duplicate submissions, bank-account-change fraud attempts, a first-time vendor, invoices over the approval limit, and a missing e-invoice IRN
 
-Our matching engine independently finds **exactly** the issues the generator planted, on all 266 invoices, and that check is part of the test suite.
+Our matching engine independently finds **exactly** the issues the generator planted, on all 576 invoices, and that check is part of the test suite.
 
 </details>
 
@@ -308,18 +385,18 @@ backend/
   app/
     data/         seeded dataset generator + vendor catalog
     matching/     3-way match engine
-    guardrails/   hard financial controls
+    guardrails/   hard financial controls (duplicates, bank, GSTIN, IRN, limits)
     memory/       Hindsight wrapper + personal-data redaction
-    llm/          OpenAI-compatible router with failover
-    ml/           per-vendor anomaly scoring
-    agent/        recommender + earned-autonomy ladder
-    services/     case lifecycle, simulator, demo stages, metrics, capture, push
+    llm/          OpenAI-compatible router with failover and cost tracking
+    ml/           per-vendor anomaly scoring + Benford's law
+    agent/        recommender, earned autonomy, certificate, calibration, RAG baseline
+    services/     case lifecycle, simulator, demo stages, metrics, capture, compliance, risk, push
     api/          FastAPI routes
-  scripts/        demo builder, charts, smoke test, sample invoice, VAPID keys
-  tests/          26 offline tests with a fake memory and fake LLM
-  data/           demo snapshots + evaluation results
+  scripts/        demo builder, ablation, capture eval, BPI calibration, charts, mocks, smoke test
+  tests/          50 offline tests with a fake memory and fake LLM
+  data/           demo snapshots, BPI calibration + evaluation results
 frontend/         Progressive Web App
-docs/             Hindsight write-up, API contract, mocks, charts, sample invoice
+docs/             Hindsight write-up, API contract, mocks, charts, sample invoices
 ```
 
 </details>
@@ -330,14 +407,14 @@ For reference, here's everything we built Precedent with, and why we chose it.
 
 | Layer | Technology | Why we chose it |
 |---|---|---|
-| **Agent memory** | Hindsight Cloud (`hindsight-client`) | Retain, recall and reflect with tags, directives, observations and mental models: the heart of the product |
+| **Agent memory** | Hindsight Cloud (`hindsight-client`) | Retain, recall and reflect with tags, directives, observations, mental models and Knowledge Pages: the heart of the product |
 | **Backend** | Python 3.12 · FastAPI · Pydantic v2 · SQLModel + SQLite · uv | Typed end to end; FastAPI serves REST and live Server-Sent Events from one app |
 | **Language models** | Groq `openai/gpt-oss-120b` → Google Gemini `gemini-3.1-flash-lite` → NVIDIA `nemotron-3-super-120b-a12b` | One OpenAI-compatible router with automatic failover, so a rate limit never stops the agent |
-| **Vision** | Gemini `gemini-3.1-flash-lite` | Reads a photo or PDF of a paper invoice into a typed invoice in about 4 seconds |
-| **Machine learning** | scikit-learn IsolationForest | A per-vendor anomaly score that lowers confidence on unusual invoices |
+| **Vision** | Gemini `gemini-3.1-flash-lite` | Reads a photo or PDF of a paper invoice into a typed invoice in about 3 seconds |
+| **Machine learning and statistics** | scikit-learn IsolationForest · SciPy | Per-vendor anomaly scores; exact Clopper–Pearson bounds for the autonomy certificate |
 | **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications |
 | **Notifications** | Web Push (VAPID) | Alerts for blocked and auto-resolved invoices |
-| **Quality** | pytest · ruff · API contract generated from the Pydantic models | 26 offline tests; the frontend's types come straight from the backend |
+| **Quality** | pytest · ruff · API contract generated from the Pydantic models | 50 offline tests; the frontend's types come straight from the backend |
 
 ## What's next
 

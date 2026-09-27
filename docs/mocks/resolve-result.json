@@ -1,213 +1,193 @@
 {
   "exception": {
-    "id": "EXC-0012",
+    "id": "EXC-0040",
     "status": "resolved",
-    "primary_type": "freight_charge",
+    "primary_type": "duplicate_invoice",
     "issue_types": [
-      "freight_charge"
+      "duplicate_invoice"
     ],
     "vendor": {
-      "id": "V001",
-      "name": "Shree Balaji Steel Traders Pvt Ltd",
-      "gstin": "36AAECS4821K1Z3",
+      "id": "V005",
+      "name": "Deccan Freight Carriers",
+      "gstin": "36EGSFD1100V1ZI",
       "city": "Hyderabad",
-      "category": "raw_materials"
+      "category": "logistics"
     },
-    "invoice_number": "SBST/2526/1231",
-    "invoice_total": 241428.0,
-    "amount_at_risk": 4543.0,
-    "created_at": "2026-03-18T09:30:00",
-    "recommended_action": "approve",
-    "confidence": 0.91,
-    "autonomy_level": "suggest",
-    "blocking": false,
+    "invoice_number": "DFC/2627/0534",
+    "invoice_total": 47151.26,
+    "amount_at_risk": 47151.26,
+    "created_at": "2026-04-27T09:42:00",
+    "recommended_action": "reject",
+    "confidence": 0.99,
+    "autonomy_level": "locked",
+    "blocking": true,
+    "msme_days_left": null,
     "invoice": {
-      "id": "INV-0094",
-      "invoice_number": "SBST/2526/1231",
-      "vendor_id": "V001",
-      "po_number": "PO-2026-0081",
-      "invoice_date": "2026-03-17",
-      "due_date": "2026-05-01",
+      "id": "INV-0175",
+      "invoice_number": "DFC/2627/0534",
+      "vendor_id": "V005",
+      "po_number": "PO-2026-0115",
+      "invoice_date": "2026-04-09",
+      "due_date": "2026-04-24",
       "lines": [
         {
           "line_no": 1,
-          "sku": "MS-PL-10",
-          "description": "MS Plate 10mm IS2062 E250",
-          "hsn": "7208",
-          "qty": 2.0,
-          "uom": "MT",
-          "unit_price": 58000.0,
-          "tax_rate": 18.0,
-          "amount": 116000.0
-        },
-        {
-          "line_no": 2,
-          "sku": "MS-ANG-50",
-          "description": "MS Angle 50x50x6mm",
-          "hsn": "7216",
-          "qty": 1.5,
-          "uom": "MT",
-          "unit_price": 56500.0,
-          "tax_rate": 18.0,
-          "amount": 84750.0
-        },
-        {
-          "line_no": 3,
-          "sku": null,
-          "description": "Freight charges - Medchal to Unit 2",
+          "sku": "FTL-16",
+          "description": "FTL 16MT Hyderabad - Pune",
           "hsn": "996511",
           "qty": 1.0,
-          "uom": "trip",
-          "unit_price": 3850.0,
-          "tax_rate": 18.0,
-          "amount": 3850.0
+          "uom": "Trip",
+          "unit_price": 44905.96,
+          "tax_rate": 5.0,
+          "amount": 44905.96
         }
       ],
-      "subtotal": 204600.0,
-      "tax_total": 36828.0,
-      "total": 241428.0,
+      "subtotal": 44905.96,
+      "tax_total": 2245.3,
+      "total": 47151.26,
       "currency": "INR",
       "bank_account": {
-        "bank_name": "HDFC Bank",
-        "account_number": "XXXXXX4521",
-        "ifsc": "HDFC0001234"
+        "bank_name": "ICICI Bank",
+        "account_number": "XXXXXX6094",
+        "ifsc": "ICIC0000456"
       },
+      "supplier_gstin": "36EGSFD1100V1ZI",
+      "irn": null,
       "source": "erp"
     },
     "purchase_order": {
-      "po_number": "PO-2026-0081",
-      "vendor_id": "V001",
-      "po_date": "2026-03-09",
+      "po_number": "PO-2026-0115",
+      "vendor_id": "V005",
+      "po_date": "2026-02-19",
       "lines": [
         {
           "line_no": 1,
-          "sku": "MS-PL-10",
-          "description": "MS Plate 10mm IS2062 E250",
-          "hsn": "7208",
-          "qty": 2.0,
-          "uom": "MT",
-          "unit_price": 58000.0,
-          "tax_rate": 18.0,
-          "amount": 116000.0
-        },
-        {
-          "line_no": 2,
-          "sku": "MS-ANG-50",
-          "description": "MS Angle 50x50x6mm",
-          "hsn": "7216",
-          "qty": 1.5,
-          "uom": "MT",
-          "unit_price": 56500.0,
-          "tax_rate": 18.0,
-          "amount": 84750.0
+          "sku": "FTL-16",
+          "description": "FTL 16MT Hyderabad - Pune",
+          "hsn": "996511",
+          "qty": 1.0,
+          "uom": "Trip",
+          "unit_price": 44905.96,
+          "tax_rate": 5.0,
+          "amount": 44905.96
         }
       ],
-      "subtotal": 200750.0,
-      "tax_total": 36135.0,
-      "total": 236885.0
+      "subtotal": 44905.96,
+      "tax_total": 2245.3,
+      "total": 47151.26
     },
     "goods_receipt": {
-      "grn_number": "GRN-2026-0077",
-      "po_number": "PO-2026-0081",
-      "received_date": "2026-03-16",
+      "grn_number": "GRN-2026-0115",
+      "po_number": "PO-2026-0115",
+      "received_date": "2026-02-28",
       "lines": [
         {
           "line_no": 1,
-          "sku": "MS-PL-10",
-          "description": "MS Plate 10mm IS2062 E250",
-          "qty_received": 2.0,
-          "uom": "MT"
-        },
-        {
-          "line_no": 2,
-          "sku": "MS-ANG-50",
-          "description": "MS Angle 50x50x6mm",
-          "qty_received": 1.5,
-          "uom": "MT"
+          "sku": "FTL-16",
+          "description": "FTL 16MT Hyderabad - Pune",
+          "qty_received": 1.0,
+          "uom": "Trip"
         }
       ]
     },
     "vendor_bank_on_file": {
-      "bank_name": "HDFC Bank",
-      "account_number": "XXXXXX4521",
-      "ifsc": "HDFC0001234"
+      "bank_name": "ICICI Bank",
+      "account_number": "XXXXXX6094",
+      "ifsc": "ICIC0000456"
     },
     "issues": [
       {
-        "type": "freight_charge",
-        "message": "Line 3 'Freight charges' (₹3,850 + GST) is not on the purchase order.",
-        "line_no": 3,
-        "expected": 0.0,
-        "actual": 3850.0,
-        "variance_amount": 4543.0,
-        "variance_pct": 2.06,
-        "blocking": false
+        "type": "duplicate_invoice",
+        "message": "Same invoice number DFC/2627/0534 as INV-0121 received on 09 Apr 2026.",
+        "line_no": null,
+        "expected": null,
+        "actual": 47151.26,
+        "variance_amount": 47151.26,
+        "variance_pct": null,
+        "blocking": true
       }
     ],
     "recommendation": {
-      "action": "approve",
-      "confidence": 0.91,
+      "action": "reject",
+      "confidence": 0.99,
       "adjusted_amount": null,
-      "rationale": "Freight of ₹4,200 is on the last line and under the ₹5,000 per-trip cap this vendor has always been approved for (3 precedents). Materials match PO and GRN exactly.",
+      "rationale": "Hard control: Same invoice number DFC/2627/0534 as INV-0121 received on 09 Apr 2026. Action: reject.",
       "citations": [
         {
-          "id": "mem_7f3a91",
-          "kind": "observation",
-          "text": "Shree Balaji Steel bills freight separately on the last invoice line; the AP team approves it when freight is under ₹5,000 per trip.",
-          "occurred_at": "2026-03-12T11:20:00",
-          "exception_id": "EXC-0007"
-        },
-        {
-          "id": "mem_2c18e0",
-          "kind": "world",
-          "text": "On 2 Mar 2026 Priya approved invoice SBST/2526/1184 from Shree Balaji Steel with a ₹3,850 freight line: 'standing agreement allows freight up to ₹5,000 per trip'.",
-          "occurred_at": "2026-03-02T10:05:00",
-          "exception_id": "EXC-0001"
+          "id": "directive-duplicate_invoice",
+          "kind": "directive",
+          "text": "Duplicates: Never recommend approving a possible duplicate invoice (same vendor and invoice number, or same amount and date as an earlier invoice). Recommend reject and name the earlier invoice.",
+          "occurred_at": null,
+          "exception_id": null
         }
       ],
-      "source": "memory",
-      "anomaly_score": 0.12,
+      "source": "guardrail",
+      "anomaly_score": 0.375,
       "auto_resolved": false,
-      "provider": "hindsight-reflect",
-      "latency_ms": 2140,
-      "generated_at": "2026-03-18T09:30:00"
+      "provider": "guardrail",
+      "latency_ms": 366,
+      "generated_at": "2026-04-27T09:44:00",
+      "route": "guardrail",
+      "calibrated_confidence": 0.905,
+      "cost_usd": 0.0005
     },
     "resolution": {
-      "decision": "approve",
-      "reason": "Freight under ₹5,000 as per standing agreement with Balaji.",
+      "decision": "escalate",
+      "reason": "Called the vendor on the number in our master record: they never changed banks.",
       "adjusted_amount": null,
-      "resolved_by": "Priya (AP)",
-      "resolved_at": "2026-03-18T09:34:00",
-      "agent_action": "approve",
-      "agreed_with_agent": true
+      "resolved_by": "Priya",
+      "resolved_at": "2026-04-27T09:44:00",
+      "agent_action": "reject",
+      "agreed_with_agent": true,
+      "redacted": [],
+      "revoked_at": null,
+      "revoked_by": null,
+      "revoke_reason": null
     },
     "autonomy": {
-      "vendor_id": "V001",
-      "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
-      "exception_type": "freight_charge",
-      "level": "suggest",
-      "streak": 2,
+      "vendor_id": "V005",
+      "vendor_name": "Deccan Freight Carriers",
+      "exception_type": "duplicate_invoice",
+      "level": "locked",
+      "streak": 1,
       "required_streak": 3,
-      "accepted": 2,
-      "overruled": 1,
+      "accepted": 1,
+      "overruled": 0,
       "auto_resolved": 0,
-      "updated_at": "2026-03-12T11:20:00"
+      "updated_at": "2026-04-27T09:44:00"
+    },
+    "compliance": {
+      "msme": {
+        "category": "small",
+        "udyam": "UDYAM-TS-02-0048812",
+        "limit_days": 45,
+        "accepted_on": "2026-02-28",
+        "deadline": "2026-04-14",
+        "days_left": -13,
+        "status": "breached",
+        "tax_at_risk": 11302.83,
+        "terms_exceed_limit": false
+      },
+      "e_invoice": {
+        "required": false,
+        "irn_present": false
+      }
     }
   },
-  "memory_id": "EXC-0012",
-  "lesson": "Shree Balaji Steel: freight up to ₹5,000 per trip on the last line is approved.",
+  "memory_id": "EXC-0040",
+  "lesson": "Deccan Freight Carriers · duplicate invoice: escalate — “Called the vendor on the number in our master record: they never changed banks.”",
   "autonomy": {
-    "vendor_id": "V001",
-    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
-    "exception_type": "freight_charge",
-    "level": "auto",
-    "streak": 3,
+    "vendor_id": "V005",
+    "vendor_name": "Deccan Freight Carriers",
+    "exception_type": "duplicate_invoice",
+    "level": "locked",
+    "streak": 1,
     "required_streak": 3,
-    "accepted": 3,
-    "overruled": 1,
+    "accepted": 1,
+    "overruled": 0,
     "auto_resolved": 0,
-    "updated_at": "2026-03-12T11:20:00"
+    "updated_at": "2026-04-27T09:44:00"
   },
-  "promoted": true,
+  "promoted": false,
   "demoted": false
 }

@@ -1,22 +1,22 @@
 {
   "lesson": {
-    "case_id": "EXC-0042",
+    "case_id": "EXC-0034",
     "vendor": {
-      "id": "V017",
-      "name": "Indus Logistics & Warehousing",
-      "gstin": "27ZCCCI8712C1Z0",
-      "city": "Nagpur",
-      "category": "logistics"
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36ASICS1238O1ZX",
+      "city": "Hyderabad",
+      "category": "raw_materials"
     },
     "exception_type": "freight_charge",
     "decision": "approve",
-    "reason": "Fuel surcharge of 4.7% is within the 6% allowed in the Indus rate contract.",
-    "taught_by": "Rahul (AP)",
-    "taught_at": "2026-04-24T11:40:00",
-    "auto": false,
+    "reason": "Auto-resolved under earned autonomy. The freight charge of ₹3,600.00 is well within the standing agreement limit of ₹5,000.00 per trip for Shree Balaji Steel Traders Pvt Ltd (V001), consistent with multiple past approvals for this vendor.",
+    "taught_by": "Precedent (auto)",
+    "taught_at": "2026-04-22T09:02:05",
+    "auto": true,
     "revoked": true,
-    "revoked_by": "Sneha (AP Lead)",
-    "revoke_reason": "Wrong: freight is capped at Rs 5,000 per trip."
+    "revoked_by": "Meera (AP lead)",
+    "revoke_reason": "Agreement ended in June; freight now needs a PO line."
   },
   "autonomy": {
     "vendor_id": "V001",
@@ -25,10 +25,10 @@
     "level": "suggest",
     "streak": 0,
     "required_streak": 3,
-    "accepted": 2,
+    "accepted": 4,
     "overruled": 1,
-    "auto_resolved": 0,
-    "updated_at": "2026-03-12T11:05:00"
+    "auto_resolved": 3,
+    "updated_at": "2026-04-22T09:02:05"
   },
   "memory_deleted": true,
   "invalidated_recommendations": 1

@@ -1,23 +1,23 @@
 {
   "status": "exception",
   "extracted": {
-    "id": "INV-0301",
-    "invoice_number": "SBST/2526/1231",
+    "id": "INV-C001",
+    "invoice_number": "SBST/2627/0612",
     "vendor_id": "V001",
-    "po_number": "PO-2026-0081",
-    "invoice_date": "2026-03-17",
-    "due_date": "2026-05-01",
+    "po_number": "PO-2026-0208",
+    "invoice_date": "2026-04-27",
+    "due_date": "2026-06-11",
     "lines": [
       {
         "line_no": 1,
-        "sku": "MS-PL-10",
-        "description": "MS Plate 10mm IS2062 E250",
+        "sku": "HR-COIL-3",
+        "description": "HR Coil 3mm IS2062",
         "hsn": "7208",
-        "qty": 2.0,
+        "qty": 1.5,
         "uom": "MT",
-        "unit_price": 58000.0,
+        "unit_price": 58514.9,
         "tax_rate": 18.0,
-        "amount": 116000.0
+        "amount": 87772.35
       },
       {
         "line_no": 2,
@@ -26,9 +26,9 @@
         "hsn": "7216",
         "qty": 1.5,
         "uom": "MT",
-        "unit_price": 56500.0,
+        "unit_price": 77094.79,
         "tax_rate": 18.0,
-        "amount": 84750.0
+        "amount": 115642.18
       },
       {
         "line_no": 3,
@@ -36,29 +36,31 @@
         "description": "Freight charges - Medchal to Unit 2",
         "hsn": "996511",
         "qty": 1.0,
-        "uom": "trip",
-        "unit_price": 3850.0,
+        "uom": "Trip",
+        "unit_price": 3700.0,
         "tax_rate": 18.0,
-        "amount": 3850.0
+        "amount": 3700.0
       }
     ],
-    "subtotal": 204600.0,
-    "tax_total": 36828.0,
-    "total": 241428.0,
+    "subtotal": 207114.53,
+    "tax_total": 37280.62,
+    "total": 244395.16,
     "currency": "INR",
     "bank_account": {
       "bank_name": "HDFC Bank",
-      "account_number": "XXXXXX4521",
+      "account_number": "XXXXXX2071",
       "ifsc": "HDFC0001234"
     },
+    "supplier_gstin": "36ASICS1238O1ZX",
+    "irn": "2c7f2257cbb206bfcee0db8ca2b44a52d5ec60e713f6f2388e1a67e909c6ac5c",
     "source": "capture"
   },
   "vendor": {
     "id": "V001",
     "name": "Shree Balaji Steel Traders Pvt Ltd",
-    "gstin": "36AAECS4821K1Z3",
+    "gstin": "36ASICS1238O1ZX",
     "city": "Hyderabad",
     "category": "raw_materials"
   },
-  "exception_id": "EXC-0140"
+  "exception_id": "EXC-0043"
 }

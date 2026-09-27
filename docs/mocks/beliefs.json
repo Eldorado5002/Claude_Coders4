@@ -1,0 +1,18 @@
+[
+  {
+    "id": "0d485797-4863-40c7-8d06-7e974c93757d",
+    "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges are approved by the team when they are ₹5,000 or less per trip, regardless of whether AP agents like Precedent recommend holding or approving the invoice.",
+    "evidence_count": 9,
+    "first_seen": "2026-03-02T12:36:00Z",
+    "last_updated": "2026-04-01T09:02:05Z",
+    "versions": []
+  },
+  {
+    "id": "db7c1e97-55b8-4662-8cfa-0ff8adc64e01",
+    "text": "Shree Balaji Steel Traders Pvt Ltd (V001) has a standing agreement limit of ₹5,000.00 for freight charges per trip; charges exceeding this amount are not on the purchase order and require a hold.",
+    "evidence_count": 1,
+    "first_seen": "2026-03-25T09:02:05Z",
+    "last_updated": "2026-03-25T09:02:05Z",
+    "versions": []
+  }
+]

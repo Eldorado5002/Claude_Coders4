@@ -1,98 +1,82 @@
 [
   {
-    "id": "d8ee0277-687b-4d97-948b-7a83e592b2d3",
+    "id": "bd9c095a-71fb-4be1-9230-7de36c5dc32f",
     "kind": "experience",
-    "text": "Precedent recommended approving the invoice exception with 100% confidence, and the clerk agreed with this recommendation. | When: 2026-03-18 | Involving: Precedent (AP agent), Priya (AP clerk)",
+    "text": "Precedent (AP agent) approved invoice SBST/2627/1162 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-04-22 | Involving: Precedent (AP agent), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,600.00 is within the ₹5,000.00 per trip agreement limit.",
     "vendor_id": "V001",
     "exception_type": "freight_charge",
-    "occurred_at": "2026-03-18T09:44:00.010000Z"
+    "occurred_at": "2026-04-22T09:02:05Z"
   },
   {
-    "id": "73422225-97c2-42af-8a10-f29f9b170e90",
-    "kind": "observation",
-    "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges under â‚¹5,000 per trip are approved by the AP clerk, regardless of whether the AP agent (Precedent) recommends holding or approving the invoice.",
+    "id": "47a309ae-3604-4054-aaa6-2383cc17fc15",
+    "kind": "experience",
+    "text": "Precedent (AP agent) recommended approving invoice ILW/2627/0703 with 95% confidence, which the clerk accepted. | When: 2026-04-21 | Involving: Precedent (AP agent), clerk",
+    "vendor_id": "V017",
+    "exception_type": "freight_charge",
+    "occurred_at": "2026-04-21T12:12:00.010000Z"
+  },
+  {
+    "id": "13bbb947-bbc7-4713-bdef-74c05f62a274",
+    "kind": "world",
+    "text": "Rahul (AP) approved invoice ILW/2627/0703 for Indus Logistics & Warehousing (V017) despite a freight charge discrepancy. | When: 2026-04-21 | Involving: Rahul (AP), Indus Logistics & Warehousing (V017) | The 5.1% fuel surcharge is within the 6% limit specified in the Indus rate contract.",
+    "vendor_id": "V017",
+    "exception_type": "freight_charge",
+    "occurred_at": "2026-04-21T12:12:00Z"
+  },
+  {
+    "id": "b03ab563-5602-44fe-aef3-ce125cbcfd6e",
+    "kind": "experience",
+    "text": "Precedent (the AP agent) recommended approving the invoice with 100% confidence, which the clerk accepted. | When: 2026-04-20 | Involving: Precedent (AP agent), clerk",
+    "vendor_id": "V002",
+    "exception_type": "price_variance",
+    "occurred_at": "2026-04-20T12:59:00.010000Z"
+  },
+  {
+    "id": "91aee9dd-80f7-4e99-a48f-55c30b93d9f0",
+    "kind": "world",
+    "text": "Arjun (AP) approved invoice SVAC/2627/1049 for Sri Venkateswara Alloys & Castings due to a price variance of 1.8%. | When: 2026-04-20 | Involving: Arjun (AP), Sri Venkateswara Alloys & Castings (vendor) | The 1.8% price increase is within the 4% raw-material escalation clause allowed by the rate contract.",
+    "vendor_id": "V002",
+    "exception_type": "price_variance",
+    "occurred_at": "2026-04-20T12:59:00Z"
+  },
+  {
+    "id": "d46c9114-c413-41d5-bb3a-2894743cf261",
+    "kind": "experience",
+    "text": "Precedent (AP agent) recommended approving the invoice with 95% confidence, and the clerk agreed with this recommendation. | When: 2026-04-20 | Involving: Precedent (AP agent), clerk",
+    "vendor_id": "V012",
+    "exception_type": "price_variance",
+    "occurred_at": "2026-04-20T10:53:00.010000Z"
+  },
+  {
+    "id": "9cf2bab6-bb4f-46ba-9c35-f39ad4249c18",
+    "kind": "world",
+    "text": "Priya (AP) approved invoice GCT/2627/1034 for Gujarat Chemical Traders (V012) despite a 2.0% price variance on Caustic Soda Flakes. | When: 2026-04-20 | Involving: Priya (AP), Gujarat Chemical Traders | The 2.0% price increase is within the 2.5% raw-material escalation clause allowed by the rate contract.",
+    "vendor_id": "V012",
+    "exception_type": "price_variance",
+    "occurred_at": "2026-04-20T10:53:00Z"
+  },
+  {
+    "id": "f8ddd1da-087f-449c-86ed-251d6edea367",
+    "kind": "experience",
+    "text": "Precedent (AP agent) approved invoice MOM/2627/0951 for ₹6,171.73 from Metro Office Mart due to missing PO. | When: 2026-04-20 | Involving: Precedent (AP agent), Metro Office Mart (vendor) | The amount is within the ₹10,000 limit for no-PO spend with this vendor, consistent with previous approvals.",
+    "vendor_id": "V015",
+    "exception_type": "missing_po",
+    "occurred_at": "2026-04-20T09:51:05Z"
+  },
+  {
+    "id": "bf47288e-37f2-4c49-bec7-fc6661cb4575",
+    "kind": "experience",
+    "text": "Precedent (AP agent) recommended approving invoice SBST/2627/1160 with 95% confidence, which the clerk accepted. | When: 2026-04-15 | Involving: Precedent (AP agent), clerk",
     "vendor_id": "V001",
     "exception_type": "freight_charge",
-    "occurred_at": "2026-03-02T12:36:00Z"
+    "occurred_at": "2026-04-15T12:43:00.010000Z"
   },
   {
-    "id": "fab3121a-fa44-4576-8aa8-973e0de3d47b",
+    "id": "97a93da0-49c5-41d2-8e41-09d1b80ce90f",
     "kind": "world",
-    "text": "Priya resolved invoice exception EXC-0014 for vendor Shree Balaji Steel Traders Pvt Ltd by approving the payment of â‚¹173,165.00 for invoice SBST/2526/1110. | When: 2026-03-18 | Involving: Priya (AP clerk), Shree Balaji Steel Traders Pvt Ltd (vendor) | The freight charge of â‚¹4,200.00 plus GST was not on the purchase order PO-2026-0022, but was approved because it fell within the â‚¹5,000 freight agreement.",
+    "text": "Sneha (AP Lead) approved invoice SBST/2627/1160 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a missing freight charge on the PO. | When: 2026-04-15 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹4,650.00 is under the ₹5,000 cap for this vendor.",
     "vendor_id": "V001",
     "exception_type": "freight_charge",
-    "occurred_at": "2026-03-18T09:44:00Z"
-  },
-  {
-    "id": "091727f9-5e66-45de-af7c-b460d77f714a",
-    "kind": "observation",
-    "text": "Sneha (AP Lead) holds invoices from Rayalaseema Cement Agencies (V013) when there is a price variance; specifically, invoice RCA/2526/1310 was held on 2026-03-17 because the unit price for OPC 53 Grade Cement was â‚¹408.39, exceeding the PO price of â‚¹385 by 6.1% without an agreed revision.",
-    "vendor_id": "V013",
-    "exception_type": "price_variance",
-    "occurred_at": "2026-03-17T09:37:00Z"
-  },
-  {
-    "id": "59e3b9b4-09d3-47dd-833c-66c72635f225",
-    "kind": "experience",
-    "text": "Precedent (AP agent) recommended holding the invoice with 30% confidence, and Sneha agreed with this recommendation. | When: 2026-03-17 | Involving: Precedent (AP agent), Sneha (AP Lead)",
-    "vendor_id": "V013",
-    "exception_type": "price_variance",
-    "occurred_at": "2026-03-17T09:37:00.010000Z"
-  },
-  {
-    "id": "1e4ed01b-ed64-4195-88d2-f22b0bd4ec75",
-    "kind": "world",
-    "text": "Sneha (AP Lead) placed invoice RCA/2526/1310 from Rayalaseema Cement Agencies on hold due to a price variance. | When: 2026-03-17 | Involving: Sneha (AP Lead), Rayalaseema Cement Agencies (V013) | The unit price for OPC 53 Grade Cement was â‚¹408.39, which is 6.1% higher than the PO price of â‚¹385, and no price revision was agreed upon.",
-    "vendor_id": "V013",
-    "exception_type": "price_variance",
-    "occurred_at": "2026-03-17T09:37:00Z"
-  },
-  {
-    "id": "98f7b1d0-76fa-4a56-9e94-b0a3cf2cc7c0",
-    "kind": "observation",
-    "text": "Sri Venkateswara Alloys & Castings has a rate contract allowing for a 4% raw-material escalation on unit prices, which Rahul applies to resolve price variance exceptions.",
-    "vendor_id": "V002",
-    "exception_type": "price_variance",
-    "occurred_at": "2026-03-16T12:42:00Z"
-  },
-  {
-    "id": "b39a25be-e39f-48b1-8532-70e127d9a289",
-    "kind": "experience",
-    "text": "Rahul approved the invoice payment, overruling the AP agent Precedent's recommendation to hold. | When: 2026-03-16 | Involving: Rahul (AP clerk), Precedent (AP agent) | The 1.9% price increase is within the 4% raw-material escalation clause allowed by the rate contract with the vendor.",
-    "vendor_id": "V002",
-    "exception_type": "price_variance",
-    "occurred_at": "2026-03-16T12:42:00.010000Z"
-  },
-  {
-    "id": "83d754ca-e342-4153-af4b-049f27be4893",
-    "kind": "world",
-    "text": "Rahul resolved a price variance exception for vendor Sri Venkateswara Alloys & Castings regarding invoice SVAC/2526/0919. | When: 2026-03-16 | Involving: Rahul (AP clerk), Sri Venkateswara Alloys & Castings (vendor) | The unit price for CI Flywheel Casting 12in was â‚¹3,210.65 compared to the PO price of â‚¹3,150, representing a 1.9% increase.",
-    "vendor_id": "V002",
-    "exception_type": "price_variance",
-    "occurred_at": "2026-03-16T12:42:00Z"
-  },
-  {
-    "id": "bbb9a1d6-e220-41dc-86e2-0ca0c1dde9f7",
-    "kind": "observation",
-    "text": "The AP team holds invoices from Kaveri Packaging Industries when tax rates deviate from PO specifications, as demonstrated by the hold on invoice KPI/2526/1247.",
-    "vendor_id": "V004",
-    "exception_type": "tax_mismatch",
-    "occurred_at": "2026-03-16T09:37:00Z"
-  },
-  {
-    "id": "b12f3ff3-da38-4e8e-a23b-70016c3e6bbc",
-    "kind": "experience",
-    "text": "Precedent (AP agent) recommended escalating the invoice exception with 40% confidence, but the clerk agreed with the hold decision. | When: 2026-03-16 | Involving: Precedent (AP agent), clerk",
-    "vendor_id": "V004",
-    "exception_type": "tax_mismatch",
-    "occurred_at": "2026-03-16T09:37:00.010000Z"
-  },
-  {
-    "id": "e3d4b54a-867e-407b-8b20-76c5f06fe681",
-    "kind": "observation",
-    "text": "Kaveri Packaging Industries is required to charge 5% GST on corrugated boxes (HSN 4819) per GST 2.0 regulations; invoices charging 18% GST are held for revision.",
-    "vendor_id": "V004",
-    "exception_type": "tax_mismatch",
-    "occurred_at": "2026-03-16T09:37:00Z"
+    "occurred_at": "2026-04-15T12:43:00Z"
   }
 ]

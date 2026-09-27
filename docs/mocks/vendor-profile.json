@@ -6,10 +6,14 @@
   "category": "raw_materials",
   "state": "Telangana",
   "payment_terms_days": 45,
-  "invoices_count": 4,
-  "exceptions_count": 4,
-  "open_exceptions": 1,
-  "touchless_rate": 0.0,
+  "invoices_count": 9,
+  "exceptions_count": 8,
+  "open_exceptions": 0,
+  "touchless_rate": 0.375,
+  "msme_category": null,
+  "e_invoice_required": true,
+  "risk_score": 10,
+  "risk_level": "low",
   "bank_account": {
     "bank_name": "HDFC Bank",
     "account_number": "XXXXXX2071",
@@ -17,18 +21,25 @@
   },
   "learned": [
     {
-      "id": "73422225-97c2-42af-8a10-f29f9b170e90",
+      "id": "0d485797-4863-40c7-8d06-7e974c93757d",
       "kind": "observation",
-      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges under â‚¹5,000 per trip are approved by the AP clerk, regardless of whether the AP agent (Precedent) recommends holding or approving the invoice.",
+      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges are approved by the team when they are ₹5,000 or less per trip, regardless of whether AP agents like Precedent recommend holding or approving the invoice.",
+      "occurred_at": null,
+      "exception_id": null
+    },
+    {
+      "id": "db7c1e97-55b8-4662-8cfa-0ff8adc64e01",
+      "kind": "observation",
+      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) has a standing agreement limit of ₹5,000.00 for freight charges per trip; charges exceeding this amount are not on the purchase order and require a hold.",
       "occurred_at": null,
       "exception_id": null
     }
   ],
-  "playbook": null,
+  "playbook": "## Overview of Vendor V001\n\nShree Balaji Steel Traders Pvt Ltd (V001) is subject to specific standing agreements regarding freight charges. An AP clerk should be aware of the following operational guidelines when processing invoices from this vendor.\n\n## Freight Charge Policy\n\nThe team maintains a standing agreement limit for freight charges of ₹5,000.00 per trip for this vendor. Charges up to and including this limit per trip are generally approved. Charges exceeding this amount are considered outside the purchase order and require a hold. While there has been variation in how individual team members handle these approvals, the established policy is that any freight charge exceeding the ₹5,000 limit must be held.\n\n## General AP Controls and Compliance\n\nIn addition to specific vendor agreements, the following general team policies apply to all invoices for V001:\n- Approval limit: Any invoice exceeding ₹5,00,000 requires Finance Controller approval; escalate immediately.\n- Bank changes: Any discrepancy between the invoice pay-to account and the vendor master requires escalation to treasury for a phone callback verification.\n- Duplicates: If an invoice matches a previous submission (vendor/invoice number or amount/date), reject the invoice and reference the earlier one.\n- GSTIN: Any failure in GSTIN checksum or discrepancy with the vendor master indicates potential impersonation; escalate.\n- E-invoicing: For suppliers with an annual turnover exceeding ₹5 crore, invoices must include a valid IRN and signed QR code. Invoices lacking these must be held until an IRP-registered version is provided.",
   "recent": [
     {
-      "id": "EXC-0014",
-      "status": "open",
+      "id": "EXC-0034",
+      "status": "auto_resolved",
       "primary_type": "freight_charge",
       "issue_types": [
         "freight_charge"
@@ -40,17 +51,18 @@
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1110",
-      "invoice_total": 173165.0,
-      "amount_at_risk": 4956.0,
-      "created_at": "2026-03-18T09:00:00",
+      "invoice_number": "SBST/2627/1162",
+      "invoice_total": 69101.32,
+      "amount_at_risk": 4248.0,
+      "created_at": "2026-04-22T09:00:00",
       "recommended_action": "approve",
-      "confidence": 1.0,
-      "autonomy_level": "suggest",
-      "blocking": false
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
     },
     {
-      "id": "EXC-0008",
+      "id": "EXC-0028",
       "status": "resolved",
       "primary_type": "freight_charge",
       "issue_types": [
@@ -63,17 +75,114 @@
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1103",
-      "invoice_total": 172752.0,
+      "invoice_number": "SBST/2627/1160",
+      "invoice_total": 168398.6,
+      "amount_at_risk": 5487.0,
+      "created_at": "2026-04-15T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0021",
+      "status": "auto_resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/0964",
+      "invoice_total": 220876.34,
+      "amount_at_risk": 3894.0,
+      "created_at": "2026-04-01T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0014",
+      "status": "auto_resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/0956",
+      "invoice_total": 79144.84,
+      "amount_at_risk": 8732.0,
+      "created_at": "2026-03-25T09:00:00",
+      "recommended_action": "hold",
+      "confidence": 0.9,
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0010",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/0953",
+      "invoice_total": 112039.71,
+      "amount_at_risk": 4956.0,
+      "created_at": "2026-03-18T09:00:00",
+      "recommended_action": "approve",
+      "confidence": 0.95,
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0005",
+      "status": "resolved",
+      "primary_type": "freight_charge",
+      "issue_types": [
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/0948",
+      "invoice_total": 130959.69,
       "amount_at_risk": 3422.0,
       "created_at": "2026-03-12T09:00:00",
       "recommended_action": "approve",
       "confidence": 1.0,
-      "autonomy_level": "suggest",
-      "blocking": false
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
     },
     {
-      "id": "EXC-0002",
+      "id": "EXC-0003",
       "status": "resolved",
       "primary_type": "freight_charge",
       "issue_types": [
@@ -86,14 +195,15 @@
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1102",
-      "invoice_total": 73278.0,
+      "invoice_number": "SBST/2526/0945",
+      "invoice_total": 80051.81,
       "amount_at_risk": 4838.0,
       "created_at": "2026-03-07T09:00:00",
       "recommended_action": "approve",
       "confidence": 1.0,
-      "autonomy_level": "suggest",
-      "blocking": false
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
     },
     {
       "id": "EXC-0001",
@@ -109,14 +219,15 @@
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2526/1100",
-      "invoice_total": 173873.0,
+      "invoice_number": "SBST/2526/0938",
+      "invoice_total": 162685.16,
       "amount_at_risk": 4543.0,
       "created_at": "2026-03-02T09:00:00",
       "recommended_action": "hold",
       "confidence": 0.3,
-      "autonomy_level": "suggest",
-      "blocking": false
+      "autonomy_level": "auto",
+      "blocking": false,
+      "msme_days_left": null
     }
   ],
   "autonomy": [
@@ -124,13 +235,48 @@
       "vendor_id": "V001",
       "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
       "exception_type": "freight_charge",
-      "level": "suggest",
-      "streak": 2,
+      "level": "auto",
+      "streak": 4,
       "required_streak": 3,
-      "accepted": 2,
+      "accepted": 4,
       "overruled": 1,
-      "auto_resolved": 0,
-      "updated_at": "2026-03-12T11:05:00"
+      "auto_resolved": 3,
+      "updated_at": "2026-04-22T09:02:05"
     }
-  ]
+  ],
+  "risk": {
+    "score": 10,
+    "level": "low",
+    "reasons": [
+      "exception rate 89% vs 21% across all vendors"
+    ],
+    "benford": {
+      "n": 22,
+      "mad": null,
+      "conformity": "insufficient data",
+      "observed": [
+        0.1364,
+        0.0455,
+        0.2727,
+        0.1818,
+        0.0909,
+        0.0455,
+        0.1364,
+        0.0909,
+        0.0
+      ],
+      "expected": [
+        0.301,
+        0.1761,
+        0.1249,
+        0.0969,
+        0.0792,
+        0.0669,
+        0.058,
+        0.0512,
+        0.0458
+      ]
+    }
+  },
+  "udyam": null
 }

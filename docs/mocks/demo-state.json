@@ -1,6 +1,6 @@
 {
-  "stage": "week3",
-  "sim_date": "2026-03-18",
+  "stage": "week8",
+  "sim_date": "2026-04-22",
   "busy": false,
   "stages": [
     {
@@ -22,7 +22,7 @@
       "label": "Week 8",
       "description": "Earned autonomy",
       "sim_date": "2026-04-22",
-      "reached": false
+      "reached": true
     },
     {
       "id": "twist",

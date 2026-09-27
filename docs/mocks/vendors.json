@@ -7,10 +7,14 @@
     "category": "raw_materials",
     "state": "Telangana",
     "payment_terms_days": 45,
-    "invoices_count": 4,
-    "exceptions_count": 4,
-    "open_exceptions": 1,
-    "touchless_rate": 0.0
+    "invoices_count": 9,
+    "exceptions_count": 8,
+    "open_exceptions": 0,
+    "touchless_rate": 0.375,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 10,
+    "risk_level": "low"
   },
   {
     "id": "V002",
@@ -20,10 +24,14 @@
     "category": "raw_materials",
     "state": "Telangana",
     "payment_terms_days": 30,
-    "invoices_count": 2,
-    "exceptions_count": 1,
+    "invoices_count": 17,
+    "exceptions_count": 3,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": "small",
+    "e_invoice_required": true,
+    "risk_score": 4,
+    "risk_level": "low"
   },
   {
     "id": "V003",
@@ -33,10 +41,14 @@
     "category": "raw_materials",
     "state": "Andhra Pradesh",
     "payment_terms_days": 45,
-    "invoices_count": 2,
+    "invoices_count": 15,
     "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V004",
@@ -46,10 +58,14 @@
     "category": "packaging",
     "state": "Karnataka",
     "payment_terms_days": 30,
-    "invoices_count": 1,
+    "invoices_count": 8,
     "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V005",
@@ -59,10 +75,14 @@
     "category": "logistics",
     "state": "Telangana",
     "payment_terms_days": 15,
-    "invoices_count": 2,
-    "exceptions_count": 1,
+    "invoices_count": 16,
+    "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": null,
+    "msme_category": "small",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V006",
@@ -75,7 +95,11 @@
     "invoices_count": 1,
     "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V007",
@@ -85,10 +109,14 @@
     "category": "utilities",
     "state": "Telangana",
     "payment_terms_days": 15,
-    "invoices_count": 1,
-    "exceptions_count": 1,
+    "invoices_count": 2,
+    "exceptions_count": 2,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V008",
@@ -98,10 +126,14 @@
     "category": "components",
     "state": "Maharashtra",
     "payment_terms_days": 60,
-    "invoices_count": 1,
+    "invoices_count": 15,
     "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V009",
@@ -111,10 +143,14 @@
     "category": "mro",
     "state": "Tamil Nadu",
     "payment_terms_days": 30,
-    "invoices_count": 1,
-    "exceptions_count": 0,
+    "invoices_count": 9,
+    "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": 0.0,
+    "msme_category": "small",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V010",
@@ -124,10 +160,14 @@
     "category": "mro",
     "state": "Kerala",
     "payment_terms_days": 30,
-    "invoices_count": 0,
+    "invoices_count": 3,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": "micro",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V011",
@@ -137,10 +177,14 @@
     "category": "components",
     "state": "Telangana",
     "payment_terms_days": 45,
-    "invoices_count": 1,
+    "invoices_count": 4,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": "micro",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V012",
@@ -150,10 +194,14 @@
     "category": "raw_materials",
     "state": "Gujarat",
     "payment_terms_days": 30,
-    "invoices_count": 1,
-    "exceptions_count": 0,
+    "invoices_count": 8,
+    "exceptions_count": 4,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 10,
+    "risk_level": "low"
   },
   {
     "id": "V013",
@@ -164,9 +212,13 @@
     "state": "Andhra Pradesh",
     "payment_terms_days": 30,
     "invoices_count": 1,
-    "exceptions_count": 1,
+    "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": null,
+    "msme_category": "small",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V014",
@@ -176,10 +228,14 @@
     "category": "components",
     "state": "Karnataka",
     "payment_terms_days": 45,
-    "invoices_count": 1,
+    "invoices_count": 9,
     "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V015",
@@ -189,10 +245,14 @@
     "category": "office_supplies",
     "state": "Telangana",
     "payment_terms_days": 15,
-    "invoices_count": 1,
-    "exceptions_count": 1,
+    "invoices_count": 4,
+    "exceptions_count": 4,
     "open_exceptions": 0,
-    "touchless_rate": 0.0
+    "touchless_rate": 0.25,
+    "msme_category": "micro",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V016",
@@ -202,10 +262,14 @@
     "category": "services",
     "state": "Telangana",
     "payment_terms_days": 30,
-    "invoices_count": 0,
+    "invoices_count": 2,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V017",
@@ -215,10 +279,14 @@
     "category": "logistics",
     "state": "Maharashtra",
     "payment_terms_days": 30,
-    "invoices_count": 1,
-    "exceptions_count": 0,
+    "invoices_count": 8,
+    "exceptions_count": 3,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V018",
@@ -228,10 +296,14 @@
     "category": "maintenance",
     "state": "Telangana",
     "payment_terms_days": 30,
-    "invoices_count": 0,
+    "invoices_count": 6,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": null,
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V019",
@@ -240,11 +312,15 @@
     "city": "Ludhiana",
     "category": "components",
     "state": "Punjab",
-    "payment_terms_days": 45,
-    "invoices_count": 1,
-    "exceptions_count": 0,
+    "payment_terms_days": 60,
+    "invoices_count": 5,
+    "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": 0.0,
+    "msme_category": "small",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V020",
@@ -254,10 +330,14 @@
     "category": "packaging",
     "state": "Andhra Pradesh",
     "payment_terms_days": 30,
-    "invoices_count": 1,
+    "invoices_count": 5,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": "micro",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V021",
@@ -267,10 +347,14 @@
     "category": "it_services",
     "state": "Telangana",
     "payment_terms_days": 30,
-    "invoices_count": 1,
+    "invoices_count": 4,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V022",
@@ -280,10 +364,14 @@
     "category": "raw_materials",
     "state": "Telangana",
     "payment_terms_days": 30,
-    "invoices_count": 1,
+    "invoices_count": 5,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": null,
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V023",
@@ -293,10 +381,14 @@
     "category": "raw_materials",
     "state": "Maharashtra",
     "payment_terms_days": 45,
-    "invoices_count": 1,
-    "exceptions_count": 0,
+    "invoices_count": 2,
+    "exceptions_count": 1,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": 0.0,
+    "msme_category": null,
+    "e_invoice_required": true,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V024",
@@ -306,10 +398,14 @@
     "category": "services",
     "state": "Telangana",
     "payment_terms_days": 15,
-    "invoices_count": 0,
-    "exceptions_count": 0,
+    "invoices_count": 2,
+    "exceptions_count": 2,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": 0.0,
+    "msme_category": "micro",
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   },
   {
     "id": "V025",
@@ -322,6 +418,10 @@
     "invoices_count": 0,
     "exceptions_count": 0,
     "open_exceptions": 0,
-    "touchless_rate": null
+    "touchless_rate": null,
+    "msme_category": null,
+    "e_invoice_required": false,
+    "risk_score": 0,
+    "risk_level": "low"
   }
 ]
