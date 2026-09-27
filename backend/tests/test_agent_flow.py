@@ -265,3 +265,20 @@ def test_recdraft_drops_unparseable_amounts():
         }
     )
     assert d.adjusted_amount is None
+
+
+def test_restore_removes_invoices_captured_during_rehearsal(client, env):
+    from app.db import get_engine
+    from app.models import Invoice
+    from app.services import demo
+
+    demo.snapshot("day1", "test-bank-day1")
+    with Session(get_engine()) as s:
+        base = s.get(Invoice, "INV-0001")
+        extra = Invoice(**{**base.model_dump(), "id": "INV-C001", "source": "capture", "status": "exception"})
+        s.add(extra)
+        s.commit()
+    demo.restore("day1")
+    with Session(get_engine()) as s:
+        assert s.get(Invoice, "INV-C001") is None
+        assert s.get(Invoice, "INV-0001") is not None

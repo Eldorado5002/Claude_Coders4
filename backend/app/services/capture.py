@@ -7,6 +7,7 @@ from difflib import SequenceMatcher
 from pydantic import BaseModel, Field
 from sqlmodel import Session, col, select
 
+from app.config import get_settings
 from app.data.generator import totals
 from app.db import get_engine
 from app.llm.router import get_router
@@ -123,13 +124,14 @@ async def capture_invoice(data: bytes, mime: str) -> CaptureResult:
         doc = invoice_doc(inv)
         if vendor is None:
             return CaptureResult(status="unknown_vendor", extracted=doc, vendor=None, exception_id=None)
+        inv_id = inv.id  # plain value: the ORM object expires after commit/close
         session.add(inv)
         session.commit()
         ref = vendor_ref(vendor)
 
-    day = (today - get_cases().memory.settings.sim_start).days
+    day = (today - get_settings().sim_start).days
     new_ids = get_cases().process_arrivals(day)
-    case_id = next((cid for cid in new_ids if _case_invoice(cid) == inv.id), None)
+    case_id = next((cid for cid in new_ids if _case_invoice(cid) == inv_id), None)
     if case_id:
         await get_cases().recommend_case(case_id)
     return CaptureResult(status="exception" if case_id else "matched", extracted=doc, vendor=ref, exception_id=case_id)

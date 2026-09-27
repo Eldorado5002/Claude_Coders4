@@ -56,10 +56,14 @@ def snapshot(stage: str, bank_id: str) -> None:
 def restore(stage: str) -> None:
     data = json.loads(snapshot_path(stage).read_text(encoding="utf-8"))
     with Session(get_engine()) as s:
-        for inv in s.exec(select(Invoice)).all():
-            inv.status = data["invoices"].get(inv.id, "pending")
-            s.add(inv)
         s.exec(delete(ExceptionCase))
+        s.flush()
+        for inv in s.exec(select(Invoice)).all():
+            if inv.id not in data["invoices"]:
+                s.delete(inv)  # e.g. invoices captured live during a rehearsal
+                continue
+            inv.status = data["invoices"][inv.id]
+            s.add(inv)
         s.exec(delete(Autonomy))
         s.flush()
         for c in data["cases"]:
