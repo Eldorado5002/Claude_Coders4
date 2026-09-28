@@ -12,6 +12,8 @@ import { Safe } from '@/components/precedent/safe'
 import { LearningChart } from './learning-chart'
 import { findReplaySummary, headline } from './learning-view'
 import { Footnotes, NoteRef } from './notes'
+import { TrustSection, TrustSkeleton } from './trust-section'
+import { useHashScroll } from './use-hash-scroll'
 
 const SHELL = 'mx-auto w-full max-w-[1240px] px-5 py-8 md:px-10'
 const CHART_GRID = 'grid gap-12 @min-[1000px]:grid-cols-2 @min-[1000px]:gap-10'
@@ -64,6 +66,8 @@ function LearningBody({ m }: { m: Metrics }) {
         </div>
       </Section>
 
+      <TrustSection m={m} />
+
       <Section title="By exception type" aside="Resolved without a human">
         <ByType rows={m.by_type} />
       </Section>
@@ -99,6 +103,7 @@ function LearningSkeleton() {
           ))}
         </div>
       </div>
+      <TrustSkeleton />
       <ByTypeSkeleton />
     </div>
   )
@@ -132,6 +137,7 @@ function LoadError({ error, retry }: { error: Error; retry: () => void }) {
 
 export default function LearningPage() {
   const q = useQuery(metricsQ())
+  useHashScroll(q.isSuccess)
   return (
     <div className={SHELL}>
       {q.isPending ? (

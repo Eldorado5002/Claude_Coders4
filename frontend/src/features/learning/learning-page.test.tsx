@@ -24,12 +24,12 @@ vi.mock('@/api/queries', async (orig) => {
 
 const metrics = metricsMock as Metrics
 
-function renderPage(seed?: Metrics) {
+function renderPage(seed?: Metrics, path = '/learning') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
   if (seed) client.setQueryData(qk.metrics, seed)
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/learning']}>
+      <MemoryRouter initialEntries={[path]}>
         <LearningPage />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -96,6 +96,35 @@ describe('LearningPage', () => {
   it('shows skeletons while loading', () => {
     const { container } = renderPage()
     expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument()
+  })
+
+  it('adds the MSME figures to the live docket row, in the warning tone while any are at risk', () => {
+    renderPage(twistMetrics as unknown as Metrics)
+    expect(screen.getByText('MSME invoices at risk')).toBeInTheDocument()
+    expect(screen.getByText('MSME tax at risk')).toBeInTheDocument()
+    expect(screen.getByText('Tax deduction at stake under 43B(h)').parentElement).toHaveClass('text-hold')
+  })
+
+  it('keeps the MSME figures neutral when nothing is at risk', () => {
+    renderPage(metrics)
+    expect(screen.getByText('MSME invoices at risk').parentElement).not.toHaveClass('text-hold')
+  })
+
+  it('puts "Trust you can check" after the curves and before the breakdown', () => {
+    renderPage(metrics)
+    const eyebrows = ['Learning curves', 'Trust you can check', 'By exception type'].map((t) => screen.getByText(t))
+    expect(eyebrows[0].compareDocumentPosition(eyebrows[1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(eyebrows[1].compareDocumentPosition(eyebrows[2]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('scrolls to the trust section when opened at /learning#trust', () => {
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {})
+    const { container } = renderPage(metrics, '/learning#trust')
+    const trust = container.querySelector('#trust')
+    expect(trust).toBeInTheDocument()
+    expect(scroll).toHaveBeenCalledTimes(1)
+    expect(scroll.mock.contexts[0]).toBe(trust)
+    scroll.mockRestore()
   })
 
   it('explains an unreachable Hindsight plainly', async () => {
