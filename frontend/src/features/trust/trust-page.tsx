@@ -122,7 +122,7 @@ export default function TrustPage() {
   const soft = m.types.filter((t) => !isHardControl(t))
   const hard = m.types.filter((t) => isHardControl(t))
   const col = (t: ExceptionType) => (
-    <th key={t} scope="col" className={cn('px-2 pb-3 align-bottom', isHardControl(t) && 'hatch')}>
+    <th key={t} scope="col" className={cn('pb-3 align-bottom', isHardControl(t) ? 'hatch px-0.5' : 'px-2')}>
       <span className="block text-center text-[10px] leading-tight font-semibold tracking-[0.08em] text-muted-foreground uppercase">
         {TYPE_LABEL[t]}
       </span>
@@ -190,9 +190,10 @@ export default function TrustPage() {
                 {m.vendors.map((v) => (
                   <tr key={v.id} className="border-t border-rule">
                     <th scope="row" className="py-1 pr-4 text-left font-normal">
-                      <Link to={`/vendors/${v.id}`} className="flex items-center gap-2 text-sm hover:underline">
-                        {v.hasAuto && <AgentMark className="text-foreground" />}
-                        <span className="truncate">{v.name}</span>
+                      {/* long names wrap rather than widen the table: at the Twist all 11 lanes fit at 1440px */}
+                      <Link to={`/vendors/${v.id}`} className="flex max-w-[13rem] items-center gap-2 text-sm hover:underline">
+                        {v.hasAuto && <AgentMark className="shrink-0 text-foreground" />}
+                        <span className="text-pretty">{v.name}</span>
                       </Link>
                     </th>
                     {soft.map((t) => (
@@ -202,7 +203,8 @@ export default function TrustPage() {
                     ))}
                     {hard.length > 0 && <td aria-hidden />}
                     {hard.map((t) => (
-                      <td key={t} className="min-w-[5.5rem] border-l border-rule p-0">
+                      // a hard-control cell only ever holds a lock, so it can be narrower than a lane that can stamp AUTO
+                      <td key={t} className="min-w-[4rem] border-l border-rule p-0">
                         <Cell a={v.cells[t]} stamp={false} />
                       </td>
                     ))}
