@@ -246,7 +246,7 @@ def detail(session: Session, case: ExceptionCase) -> ExceptionDetail:
         resolution=Resolution(**case.resolution) if case.resolution else None,
         autonomy=to_state(auto, v.name),
         compliance=Compliance(
-            msme=case_msme(session, case, sim_date(session)),
+            msme=case_msme(session, case, sim_date(session)) if case.status == CaseStatus.OPEN else None,
             e_invoice=einvoice_status(v.profile, row_dict(inv)),
         ),
     )

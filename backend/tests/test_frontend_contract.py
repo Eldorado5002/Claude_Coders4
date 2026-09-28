@@ -85,3 +85,64 @@ def test_unfinished_summaries_are_not_cited_as_evidence():
         )
     )
     assert [c.id for c in citations_from(resp)] == ["mm-2"]
+
+
+def test_health_is_down_when_hindsight_rejects_the_key():
+    from app.memory.store import MemoryStore
+
+    class Err(Exception):
+        def __init__(self, status):
+            super().__init__(f"HTTP {status}")
+            self.status = status
+
+    class Client:
+        def __init__(self, status):
+            self.status = status
+
+        async def aget_bank_config(self, bank_id):
+            if self.status:
+                raise Err(self.status)
+            return {}
+
+        async def aget_version(self):  # answers without a key: must not count
+            return {"version": "x"}
+
+    store = MemoryStore()
+    for status, up in ((None, True), (404, True), (401, False), (403, False), (500, False)):
+        store._client = Client(status)
+        assert asyncio.run(store.health("bank")) is up, status
+
+
+def test_vendor_profile_says_when_memory_is_unavailable(client, env, monkeypatch):
+    assert client.get("/api/vendors/V001").json()["memory"] == "ok"
+
+    async def down(*_, **__):
+        raise ConnectionError("hindsight down")
+
+    monkeypatch.setattr(env.memory, "recall", down)
+    profile = client.get("/api/vendors/V001").json()
+    assert profile["memory"] == "unavailable" and profile["learned"] == []
+
+
+def test_msme_status_only_on_open_cases_in_list_and_detail(client, env):
+    from app.db import get_engine
+    from app.models import ExceptionCase, Vendor
+    from app.services.cases import get_cases
+
+    svc = get_cases()
+    with Session(get_engine()) as s:
+        msme = {v.id for v in s.exec(select(Vendor)).all() if (v.profile or {}).get("msme")}
+    case_id = None
+    for day in range(1, 60):
+        for cid in svc.process_arrivals(day):
+            with Session(get_engine()) as s:
+                c = s.get(ExceptionCase, cid)
+                if c.vendor_id in msme and not c.blocking:
+                    case_id = cid
+        if case_id:
+            break
+    assert client.get(f"/api/exceptions/{case_id}").json()["compliance"]["msme"] is not None
+    client.post(f"/api/exceptions/{case_id}/resolve", json={"decision": "approve", "reason": "Checked and fine."})
+    detail = client.get(f"/api/exceptions/{case_id}").json()
+    row = next(i for i in client.get("/api/exceptions", params={"status": "all"}).json()["items"] if i["id"] == case_id)
+    assert detail["compliance"]["msme"] is None and row["msme_days_left"] is None

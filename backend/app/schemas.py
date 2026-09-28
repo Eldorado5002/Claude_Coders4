@@ -375,6 +375,11 @@ class VendorProfile(VendorSummary):
     autonomy: list[AutonomyState]
     risk: VendorRisk | None = None
     udyam: str | None = None
+    memory: Literal["ok", "unavailable"] = Field(
+        "ok",
+        description="'unavailable' when Hindsight couldn't be reached: then an empty `learned` and a null `playbook` "
+        "mean 'unknown', not 'nothing learned yet'",
+    )
 
 
 # ---------------------------------------------------------------- beliefs & knowledge pages
