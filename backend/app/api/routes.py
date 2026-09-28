@@ -79,7 +79,7 @@ _inflight: set[str] = set()
 
 async def hindsight_up(bank: str) -> bool:
     hit = _health_cache.get(bank)
-    if hit and time.time() - hit[0] < 30:
+    if hit and time.time() - hit[0] < (30 if hit[1] else 10):  # recheck a "down" sooner
         return hit[1]
     ok = await get_memory().health(bank)
     _health_cache[bank] = (time.time(), ok)

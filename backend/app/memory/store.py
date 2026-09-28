@@ -165,11 +165,18 @@ class MemoryStore:
         """True only when Hindsight answers an authenticated call. A 404 (the bank isn't created yet) still proves
         the key works; 401/403, timeouts and network errors mean memory is unavailable. (The version endpoint
         answers without a key, so it can't be used as a health check.)"""
-        try:
-            await asyncio.wait_for(self.client.aget_bank_config(bank_id), timeout=5)
-            return True
-        except Exception as e:  # noqa: BLE001
-            return getattr(e, "status", None) == 404
+        for attempt in range(2):  # one retry: a single slow answer shouldn't raise the "memory is down" banner
+            try:
+                await asyncio.wait_for(self.client.aget_bank_config(bank_id), timeout=8)
+                return True
+            except Exception as e:  # noqa: BLE001
+                status = getattr(e, "status", None)
+                if status == 404:
+                    return True
+                if status in (401, 403) or attempt:  # a rejected key is definitive
+                    return False
+                await asyncio.sleep(0.5)
+        return False
 
     async def ensure_bank(self, bank_id: str) -> None:
         if bank_id in self._ready:
