@@ -30,8 +30,6 @@ export const qk = {
   beliefs: (vendorId: string) => ['beliefs', vendorId] as const,
   risk: ['risk'] as const,
   benford: ['benford'] as const,
-  knowledge: ['knowledge'] as const,
-  knowledgePage: (id: string) => ['knowledge', id] as const,
 }
 
 type Payload = Record<string, unknown>

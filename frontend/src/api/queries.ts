@@ -93,15 +93,3 @@ export const riskQ = () => queryOptions({ queryKey: qk.risk, queryFn: () => unwr
 
 export const benfordQ = () =>
   queryOptions({ queryKey: qk.benford, queryFn: () => unwrap(api.GET('/api/benford')), staleTime: 60_000 })
-
-export const knowledgeQ = () =>
-  queryOptions({ queryKey: qk.knowledge, queryFn: () => unwrap(api.GET('/api/knowledge')), staleTime: 60_000, retry: false })
-
-export const knowledgePageQ = (id: string) =>
-  queryOptions({
-    queryKey: qk.knowledgePage(id),
-    queryFn: () => unwrap(api.GET('/api/knowledge/{page_id}', { params: { path: { page_id: id } } })),
-    staleTime: 60_000,
-    retry: false,
-  })
-

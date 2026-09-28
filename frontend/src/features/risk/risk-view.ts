@@ -162,7 +162,5 @@ export function riskErrorCopy(error: unknown, what: keyof typeof WHAT): { title:
   const status = error instanceof ApiError ? error.status : undefined
   if (status === 0)
     return { title: 'Can’t reach the Precedent API.', body: 'Start the backend, or switch to sample data from the banner above.' }
-  if (status === 503)
-    return { title: 'Hindsight memory is unreachable.', body: 'Risk figures are paused until Hindsight is back.' }
   return { title: `${WHAT[what]} didn’t load.`, body: error instanceof Error ? error.message : String(error) }
 }

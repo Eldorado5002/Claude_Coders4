@@ -234,10 +234,11 @@ describe('riskErrorCopy', () => {
     )
   })
 
-  it('explains Hindsight being down', () => {
-    expect(riskErrorCopy(new ApiError(503, 'Hindsight unavailable'), 'benford').title).toBe(
-      'Hindsight memory is unreachable.',
-    )
+  it('doesn’t blame Hindsight for a 503: risk and Benford read only the database', () => {
+    expect(riskErrorCopy(new ApiError(503, 'Service unavailable'), 'benford')).toEqual({
+      title: 'The Benford test didn’t load.',
+      body: 'Service unavailable',
+    })
   })
 
   it('names what failed otherwise', () => {
