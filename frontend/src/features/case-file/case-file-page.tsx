@@ -30,7 +30,13 @@ export default function CaseFilePage() {
   const { search } = useLocation()
   const settings = useQuery(settingsQ())
   const memOn = settings.data?.memory_enabled ?? true
-  const q = useQuery({ ...exceptionQ(id, memOn), enabled: !!settings.data })
+  const q = useQuery({
+    ...exceptionQ(id, memOn),
+    enabled: !!settings.data,
+    // switching memory keeps this case on screen (header, evidence, the old verdict dimmed) while the other
+    // verdict loads, instead of dropping the whole file to a skeleton; opening another case starts fresh
+    placeholderData: (prev) => (prev?.id === id ? prev : undefined),
+  })
   // the other memory mode, if it's in the cache: powers "Memory changed this verdict"
   const other = useQuery({ ...exceptionQ(id, !memOn), enabled: false })
 
@@ -67,7 +73,7 @@ export default function CaseFilePage() {
       <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8 @min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(380px,440px)]">
         <aside className="min-w-0 self-start @min-[1100px]:sticky @min-[1100px]:top-6 @min-[1100px]:order-2">
           <Safe label="Precedent’s opinion">
-            <OpinionPanel key={c.id} c={c} other={other.data} memOn={memOn} />
+            <OpinionPanel key={c.id} c={c} other={other.data} memOn={memOn} rerunning={q.isPlaceholderData} />
           </Safe>
         </aside>
         <div className="min-w-0 space-y-9 @min-[1100px]:order-1">

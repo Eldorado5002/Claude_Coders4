@@ -27,12 +27,15 @@ export function TrustDots({
   required = 3,
   className,
   label = true,
+  justEarned = false,
 }: {
   level: AutonomyLevel
   streak: number
   required?: number
   className?: string
   label?: boolean
+  /** the last filled dot was earned by the decision just filed: it fills in once its card has landed */
+  justEarned?: boolean
 }) {
   if (level === 'locked')
     return (
@@ -49,15 +52,22 @@ export function TrustDots({
       aria-label={`${filled} of ${required} accepted recommendations toward auto`}
     >
       <span className="inline-flex gap-1" aria-hidden>
-        {Array.from({ length: required }, (_, i) => (
-          <span
-            key={i}
-            className={cn(
-              'size-2 rounded-full border border-foreground transition-colors duration-200',
-              i < filled ? 'bg-foreground' : 'bg-transparent',
-            )}
-          />
-        ))}
+        {Array.from({ length: required }, (_, i) => {
+          const earned = justEarned && i === filled - 1
+          return (
+            <span
+              key={i}
+              data-just-earned={earned || undefined}
+              className={cn(
+                'relative size-2 rounded-full border border-foreground transition-colors duration-200',
+                i < filled && !earned ? 'bg-foreground' : 'bg-transparent',
+              )}
+            >
+              {/* the ring stays; the ink fills in after the card has landed */}
+              {earned && <span className="absolute inset-0 animate-fill-in rounded-full bg-foreground" />}
+            </span>
+          )
+        })}
       </span>
       {label && (
         <span className="tabular-nums">

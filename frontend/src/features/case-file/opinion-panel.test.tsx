@@ -1,9 +1,13 @@
-import { screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { MemoryRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { ExceptionDetail, Recommendation } from '@/api/types'
 import detailMock from '@mocks/exception-detail.json'
 import hardControlMock from '@mocks/twist/exception-detail-hard-control.json'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { renderApp } from '@/test/render'
 import { OpinionPanel } from './opinion-panel'
 
@@ -97,5 +101,26 @@ describe('OpinionPanel', () => {
     renderApp(<OpinionPanel c={{ ...detail, recommendation: rec }} />)
     expect(screen.getByText('Grounded in 1 precedent')).toBeInTheDocument()
     expect(screen.queryByText(/Generating content/)).not.toBeInTheDocument()
+  })
+
+  it('a verdict that arrives while you watch rises in', () => {
+    const client = new QueryClient()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={client}>
+        <TooltipProvider>
+          <MemoryRouter>{children}</MemoryRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    )
+    const { rerender, container } = render(<OpinionPanel c={{ ...detail, status: 'open', recommendation: null }} />, { wrapper })
+    expect(container.querySelector('[data-enter]')).toBeNull()
+    rerender(<OpinionPanel c={{ ...detail, status: 'open' }} />)
+    expect(container.querySelector('[data-enter="true"]')).not.toBeNull()
+  })
+
+  it('a verdict already written when the case opens simply shows, with no entrance', () => {
+    const { container } = renderApp(<OpinionPanel c={detail} />)
+    expect(screen.getByText('Precedents cited')).toBeInTheDocument()
+    expect(container.querySelector('[data-enter]')).toBeNull()
   })
 })

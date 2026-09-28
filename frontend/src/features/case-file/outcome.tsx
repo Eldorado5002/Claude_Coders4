@@ -92,7 +92,7 @@ export function LessonCard({ result }: { result: ResolveResult }) {
         ) : result.demoted ? (
           <p className="text-sm">Overruled, so trust resets: back to suggesting for {TYPE_LABEL[a.exception_type]}.</p>
         ) : (
-          <TrustDots level={a.level} streak={a.streak} required={a.required_streak} />
+          <TrustDots level={a.level} streak={a.streak} required={a.required_streak} justEarned={a.streak > 0} />
         )}
       </div>
     </div>
