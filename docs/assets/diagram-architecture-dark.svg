@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="470" viewBox="0 0 960 470" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Precedent architecture</title><desc id="d">A progressive web app talks to the Precedent API over REST and live server-sent events. The API holds the 3-way match, hard controls, recommender, autonomy, compliance, anomaly model and capture, with SQLite as the system of record. It uses Hindsight Cloud for memory, an LLM failover chain for decisions and Gemini vision for invoice photos.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d7c76"/></marker><marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3987e5"/></marker></defs>
+<rect x="0.5" y="0.5" width="959" height="469" rx="12" fill="#1a1a19" stroke="#2c2c2a"/>
+<rect x="24" y="170" width="150" height="128" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="99.0" y="212.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Web app</text>
+<text x="99.0" y="234.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">PWA · React 19</text>
+<text x="99.0" y="252.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">desktop-first</text>
+<text x="99.0" y="270.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">installable, push</text>
+<path d="M177,222 L247,222" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M247,246 L177,246" fill="none" stroke="#7d7c76" stroke-width="2" stroke-dasharray="6 5" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="212" y="212" font-size="12.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">REST</text>
+<text x="212" y="266" font-size="12.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">live SSE</text>
+<rect x="250" y="40" width="410" height="370" rx="14" fill="none" stroke="#3d3d3a" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="266" y="66" font-size="15" font-weight="600" fill="#f0f0ee" text-anchor="start">Precedent API · FastAPI</text>
+<rect x="266" y="84" width="184" height="74" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="358.0" y="108.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Match + controls</text>
+<text x="358.0" y="130.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">3-way match</text>
+<text x="358.0" y="148.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">6 hard controls in code</text>
+<rect x="460" y="84" width="184" height="74" rx="10" fill="#15263b" stroke="#3987e5" stroke-width="2"/>
+<text x="552.0" y="108.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Recommender</text>
+<text x="552.0" y="130.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">guardrail · fast path</text>
+<text x="552.0" y="148.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">or reflect</text>
+<rect x="266" y="168" width="184" height="74" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="358.0" y="192.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Earned autonomy</text>
+<text x="358.0" y="214.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">streak · envelope</text>
+<text x="358.0" y="232.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">certificate</text>
+<rect x="460" y="168" width="184" height="74" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="552.0" y="192.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Compliance + risk</text>
+<text x="552.0" y="214.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">MSME 43B(h) · IRN</text>
+<text x="552.0" y="232.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">GSTIN · Benford</text>
+<rect x="266" y="252" width="184" height="74" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="358.0" y="276.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Anomaly model</text>
+<text x="358.0" y="298.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">IsolationForest</text>
+<text x="358.0" y="316.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">per vendor</text>
+<rect x="460" y="252" width="184" height="74" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="552.0" y="276.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Capture</text>
+<text x="552.0" y="298.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">photo → invoice</text>
+<text x="552.0" y="316.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">→ 3-way match</text>
+<rect x="266" y="340" width="378" height="52" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="455" y="371" font-size="14" font-weight="400" fill="#f0f0ee" text-anchor="middle">SQLite · the system of record (invoices, POs, GRNs, cases)</text>
+<rect x="720" y="40" width="216" height="170" rx="10" fill="#15263b" stroke="#3987e5" stroke-width="2"/>
+<text x="828.0" y="94.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Hindsight Cloud</text>
+<text x="828.0" y="116.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">retain · recall · reflect</text>
+<text x="828.0" y="134.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">observations + history</text>
+<text x="828.0" y="152.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">directives · mental models</text>
+<text x="828.0" y="170.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">Knowledge Pages</text>
+<rect x="720" y="232" width="216" height="86" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="828.0" y="262.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">LLM chain</text>
+<text x="828.0" y="284.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">Groq → Gemini → NVIDIA</text>
+<text x="828.0" y="302.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">automatic failover</text>
+<rect x="720" y="340" width="216" height="70" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
+<text x="828.0" y="371.0" font-size="16" font-weight="600" fill="#f0f0ee" text-anchor="middle">Gemini vision</text>
+<text x="828.0" y="393.0" font-size="13.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">invoice photos and PDFs</text>
+<path d="M663,116 L717,116" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" marker-end="url(#aa)"/>
+<path d="M717,140 L663,140" fill="none" stroke="#3987e5" stroke-width="2" stroke-dasharray="6 5" stroke-linejoin="round" marker-end="url(#aa)"/>
+<text x="690" y="166" font-size="12.5" font-weight="600" fill="#3987e5" text-anchor="middle">memory</text>
+<path d="M663,275 L717,275" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="690" y="265" font-size="12.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">JSON</text>
+<path d="M663,375 L717,375" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="690" y="365" font-size="12.5" font-weight="400" fill="#b3b2ab" text-anchor="middle">images</text>
+<text x="24" y="446" font-size="13" font-weight="400" fill="#b3b2ab" text-anchor="start">SQLite records what happened; Hindsight stores what the team learned. API keys never leave the server.</text>
+</svg>

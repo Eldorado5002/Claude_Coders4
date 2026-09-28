@@ -182,7 +182,8 @@ Having memory matters far more than how it is read. `reflect` is the most accura
 expensive; the hybrid gives up a few cautious holds to cut cost, and its cost keeps falling as more pairs
 become routine ($0.021 per case in weeks 9–12). A plain vector store is a strong baseline on this data; what
 it doesn't give us is consolidated beliefs with history, directives enforced during reasoning, time-anchored
-recall, a self-writing wiki and clean forgetting. Raw results: [`ablation.json`](../backend/data/ablation.json).
+recall, a self-writing wiki and clean forgetting. Full method and variance notes: [`EVALUATION.md`](EVALUATION.md);
+raw results: [`ablation.json`](../backend/data/ablation.json).
 
 ## 10. Demo snapshots and evaluation
 

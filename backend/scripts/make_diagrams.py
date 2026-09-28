@@ -138,6 +138,78 @@ class Svg:
         return NL.join([*self.parts, "</svg>"]) + NL
 
 
+# ---------------------------------------------------------------- 0. the architecture
+
+
+def architecture(t: dict) -> str:
+    s = Svg(
+        960,
+        470,
+        t,
+        "Precedent architecture",
+        "A progressive web app talks to the Precedent API over REST and live server-sent events. The API holds the "
+        "3-way match, hard controls, recommender, autonomy, compliance, anomaly model and capture, with SQLite as the "
+        "system of record. It uses Hindsight Cloud for memory, an LLM failover chain for decisions and Gemini "
+        "vision for invoice photos.",
+    )
+    # the app
+    s.box(24, 170, 150, 128, "Web app", f"PWA · React 19{NL}desktop-first{NL}installable, push", chars=20)
+    s.arrow([(177, 222), (247, 222)])
+    s.arrow([(247, 246), (177, 246)], dashed=True)
+    s.label(212, 212, "REST", size=12.5)
+    s.label(212, 266, "live SSE", size=12.5)
+    # the API
+    x0, y0, w0, h0 = 250, 40, 410, 370
+    s.add(
+        f'<rect x="{x0}" y="{y0}" width="{w0}" height="{h0}" rx="14" fill="none" stroke="{t["stroke"]}" '
+        'stroke-width="1.5" stroke-dasharray="6 5"/>'
+    )
+    s.text(x0 + 16, y0 + 26, "Precedent API · FastAPI", size=15, weight=600)
+    cells = [
+        ("Match + controls", f"3-way match{NL}6 hard controls in code"),
+        ("Recommender", f"guardrail · fast path{NL}or reflect"),
+        ("Earned autonomy", f"streak · envelope{NL}certificate"),
+        ("Compliance + risk", f"MSME 43B(h) · IRN{NL}GSTIN · Benford"),
+        ("Anomaly model", f"IsolationForest{NL}per vendor"),
+        ("Capture", f"photo → invoice{NL}→ 3-way match"),
+    ]
+    for i, (title, body) in enumerate(cells):
+        cx, cy = x0 + 16 + (i % 2) * 194, y0 + 44 + (i // 2) * 84
+        s.box(cx, cy, 184, 74, title, body, kind="accent" if title == "Recommender" else "node", chars=26)
+    s.box(x0 + 16, y0 + 300, 378, 52, "", kind="node")
+    s.text(
+        x0 + 16 + 189, y0 + 331, "SQLite · the system of record (invoices, POs, GRNs, cases)", size=14, anchor="middle"
+    )
+    # the services
+    rx, rw = 720, 216
+    s.box(
+        rx,
+        40,
+        rw,
+        170,
+        "Hindsight Cloud",
+        f"retain · recall · reflect{NL}observations + history{NL}directives · mental models{NL}Knowledge Pages",
+        kind="accent",
+        chars=28,
+    )
+    s.box(rx, 232, rw, 86, "LLM chain", f"Groq → Gemini → NVIDIA{NL}automatic failover", chars=28)
+    s.box(rx, 340, rw, 70, "Gemini vision", "invoice photos and PDFs", chars=28)
+    s.arrow([(663, 116), (717, 116)], accent=True)
+    s.arrow([(717, 140), (663, 140)], accent=True, dashed=True)
+    s.label(690, 166, "memory", color="accent", size=12.5, weight=600)
+    s.arrow([(663, 275), (717, 275)])
+    s.label(690, 265, "JSON", size=12.5)
+    s.arrow([(663, 375), (717, 375)])
+    s.label(690, 365, "images", size=12.5)
+    s.label(
+        24,
+        446,
+        "SQLite records what happened; Hindsight stores what the team learned. API keys never leave the server.",
+        anchor="start",
+    )
+    return s.render()
+
+
 # ---------------------------------------------------------------- 1. the loop
 
 
@@ -256,8 +328,8 @@ def sequence(t: dict) -> str:
         500,
         t,
         "The learning loop, step by step",
-        "Numbered sequence between the invoice, the Precedent API, Hindsight and the AP clerk: reflect for a cited "
-        "recommendation, the clerk decides, the autonomy ladder updates, and the lesson is retained.",
+        "Numbered sequence between the invoice, the Precedent API, Hindsight and the AP clerk: recall or reflect "
+        "for a cited recommendation, the clerk decides, the autonomy ladder updates, and the lesson is retained.",
     )
     lanes = [("Invoice", 110), ("Precedent API", 360), ("Hindsight", 610), ("AP clerk", 850)]
     top, bottom = 26, 480
@@ -280,8 +352,8 @@ def sequence(t: dict) -> str:
         s.badge(x - 150, y, n)
 
     step(1, 118, "Invoice", "Precedent API", "3-way match finds an exception")
-    step(2, 170, "Precedent API", "Hindsight", "reflect(case, vendor + type tags)", accent=True)
-    step(3, 222, "Hindsight", "Precedent API", "approve · 1.00 · cited memories", dashed=True, accent=True)
+    step(2, 170, "Precedent API", "Hindsight", "recall (routine) or reflect · vendor + type tags", accent=True)
+    step(3, 222, "Hindsight", "Precedent API", "approve · 0.95 · cited memories", dashed=True, accent=True)
     step(4, 274, "Precedent API", "AP clerk", "recommendation + memories-used panel")
     step(5, 326, "AP clerk", "Precedent API", "approve in one click, or correct with a reason", dashed=True)
     note(6, 378, "Precedent API", "autonomy ladder +1 (3 in a row = auto)")
@@ -292,7 +364,7 @@ def sequence(t: dict) -> str:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for name, fn in (("loop", loop), ("pipeline", pipeline), ("sequence", sequence)):
+    for name, fn in (("architecture", architecture), ("loop", loop), ("pipeline", pipeline), ("sequence", sequence)):
         for mode, theme in THEMES.items():
             path = OUT / f"diagram-{name}-{mode}.svg"
             path.write_text(fn(theme), encoding="utf-8")

@@ -33,7 +33,13 @@ and earns autonomy per vendor × exception type. Hard financial controls never b
 - LLM: `app/llm/router.py` — one OpenAI-compatible client, failover chain
   Groq `openai/gpt-oss-120b` → Gemini `gemini-3.1-flash-lite` → NVIDIA `nvidia/nemotron-3-super-120b-a12b`.
   LLMs only return schema-validated JSON; plain Python drives control flow.
-- Deterministic guardrails run **before** any LLM: duplicate invoice, bank-detail change, first-time vendor, over ₹5,00,000.
+- Deterministic guardrails run **before** any LLM: duplicate invoice (exact and fuzzy), bank-detail change,
+  invalid or mismatched GSTIN, missing e-invoice IRN, first-time vendor, over ₹5,00,000.
+- Recommender routes, cheapest first: guardrail (no LLM) → fast path (Hindsight recall + one LLM call, for routine
+  vendor × type pairs) → reflect (new or uncertain cases). Auto-payment also needs the autonomy certificate
+  (`app/agent/certify.py`, Clopper–Pearson bound on the wrong-payment rate).
+- India compliance lives in `app/services/compliance.py` (MSME 43B(h), e-invoicing); fraud scoring in
+  `app/services/risk.py` and `app/ml/benford.py`.
 - ML: scikit-learn IsolationForest per vendor → anomaly score.
 
 ```bash
@@ -44,6 +50,10 @@ uv run fastapi dev app/main.py        # API on http://localhost:8000  (docs at /
 uv run pytest                         # tests
 uv run ruff check . && uv run ruff format .
 ```
+
+Evaluations (live APIs, cost real money — ask before rerunning): `scripts/build_demo.py` (demo snapshots +
+learning curve, ~$4–5 of Hindsight), `scripts/ablation.py` (~$4.60), `scripts/eval_capture.py` (~$0.05 of Gemini).
+Method and results: `docs/EVALUATION.md`. `scripts/make_mocks.py` regenerates `docs/mocks/` from the running app.
 
 ## Frontend (`frontend/`)
 

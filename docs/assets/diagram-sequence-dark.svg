@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" font-family="Segoe UI, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
-<title id="t">The learning loop, step by step</title><desc id="d">Numbered sequence between the invoice, the Precedent API, Hindsight and the AP clerk: reflect for a cited recommendation, the clerk decides, the autonomy ladder updates, and the lesson is retained.</desc>
+<title id="t">The learning loop, step by step</title><desc id="d">Numbered sequence between the invoice, the Precedent API, Hindsight and the AP clerk: recall or reflect for a cited recommendation, the clerk decides, the autonomy ladder updates, and the lesson is retained.</desc>
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d7c76"/></marker><marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3987e5"/></marker></defs>
 <rect x="0.5" y="0.5" width="959" height="499" rx="12" fill="#1a1a19" stroke="#2c2c2a"/>
 <rect x="30" y="26" width="160" height="44" rx="10" fill="#232322" stroke="#3d3d3a" stroke-width="1.2"/>
@@ -19,11 +19,11 @@
 <circle cx="132" cy="118" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
 <text x="132" y="122.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">1</text>
 <path d="M366,170 L604,170" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" marker-end="url(#aa)"/>
-<text x="485.0" y="160" font-size="13.5" font-weight="400" fill="#f0f0ee" text-anchor="middle">reflect(case, vendor + type tags)</text>
+<text x="485.0" y="160" font-size="13.5" font-weight="400" fill="#f0f0ee" text-anchor="middle">recall (routine) or reflect · vendor + type tags</text>
 <circle cx="382" cy="170" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
 <text x="382" y="174.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">2</text>
 <path d="M604,222 L366,222" fill="none" stroke="#3987e5" stroke-width="2" stroke-dasharray="6 5" stroke-linejoin="round" marker-end="url(#aa)"/>
-<text x="485.0" y="212" font-size="13.5" font-weight="400" fill="#f0f0ee" text-anchor="middle">approve · 1.00 · cited memories</text>
+<text x="485.0" y="212" font-size="13.5" font-weight="400" fill="#f0f0ee" text-anchor="middle">approve · 0.95 · cited memories</text>
 <circle cx="588" cy="222" r="12" fill="#3987e5" stroke="#1a1a19" stroke-width="3"/>
 <text x="588" y="226.5" font-size="12.5" font-weight="700" fill="#1a1a19" text-anchor="middle">3</text>
 <path d="M366,274 L844,274" fill="none" stroke="#7d7c76" stroke-width="2" stroke-linejoin="round" marker-end="url(#a)"/>
