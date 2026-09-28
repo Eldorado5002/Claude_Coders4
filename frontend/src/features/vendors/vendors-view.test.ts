@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { AutonomyState, VendorProfile, VendorSummary } from '@/api/types'
+import type { AutonomyState, Belief, Citation, VendorProfile, VendorSummary } from '@/api/types'
 import twistProfile from '@mocks/twist/vendor-profile.json'
 import twistVendors from '@mocks/twist/vendors.json'
 import {
@@ -7,6 +7,7 @@ import {
   categoryLabel,
   complianceBadges,
   formatSort,
+  learnedBeyondBeliefs,
   lessonReason,
   matchesVendor,
   msmeLabel,
@@ -298,3 +299,32 @@ describe('sortLanes with a type the UI has never seen', () => {
     expect(() => sortLanes([lane('future_a'), lane('duplicate_invoice'), lane('future_b')])).not.toThrow()
   })
 })
+
+describe('learnedBeyondBeliefs', () => {
+  const cite = (id: string, text: string): Citation => ({ id, kind: 'observation', text }) as Citation
+  const belief = (id: string, text: string): Belief => ({ id, text, evidence_count: 3, versions: [] }) as Belief
+  const learned = [
+    cite('obs-1', 'Balaji freight up to ₹5,000 per trip is approved.'),
+    cite('obs-2', 'Balaji   freight over ₹5,000 is held.'),
+    cite('obs-3', 'Balaji bills fuel surcharge separately.'),
+  ]
+  const loaded = (data: Belief[]) => ({ data, isPending: false, isError: false })
+
+  it('drops what the beliefs already show, by id or by the same sentence', () => {
+    const out = learnedBeyondBeliefs(learned, loaded([belief('obs-1', 'x'), belief('b-9', 'Balaji freight over ₹5,000 is held.')]))
+    expect(out?.map((c) => c.id)).toEqual(['obs-3'])
+  })
+
+  it('shows nothing extra when the beliefs cover it all', () => {
+    expect(learnedBeyondBeliefs(learned.slice(0, 1), loaded([belief('obs-1', 'x')]))).toEqual([])
+  })
+
+  it('waits for the beliefs instead of flashing the list', () => {
+    expect(learnedBeyondBeliefs(learned, { isPending: true, isError: false })).toBeNull()
+  })
+
+  it('falls back to the full list when the beliefs could not load', () => {
+    expect(learnedBeyondBeliefs(learned, { isPending: false, isError: true })).toEqual(learned)
+  })
+})
+

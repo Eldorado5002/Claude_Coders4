@@ -64,8 +64,8 @@ export default function CaseFilePage() {
         <ArrowLeft className="size-3.5" /> Docket
       </Link>
       <CaseHeader c={c} />
-      <div className="mt-6 grid gap-8 @min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(380px,440px)]">
-        <aside className="self-start @min-[1100px]:sticky @min-[1100px]:top-6 @min-[1100px]:order-2">
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8 @min-[1100px]:grid-cols-[minmax(0,1fr)_minmax(380px,440px)]">
+        <aside className="min-w-0 self-start @min-[1100px]:sticky @min-[1100px]:top-6 @min-[1100px]:order-2">
           <Safe label="Precedent’s opinion">
             <OpinionPanel key={c.id} c={c} other={other.data} memOn={memOn} />
           </Safe>
