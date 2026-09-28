@@ -21,11 +21,6 @@
 
 </div>
 
-<p align="center">
-  <img src="docs/assets/screens/case-file.png" alt="Precedent's case file at Week 3: the docket on the left, and on the right the 3-way match, the compliance strip and Precedent's opinion, Approve with High 95 confidence, grounded in 8 precedents cited as footnotes." width="100%">
-  <br/><sub>Week 3 of the demo: a Balaji freight invoice, and Precedent's opinion grounded in eight precedents from Hindsight memory.</sub>
-</p>
-
 ---
 
 We're **team Claude_Coders4**, and this is **Precedent**: an AI agent for the accounts-payable (AP) team that gets better with every invoice problem it helps solve. This page walks you through the problem we picked, what we built, how it uses Hindsight memory, and the numbers that show it works. Everything described here is running code, and every number comes from an evaluation you can reproduce.
@@ -169,6 +164,10 @@ In the demo's Twist stage, sorting the queue by MSME deadline puts a micro suppl
 Rupesh built the clerk's workspace as a **Progressive Web App**. It's desktop-first for a projector, installs like a native app, and works on a phone for capturing invoices and quick decisions.
 
 Its design language is **"Case Law"**. The agent writes *opinions* and cites past cases like footnotes, on paper-and-ink styling where colour only ever marks a decision. Anything Precedent wrote carries the ◆ mark, and hard controls are locked and hatched, so you can see at a glance what memory may decide and what it never will.
+
+<img src="docs/assets/screens/case-file.png" alt="Precedent's case file at Week 3: the docket on the left, and on the right the 3-way match, the compliance strip and Precedent's opinion, Approve with High 95 confidence, grounded in 8 precedents cited as footnotes." width="100%">
+
+**The case file.** Week 3 of the demo: a Balaji freight invoice, and Precedent's opinion grounded in eight precedents from Hindsight memory.
 
 | | |
 |---|---|
