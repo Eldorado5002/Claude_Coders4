@@ -1,22 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { ExceptionDetail, MsmeStatus } from '@/api/types'
 import msmeMock from '@mocks/twist/exception-detail-msme.json'
-import { eInvoiceCheck, gstinCheck, msmeLine, shortIrn } from './compliance'
+import { eInvoiceCheck, gstinCheck, msmeLine } from './compliance'
 
 const msmeCase = msmeMock as unknown as ExceptionDetail
 const msme = msmeCase.compliance.msme!
 
 const text = (l: { strong: string; rest: string }) => `${l.strong}${l.rest}`
-
-describe('shortIrn', () => {
-  it('shortens a 64-hex IRN like a hash: first 8 … last 6', () => {
-    expect(shortIrn('1a9d7bc45699b8a8c24791bc16073a2a98508167eec94d39a65ae3832afbac44')).toBe('1a9d7bc4…fbac44')
-  })
-  it('leaves short values alone and trims whitespace', () => {
-    expect(shortIrn('  ABC123  ')).toBe('ABC123')
-    expect(shortIrn('0123456789abcdef')).toBe('0123456789abcdef')
-  })
-})
 
 describe('msmeLine', () => {
   it('once the case is decided: neutral, the deadline as a plain fact, nothing “at stake”', () => {

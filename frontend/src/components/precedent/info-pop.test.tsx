@@ -70,6 +70,19 @@ describe('InfoPop', () => {
     await expect.poll(() => screen.queryByText('Risk signals')).toBeNull()
   })
 
+  it('Enter on a popover the mouse already opened moves focus in, so Tab reaches its link', async () => {
+    pointer(true)
+    const user = userEvent.setup()
+    render(<Example />)
+    const trigger = screen.getByRole('button', { name: '58 high' })
+    await user.hover(trigger)
+    await screen.findByText('Risk signals')
+    trigger.focus()
+    await user.keyboard('{Enter}')
+    await user.tab()
+    expect(screen.getByRole('link', { name: 'All vendors by risk' })).toHaveFocus()
+  })
+
   it('a click while hover-open pins it, so moving away keeps it open', async () => {
     pointer(true)
     const user = userEvent.setup()

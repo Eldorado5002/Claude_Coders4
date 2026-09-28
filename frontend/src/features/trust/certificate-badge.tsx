@@ -4,7 +4,8 @@ import { Link } from 'react-router'
 import { certificateQ } from '@/api/queries'
 import { AgentMark } from '@/components/precedent'
 import { cn } from '@/lib/utils'
-import { certificateChip, decisionsNeeded } from './certificate-chip'
+import { decisionsNeeded } from '@/lib/certificate'
+import { certificateChip } from './certificate-chip'
 
 /** Is auto-pay statistically earned? One line, linking to the proof on the Learning page. */
 export function CertificateBadge() {

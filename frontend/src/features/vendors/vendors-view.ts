@@ -1,6 +1,7 @@
 import type { SortingState } from '@tanstack/react-table'
 import type { AutonomyLevel, AutonomyState, BenfordResult, Lesson, VendorProfile, VendorSummary } from '@/api/types'
 import { TYPE_LABEL } from '@/lib/labels'
+import { tidyReason } from '@/lib/risk'
 
 /** Column ids the vendor table can sort by (and the only ones the URL may name). */
 export const SORT_COLUMNS = ['name', 'gstin', 'terms', 'invoices', 'exceptions', 'open', 'touchless', 'risk'] as const
@@ -114,7 +115,8 @@ export function profileRisk(v: VendorProfile): ProfileRisk | null {
 }
 
 /** Reasons arrive as clauses ("exception rate 91% vs …"); in a list each starts with a capital. */
-export const riskReason = (r: string) => r.charAt(0).toUpperCase() + r.slice(1)
+/** The same sentence the /risk page shows: "1 request to pay…", capitalised. */
+export const riskReason = (r: string) => tidyReason(r)
 
 /** "First digits (Benford): marginal · MAD 0.0146 · 212 amounts" */
 export function benfordLine(b: BenfordResult | null | undefined): string | null {
