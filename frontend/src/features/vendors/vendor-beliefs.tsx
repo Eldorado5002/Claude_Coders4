@@ -36,7 +36,7 @@ export function Beliefs({ vendorId }: { vendorId: string }) {
     >
       {q.isPending ? (
         <BeliefsSkeleton />
-      ) : q.isError ? (
+      ) : q.isError && !q.data ? (
         <Quiet>
           {beliefsErrorCopy(q.error)}{' '}
           <button
@@ -51,11 +51,17 @@ export function Beliefs({ vendorId }: { vendorId: string }) {
       ) : list.length === 0 ? (
         <Quiet>No consolidated beliefs yet.</Quiet>
       ) : (
-        <ul className="divide-y divide-rule">
-          {list.map((b) => (
-            <BeliefItem key={b.id} b={b} />
-          ))}
-        </ul>
+        <>
+          {/* a failed background refresh keeps what Hindsight last said */}
+          {q.isError && (
+            <p className="mb-2 text-xs text-muted-foreground">Couldn’t refresh from Hindsight; showing the last beliefs it gave.</p>
+          )}
+          <ul className="divide-y divide-rule">
+            {list.map((b) => (
+              <BeliefItem key={b.id} b={b} />
+            ))}
+          </ul>
+        </>
       )}
     </Section>
   )

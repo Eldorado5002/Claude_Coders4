@@ -49,7 +49,8 @@ export function Lines({ n = 3, tall }: { n?: number; tall?: boolean }) {
 
 const UNAVAILABLE = 'Not available while the profile can’t be loaded.'
 
-export function Learned({ items, phase }: { items: Citation[]; phase: Phase }) {
+/** Hindsight is down (the beliefs call says so): an empty list means "can't see", not "nothing learned". */
+export function Learned({ items, phase, memoryDown = false }: { items: Citation[]; phase: Phase; memoryDown?: boolean }) {
   return (
     <Section
       title={
@@ -64,7 +65,11 @@ export function Learned({ items, phase }: { items: Citation[]; phase: Phase }) {
       ) : phase === 'unavailable' ? (
         <Quiet>{UNAVAILABLE}</Quiet>
       ) : items.length === 0 ? (
-        <Quiet>Nothing learned yet. Resolve a case for this vendor and the lesson appears here.</Quiet>
+        <Quiet>
+          {memoryDown
+            ? 'Hindsight isn’t answering, so what Precedent has learned can’t be shown right now.'
+            : 'Nothing learned yet. Resolve a case for this vendor and the lesson appears here.'}
+        </Quiet>
       ) : (
         <ul className="divide-y divide-rule">
           {items.map((c) => (
@@ -98,11 +103,17 @@ export function Learned({ items, phase }: { items: Citation[]; phase: Phase }) {
 export function VendorWiki({
   text,
   phase,
+  memoryDown = false,
+  hasExceptions = true,
   retrying,
   onRetry,
 }: {
   text: string | null | undefined
   phase: Phase
+  /** Hindsight is down: a missing wiki can't be told apart from one being written */
+  memoryDown?: boolean
+  /** the backend only asks Hindsight for a wiki once the vendor has exceptions */
+  hasExceptions?: boolean
   retrying: boolean
   onRetry: () => void
 }) {
@@ -119,6 +130,20 @@ export function VendorWiki({
         <Lines n={2} tall />
       ) : phase === 'unavailable' ? (
         <Quiet>{UNAVAILABLE}</Quiet>
+      ) : isPendingContent(text) && memoryDown ? (
+        <Quiet>
+          Hindsight isn’t answering, so the wiki can’t be shown right now.{' '}
+          <button
+            type="button"
+            className="underline underline-offset-2 hover:text-foreground disabled:opacity-60"
+            onClick={onRetry}
+            disabled={retrying}
+          >
+            Try again
+          </button>
+        </Quiet>
+      ) : isPendingContent(text) && !hasExceptions ? (
+        <Quiet>No wiki yet. Hindsight writes one once this vendor has exceptions to learn from.</Quiet>
       ) : isPendingContent(text) ? (
         <div className="space-y-3 pt-1" role="status">
           <p className="font-serif text-[1.05rem] text-muted-foreground">Hindsight is writing the wiki…</p>

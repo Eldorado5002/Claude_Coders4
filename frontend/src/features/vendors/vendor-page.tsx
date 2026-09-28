@@ -15,6 +15,8 @@ import { Learned, Lessons, RecentCases, Trust, VendorWiki, type Phase } from './
 import { placeholderProfile } from './vendors-view'
 
 const is404 = (e: unknown) => e instanceof ApiError && e.status === 404
+/** The profile swallows Hindsight failures (learned: [], playbook: null); the beliefs call's 503 is how we know. */
+const hindsightDown = (e: unknown) => e instanceof ApiError && e.status === 503
 
 function unavailableCopy(e: unknown): string {
   if (e instanceof ApiError && e.status === 503)
@@ -62,9 +64,8 @@ export default function VendorPage() {
   }, [id])
 
   // Beliefs are a second Hindsight call (~1.5 s): start it alongside the profile, not after the header paints.
-  useEffect(() => {
-    void qc.prefetchQuery(beliefsQ(id))
-  }, [qc, id])
+  const beliefs = useQuery(beliefsQ(id))
+  const memoryDown = hindsightDown(beliefs.error)
 
   const backLink = (
     <Link to={back} className="mb-5 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
@@ -134,12 +135,17 @@ export default function VendorPage() {
           <div className="mt-8 grid gap-10 @min-[880px]:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] @min-[880px]:gap-12">
             <div className="min-w-0 space-y-10">
               <Beliefs vendorId={v.id} />
-              <Learned items={v.learned} phase={phase} />
+              <Learned items={v.learned} phase={phase} memoryDown={memoryDown} />
               <VendorWiki
                 text={v.playbook}
                 phase={phase}
-                retrying={q.isFetching && !q.isPlaceholderData}
-                onRetry={() => q.refetch()}
+                memoryDown={memoryDown}
+                hasExceptions={v.exceptions_count > 0}
+                retrying={(q.isFetching && !q.isPlaceholderData) || beliefs.isFetching}
+                onRetry={() => {
+                  void q.refetch()
+                  if (memoryDown) void beliefs.refetch()
+                }}
               />
             </div>
             <div className="min-w-0 space-y-10">

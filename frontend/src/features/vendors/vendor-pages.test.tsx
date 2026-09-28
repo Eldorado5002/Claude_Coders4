@@ -362,3 +362,36 @@ describe('Vendor file', () => {
     expect(screen.getByText('Not available right now')).toBeInTheDocument()
   })
 })
+
+describe('Vendor file when Hindsight is down or has nothing yet', () => {
+  it('says Hindsight is down in Learned and the wiki, instead of "nothing learned" or a wiki being written', async () => {
+    // the profile swallows Hindsight's failure (learned: [], playbook: null); the beliefs 503 is the tell
+    mockApi({ vendor: () => ok({ ...profile, learned: [], playbook: null }), beliefs: () => fail(503, 'Hindsight unavailable') })
+    renderAt('/vendors/V001')
+    expect(await screen.findByText('Hindsight isn’t answering, so what Precedent has learned can’t be shown right now.')).toBeInTheDocument()
+    expect(screen.getByText('Hindsight isn’t answering, so the wiki can’t be shown right now.')).toBeInTheDocument()
+    expect(screen.queryByText(/Nothing learned yet/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/writing the wiki/)).not.toBeInTheDocument()
+  })
+
+  it('a vendor with no exceptions has no wiki yet, rather than one being written forever', async () => {
+    mockApi({ vendor: () => ok({ ...profile, exceptions_count: 0, learned: [], playbook: null }), beliefs: () => ok([]) })
+    renderAt('/vendors/V001')
+    expect(await screen.findByText('No wiki yet. Hindsight writes one once this vendor has exceptions to learn from.')).toBeInTheDocument()
+    expect(screen.queryByText(/writing the wiki/)).not.toBeInTheDocument()
+  })
+
+  it('keeps beliefs already shown when a refresh fails, with a quiet note', async () => {
+    let qc!: QueryClient
+    renderAt('/vendors/V001', (c) => (qc = c))
+    // the Week 3 belief also reads as a learned pattern, so it shows twice on the page
+    const text = (beliefsMock as Belief[])[0].text
+    expect(await screen.findByText(/Backed by/)).toBeInTheDocument()
+    const shown = screen.getAllByText(text).length
+    mockApi({ beliefs: () => fail(503, 'Hindsight unavailable') })
+    await qc.refetchQueries({ queryKey: qk.beliefs('V001') })
+    expect(await screen.findByText('Couldn’t refresh from Hindsight; showing the last beliefs it gave.')).toBeInTheDocument()
+    expect(screen.getAllByText(text)).toHaveLength(shown)
+    expect(screen.getByText(/Backed by/)).toBeInTheDocument()
+  })
+})
