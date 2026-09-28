@@ -73,6 +73,12 @@ snapshots for free with `uv run python -m scripts.refresh_stage day1 week3 week8
 - Generate API types from the running backend: `npm run gen:api`.
 - Screen-by-screen work for the newer backend features: `docs/frontend-integration.md`.
 
+## Hosting
+
+The demo runs on Google Cloud Run (project `claude-coders-4`, service `precedent`, `us-central1`): one container
+that serves the API and the built web app (`Dockerfile` at the root). Keys live in Secret Manager, never in git.
+Keep it at **one instance** (live state is in memory). Deploy, demo on/off and costs: `docs/DEPLOY.md`.
+
 ## Conventions
 
 - Money is INR, sent as numbers (rupees with paise); format in the UI with `Intl.NumberFormat('en-IN')`.

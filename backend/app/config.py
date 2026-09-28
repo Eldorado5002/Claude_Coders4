@@ -42,6 +42,13 @@ class Settings(BaseSettings):
     autonomy_min_confidence: float = 0.75
     recommender_mode: str = "hybrid"  # hybrid | reflect | recall (recall_facts and rag: ablation only)
 
+    # Hosted demo (all off by default; see docs/DEPLOY.md)
+    frontend_dist: str = ""  # path to the built web app; when set, the API serves it at /
+    daily_cap_ask: int = 0  # copilot questions per day (0 = unlimited)
+    daily_cap_capture: int = 0  # invoice captures per day
+    daily_cap_rerun: int = 0  # re-run recommendations per day
+    per_visitor_per_minute: int = 0  # paid actions per visitor per minute
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

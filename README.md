@@ -393,6 +393,7 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 | `uv run python -m scripts.make_charts` | Redraws the learning-curve and ablation charts |
 | `uv run python -m scripts.make_diagrams` | Redraws the README diagrams |
 | `uv run python -m scripts.gen_vapid` | Creates push-notification keys |
+| `gcloud run deploy precedent --source .` (repository root) | Redeploys the hosted demo on Google Cloud Run; see [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 
 <details>
 <summary><b>API overview (29 endpoints)</b></summary>

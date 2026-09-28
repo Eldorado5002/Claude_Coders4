@@ -3,12 +3,13 @@ import logging
 import time
 from collections.abc import AsyncIterable
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, UploadFile
 from fastapi.sse import EventSourceResponse, ServerSentEvent
 from sqlmodel import Session, col, func, select
 
 from app.agent.autonomy import to_state
 from app.agent.certify import certificate
+from app.api.limits import spend
 from app.config import get_settings
 from app.db import get_engine, get_state, set_state
 from app.memory.store import citations_from, get_memory
@@ -186,7 +187,7 @@ def get_exception(case_id: str, background: BackgroundTasks) -> ExceptionDetail:
         return detail(s, case)
 
 
-@router.post("/exceptions/{case_id}/recommend", response_model=ExceptionDetail)
+@router.post("/exceptions/{case_id}/recommend", response_model=ExceptionDetail, dependencies=[Depends(spend("rerun"))])
 async def recommend(case_id: str) -> ExceptionDetail:
     with Session(get_engine()) as s:
         case = _case_or_404(s, case_id)
@@ -417,7 +418,7 @@ async def recent_memory(limit: int = Query(20, ge=1, le=100)) -> list[MemoryItem
     return [_memory_item(m) for m in items]
 
 
-@router.post("/copilot/ask", response_model=CopilotAnswer)
+@router.post("/copilot/ask", response_model=CopilotAnswer, dependencies=[Depends(spend("ask"))])
 async def copilot(body: CopilotRequest) -> CopilotAnswer:
     with Session(get_engine()) as s:
         bank, today = active_bank(s), sim_date(s)
@@ -479,7 +480,7 @@ async def team_policy() -> PolicyDoc:
 # ---------------------------------------------------------------- capture
 
 
-@router.post("/invoices/capture", response_model=CaptureResult)
+@router.post("/invoices/capture", response_model=CaptureResult, dependencies=[Depends(spend("capture"))])
 async def capture(file: UploadFile) -> CaptureResult:
     mime = file.content_type or "image/jpeg"
     if mime not in ("image/jpeg", "image/png", "image/webp", "application/pdf"):

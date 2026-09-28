@@ -6,9 +6,11 @@ import json
 import logging
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlmodel import Session, select
 
 from app.api.routes import router
@@ -100,6 +102,31 @@ app.add_middleware(
 app.include_router(router)
 
 
-@app.get("/", include_in_schema=False)
-def root() -> dict:
-    return {"name": "Precedent API", "docs": "/docs", "openapi": "/openapi.json"}
+API_INFO = {"name": "Precedent API", "docs": "/docs", "openapi": "/openapi.json"}
+NO_CACHE = {"Cache-Control": "no-cache"}  # the service worker and index must never be stale
+IMMUTABLE = {"Cache-Control": "public, max-age=31536000, immutable"}  # hashed build assets
+
+
+def _web_app() -> Path | None:
+    dist = get_settings().frontend_dist
+    return Path(dist).resolve() if dist and (Path(dist) / "index.html").is_file() else None
+
+
+@app.get("/", include_in_schema=False, response_model=None)
+def root() -> dict | FileResponse:
+    web = _web_app()
+    return FileResponse(web / "index.html", headers=NO_CACHE) if web else API_INFO
+
+
+@app.get("/{path:path}", include_in_schema=False, response_model=None)
+def web_app(path: str) -> FileResponse:
+    """The built frontend, when FRONTEND_DIST is set: real files as they are, every other path gets index.html
+    so deep links like /exceptions/EXC-0010 load the app. API routes are matched before this."""
+    web = _web_app()
+    if web is None or path == "api" or path.startswith("api/"):
+        raise HTTPException(404, "Not found")
+    f = (web / path).resolve()
+    if web in f.parents and f.is_file():
+        headers = IMMUTABLE if path.startswith("assets/") else NO_CACHE
+        return FileResponse(f, headers=headers)
+    return FileResponse(web / "index.html", headers=NO_CACHE)

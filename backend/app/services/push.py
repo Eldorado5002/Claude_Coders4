@@ -28,6 +28,7 @@ def _send_all(payload: dict) -> None:
     from pywebpush import WebPushException, webpush
 
     s = get_settings()
+    sent = failed = 0
     with Session(get_engine()) as session:
         subs = session.exec(select(PushSub)).all()
         for sub in subs:
@@ -44,7 +45,11 @@ def _send_all(payload: dict) -> None:
                 if status in (404, 410):  # subscription expired
                     session.delete(sub)
                 log.info("push failed (%s): %s", status, e)
+                failed += 1
+            else:
+                sent += 1
         session.commit()
+    log.info("push %r: sent to %d device(s), %d failed", payload.get("title"), sent, failed)
 
 
 async def notify(title: str, body: str, url: str = "/") -> None:
