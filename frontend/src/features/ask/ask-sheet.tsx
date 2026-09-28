@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useEffectEvent, useReducer, useRef, useState, type MouseEvent } from 'react'
 import { useAsk } from '@/api/mutations'
 import { vendorsQ } from '@/api/queries'
-import { AgentMark } from '@/components/precedent'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useUi } from '@/stores/ui'
 import {
@@ -135,8 +134,7 @@ export default function AskSheet() {
         }}
       >
         <SheetHeader className="gap-1 border-b border-rule px-5 pt-5 pr-16 pb-4">
-          <SheetTitle className="flex items-center gap-2 font-serif serif-display text-[1.6rem] leading-tight font-medium tracking-normal normal-case">
-            <AgentMark className="size-[0.5em]" />
+          <SheetTitle className="font-serif serif-display text-[1.6rem] leading-tight font-medium tracking-normal normal-case">
             Ask Precedent
           </SheetTitle>
           <SheetDescription className="mt-0 text-[13px]">
