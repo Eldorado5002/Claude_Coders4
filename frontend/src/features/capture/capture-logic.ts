@@ -1,5 +1,5 @@
 import { ApiError } from '@/api/client'
-import type { CaptureResult } from '@/api/types'
+import type { CaptureResult, ExceptionType, VendorSummary } from '@/api/types'
 import { inr } from '@/lib/format'
 
 /** Same limits the backend enforces (415 / 413). */
@@ -10,9 +10,24 @@ export const ACCEPT: Record<string, string[]> = {
   'image/webp': ['.webp'],
   'application/pdf': ['.pdf'],
 }
-/** The bundled demo invoice (frontend/public/samples). */
-export const SAMPLE_NAME = 'invoice-balaji-freight.png'
-export const SAMPLE_URL = `${import.meta.env.BASE_URL}samples/${SAMPLE_NAME}`
+/** A bundled demo invoice (frontend/public/samples) and what it demonstrates at the Twist. */
+export type Sample = { file: string; label: string; shows: string; url: string; /** trips a hard control */ hard: boolean }
+
+export const sampleUrl = (file: string) => `${import.meta.env.BASE_URL}samples/${file}`
+
+const sample = (file: string, label: string, shows: string, hard: boolean): Sample => ({
+  file,
+  label,
+  shows,
+  url: sampleUrl(file),
+  hard,
+})
+
+export const SAMPLES: readonly Sample[] = [
+  sample('invoice-balaji-freight.png', 'Freight', 'within the agreed cap', false),
+  sample('invoice-balaji-no-irn.png', 'No IRN', 'e-invoice control', true),
+  sample('invoice-balaji-bad-gstin.png', 'Bad GSTIN', 'GSTIN control', true),
+]
 
 const MSG = {
   badType: 'Use a JPG, PNG, WEBP or PDF.',
@@ -82,11 +97,90 @@ export function captureErrorView(err: unknown): ErrorView {
   return { message: couldNotRead(err instanceof Error ? err.message : ''), retry: true }
 }
 
-export type OutcomeTone = 'approve' | 'hold' | 'reject'
-export type Outcome = { tone: OutcomeTone; title: string; body: string; caseId: string | null }
+// ---------------------------------------------------------------- what was read: GSTIN and IRN
 
-/** The one line that says what happened to the invoice. */
-export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>): Outcome {
+const HEAD = 8
+const TAIL = 6
+
+/** An IRN is a 64-character hash: show it like one (first 8…last 6). null when none was printed. */
+export function shortIrn(irn: string | null | undefined): string | null {
+  const v = irn?.trim()
+  if (!v) return null
+  return v.length > HEAD + TAIL + 2 ? `${v.slice(0, HEAD)}…${v.slice(-TAIL)}` : v
+}
+
+/** Same test the backend applies: 64 lowercase hex characters. */
+const IRN_FORMAT = /^[0-9a-f]{64}$/
+const irnValid = (irn: string | null | undefined) => IRN_FORMAT.test(irn?.trim() ?? '')
+
+const normGstin = (g: string | null | undefined) => (g ?? '').replace(/\s+/g, '').toUpperCase()
+
+/** The GSTIN printed on the invoice vs the vendor master's. null = nothing to compare. */
+export function gstinCheck(printed: string | null | undefined, master: string | null | undefined): 'match' | 'mismatch' | null {
+  const p = normGstin(printed)
+  const m = normGstin(master)
+  if (!p || !m) return null
+  return p === m ? 'match' : 'mismatch'
+}
+
+/** VendorRef doesn't say whether the vendor must e-invoice; the vendor list does. undefined = not known. */
+export function eInvoiceRequiredFor(vendors: readonly VendorSummary[] | undefined, vendorId: string | null | undefined) {
+  return vendors?.find((v) => v.id === vendorId)?.e_invoice_required
+}
+
+/** Worth looking up the vendor's e-invoice flag only when a known vendor's invoice opened a case without a valid IRN. */
+export const needsEInvoiceFlag = (r: CaptureResult) => r.status === 'exception' && !!r.vendor && !irnValid(r.extracted.irn)
+
+// ---------------------------------------------------------------- outcome
+
+export type CaptureControl = {
+  type: Extract<ExceptionType, 'invalid_gstin' | 'einvoice_missing'>
+  action: 'hold' | 'escalate'
+  /** "GSTIN control" */
+  label: string
+  /** "Escalated: the GSTIN doesn't match the vendor master." */
+  headline: string
+  /** Why the rule exists, in plain words. */
+  detail: string
+}
+
+/**
+ * Which hard control fired, told from what was read. CaptureResult carries no issue list, so this only names the two
+ * controls the extraction itself proves (GSTIN first, as the backend orders them); anything else stays generic.
+ */
+export function captureControl(r: CaptureResult, ctx: { eInvoiceRequired?: boolean } = {}): CaptureControl | null {
+  if (r.status !== 'exception' || !r.vendor) return null
+  if (gstinCheck(r.extracted.supplier_gstin, r.vendor.gstin) === 'mismatch')
+    return {
+      type: 'invalid_gstin',
+      action: 'escalate',
+      label: 'GSTIN control',
+      headline: 'Escalated: the GSTIN doesn’t match the vendor master.',
+      detail: 'That can mean someone is posing as the vendor, so a hard control escalates it. Past decisions can’t override it.',
+    }
+  if (ctx.eInvoiceRequired && !irnValid(r.extracted.irn))
+    return {
+      type: 'einvoice_missing',
+      action: 'hold',
+      label: 'E-invoice control',
+      headline: shortIrn(r.extracted.irn) ? 'Held: the e-invoice IRN isn’t valid.' : 'Held: no e-invoice IRN.',
+      detail:
+        'This vendor must issue e-invoices, so without a valid IRN it isn’t a valid tax invoice. A hard control holds it; past decisions can’t override it.',
+    }
+  return null
+}
+
+export type OutcomeTone = 'approve' | 'hold' | 'reject' | 'escalate'
+export type Outcome = {
+  tone: OutcomeTone
+  title: string
+  body: string
+  caseId: string | null
+  control: CaptureControl | null
+}
+
+/** The one line that says what happened to the invoice (and which hard control fired, when that can be told). */
+export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>, control: CaptureControl | null = null): Outcome {
   switch (r.status) {
     case 'matched':
       return {
@@ -94,14 +188,24 @@ export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>
         title: 'Clean 3-way match. Queued for payment.',
         body: 'Invoice, purchase order and goods receipt agree, so no case was opened.',
         caseId: null,
+        control: null,
       }
     case 'exception': {
       const id = r.exception_id ?? null
+      if (control)
+        return {
+          tone: control.action,
+          title: id ? `${control.headline} Opened ${id}.` : control.headline,
+          body: control.detail,
+          caseId: id,
+          control,
+        }
       return {
         tone: 'hold',
         title: id ? `Opened ${id}` : 'Opened a case',
         body: 'The 3-way match found something off. Precedent has written its opinion on the case.',
         caseId: id,
+        control: null,
       }
     }
     case 'unknown_vendor':
@@ -110,6 +214,7 @@ export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>
         title: 'This vendor isn’t in the vendor master. Onboard them before paying.',
         body: 'The invoice wasn’t filed, so nothing will be paid.',
         caseId: null,
+        control: null,
       }
   }
 }

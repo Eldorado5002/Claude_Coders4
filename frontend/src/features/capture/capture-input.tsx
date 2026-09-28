@@ -1,49 +1,71 @@
-import { ArrowRight, Camera, FileUp, Upload } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import { ArrowRight, Camera, FileUp, Lock, Upload } from 'lucide-react'
+import { useId, type MouseEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
-import { SAMPLE_URL } from './capture-logic'
+import { SAMPLES, type Sample } from './capture-logic'
 
 type Props = {
   onChoose: () => void
   onCamera: () => void
-  onSample: () => void
-  sampleLoading: boolean
+  onSample: (s: Sample) => void
+  /** file name of the sample being fetched, if any */
+  sampleLoading: string | null
   dragActive: boolean
   dragReject: boolean
 }
 
-/** A clearly labelled demo path: loads the bundled Balaji invoice and captures it. */
-function SampleButton({ onSample, loading }: { onSample: () => void; loading: boolean }) {
+/** A clearly labelled demo path: the three bundled Balaji invoices, each saying which control it exercises. */
+function SamplePicker({ onSample, loading }: { onSample: (s: Sample) => void; loading: string | null }) {
+  const labelId = useId()
   return (
-    <div className="space-y-2">
+    <div role="group" aria-labelledby={labelId} className="space-y-2">
       <p className="text-xs text-muted-foreground">No invoice to hand?</p>
-      <button
-        type="button"
-        onClick={onSample}
-        disabled={loading}
-        className="group press flex w-full items-center gap-4 border border-rule bg-card px-3 py-3 text-left transition-colors duration-150 outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:opacity-60"
-      >
-        <img
-          src={SAMPLE_URL}
-          alt=""
-          aria-hidden
-          className="h-14 w-11 shrink-0 border border-rule object-cover object-top"
-        />
-        <span className="min-w-0 flex-1 space-y-0.5">
-          <span className="block text-xs font-semibold tracking-widest uppercase">Use sample invoice</span>
-          <span className="block truncate text-xs text-muted-foreground">Shree Balaji Steel Traders · steel plate and freight</span>
-        </span>
-        {loading ? (
-          <Spinner className="size-4 shrink-0" />
-        ) : (
-          <ArrowRight
-            className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5"
-            aria-hidden
-          />
-        )}
-      </button>
+      <div className="border border-rule bg-card">
+        <div className="flex items-baseline justify-between gap-3 border-b border-rule px-3 py-2">
+          <span id={labelId} className="text-xs font-semibold tracking-widest uppercase">
+            Use a sample invoice
+          </span>
+          <span className="truncate text-xs text-muted-foreground">Shree Balaji Steel Traders</span>
+        </div>
+        <ul className="divide-y divide-rule">
+          {SAMPLES.map((s) => (
+            <li key={s.file}>
+              <button
+                type="button"
+                aria-label={`${s.label} · ${s.shows}`}
+                onClick={() => onSample(s)}
+                disabled={loading !== null}
+                className="group press flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors duration-150 outline-none hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-inset disabled:opacity-60"
+              >
+                <img
+                  src={s.url}
+                  alt=""
+                  aria-hidden
+                  decoding="async"
+                  className="h-11 w-8 shrink-0 border border-rule object-cover object-top"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium">{s.label}</span>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    {s.hard && <Lock className="size-3 shrink-0" strokeWidth={2.5} aria-hidden />}
+                    <span className="truncate">{s.shows}</span>
+                  </span>
+                </span>
+                {loading === s.file ? (
+                  <Spinner className="size-4 shrink-0" />
+                ) : (
+                  <ArrowRight
+                    className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="text-xs text-pretty text-muted-foreground">Capture the freight one twice to see the duplicate control.</p>
     </div>
   )
 }
@@ -93,7 +115,7 @@ export function CaptureInput({ onChoose, onCamera, onSample, sampleLoading, drag
         </div>
       </div>
 
-      <SampleButton onSample={onSample} loading={sampleLoading} />
+      <SamplePicker onSample={onSample} loading={sampleLoading} />
     </div>
   )
 }

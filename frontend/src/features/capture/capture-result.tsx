@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Pause, RotateCcw, X, type LucideIcon } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, Lock, Pause, RotateCcw, X, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import type { CaptureResult, InvoiceDoc, VendorRef } from '@/api/types'
@@ -6,19 +6,34 @@ import { AgentMark, Eyebrow, Money, Mono, Section, TONE_SOFT, TONE_TEXT } from '
 import { Button } from '@/components/ui/button'
 import { simDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { captureOutcome, qtyText, rupees, type Outcome, type OutcomeTone } from './capture-logic'
+import { gstinCheck, qtyText, rupees, shortIrn, type CaptureControl, type Outcome, type OutcomeTone } from './capture-logic'
+import { useCaptureOutcome } from './use-capture-outcome'
 
-const TONE_ICON: Record<OutcomeTone, LucideIcon> = { approve: Check, hold: Pause, reject: X }
+const TONE_ICON: Record<OutcomeTone, LucideIcon> = { approve: Check, hold: Pause, reject: X, escalate: ArrowUpRight }
+
+/** Lock and hatching: the house mark for a rule memory can't bend. */
+function ControlChip({ label }: { label: string }) {
+  return (
+    <span className="hatch inline-flex h-5 items-center gap-1 rounded-sm border border-foreground/70 px-1.5 text-[11px] font-medium whitespace-nowrap text-foreground">
+      <Lock className="size-3" strokeWidth={2.5} aria-hidden />
+      {label}
+    </span>
+  )
+}
 
 function OutcomeBanner({ o }: { o: Outcome }) {
   const Icon = TONE_ICON[o.tone]
+  const c = o.control
   return (
     <div className={cn('flex flex-col gap-4 border px-5 py-4 sm:flex-row sm:items-center', TONE_SOFT[o.tone])}>
       <div className="flex min-w-0 flex-1 items-start gap-3">
         <Icon className="mt-1 size-5 shrink-0" strokeWidth={2.5} aria-hidden />
         <div className="min-w-0 space-y-1">
+          {c && <ControlChip label={c.label} />}
           <p className="font-serif text-[1.35rem] leading-snug text-balance text-foreground">
-            {o.caseId ? (
+            {c ? (
+              c.headline
+            ) : o.caseId ? (
               <>
                 Opened <Mono className="text-[0.8em] tracking-normal">{o.caseId}</Mono>
               </>
@@ -27,7 +42,12 @@ function OutcomeBanner({ o }: { o: Outcome }) {
             )}
           </p>
           <p className="text-sm text-pretty text-muted-foreground">
-            {o.tone === 'hold' && <AgentMark className="mr-1.5 text-foreground" />}
+            {c && o.caseId && (
+              <>
+                Opened <Mono className="text-foreground">{o.caseId}</Mono>.{' '}
+              </>
+            )}
+            {o.tone === 'hold' && !c && <AgentMark className="mr-1.5 text-foreground" />}
             {o.body}
           </p>
         </div>
@@ -43,16 +63,18 @@ function OutcomeBanner({ o }: { o: Outcome }) {
   )
 }
 
+const DT = 'text-[10px] font-semibold tracking-[0.12em] text-muted-foreground uppercase'
+
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0 space-y-1">
-      <dt className="text-[10px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">{label}</dt>
+      <dt className={DT}>{label}</dt>
       <dd className="truncate text-sm">{children}</dd>
     </div>
   )
 }
 
-function VendorRow({ vendor }: { vendor: VendorRef | null }) {
+function VendorRow({ vendor, byName }: { vendor: VendorRef | null; byName: boolean }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 px-5 py-4">
       <div className="min-w-0 space-y-1">
@@ -65,13 +87,7 @@ function VendorRow({ vendor }: { vendor: VendorRef | null }) {
             >
               {vendor.name}
             </Link>
-            <p className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-              <span>
-                GSTIN <Mono className="text-foreground">{vendor.gstin}</Mono>
-              </span>
-              <span aria-hidden>·</span>
-              <span>{vendor.city}</span>
-            </p>
+            <p className="text-xs text-muted-foreground">{vendor.city}</p>
           </>
         ) : (
           <p className="font-serif text-xl leading-tight text-muted-foreground">Not a vendor we know</p>
@@ -79,12 +95,70 @@ function VendorRow({ vendor }: { vendor: VendorRef | null }) {
       </div>
       {vendor ? (
         <span className={cn('inline-flex items-center gap-1 text-xs font-medium', TONE_TEXT.approve)}>
-          <Check className="size-3.5" strokeWidth={2.5} aria-hidden /> Matched to vendor master
+          <Check className="size-3.5" strokeWidth={2.5} aria-hidden /> Matched to vendor master{byName && ' by name'}
         </span>
       ) : (
         <span className={cn('inline-flex items-center gap-1 text-xs font-medium', TONE_TEXT.reject)}>
           <X className="size-3.5" strokeWidth={2.5} aria-hidden /> No match by GSTIN or name
         </span>
+      )}
+    </div>
+  )
+}
+
+const OK_LINE = cn('flex items-center gap-1 text-xs font-medium', TONE_TEXT.approve)
+const BAD_LINE = cn('flex items-center gap-1 text-xs font-semibold', TONE_TEXT.reject)
+
+/** The supplier GSTIN printed on the invoice, against the vendor master's. */
+function GstinFact({ printed, vendor }: { printed: string | null | undefined; vendor: VendorRef | null }) {
+  const check = gstinCheck(printed, vendor?.gstin)
+  const bad = check === 'mismatch'
+  return (
+    <div className="min-w-0 space-y-1">
+      <dt className={DT}>GSTIN on invoice</dt>
+      <dd className="text-sm">
+        {printed ? <Mono className={cn(bad && TONE_TEXT.reject)}>{printed}</Mono> : <span className="text-muted-foreground">Not printed</span>}
+      </dd>
+      {vendor && check !== 'match' && (
+        <dd className="text-xs text-muted-foreground">
+          Vendor master <Mono className="text-foreground">{vendor.gstin}</Mono>
+        </dd>
+      )}
+      {check === 'match' && (
+        <dd className={OK_LINE}>
+          <Check className="size-3.5" strokeWidth={2.5} aria-hidden /> Matches vendor master
+        </dd>
+      )}
+      {bad && (
+        <dd className={BAD_LINE}>
+          <Lock className="size-3.5" strokeWidth={2.5} aria-hidden /> Doesn’t match vendor master
+        </dd>
+      )}
+    </div>
+  )
+}
+
+/** The e-invoice IRN, shortened like the hash it is; the full value is one hover away. */
+function IrnFact({ irn, control }: { irn: string | null | undefined; control: CaptureControl | null }) {
+  const short = shortIrn(irn)
+  const fired = control?.type === 'einvoice_missing'
+  return (
+    <div className="min-w-0 space-y-1">
+      <dt className={DT}>E-invoice IRN</dt>
+      <dd className="text-sm">
+        {short ? (
+          <abbr title={irn?.trim()} className="decoration-muted-foreground/40 underline-offset-4">
+            <Mono className={cn(fired && TONE_TEXT.reject)}>{short}</Mono>
+          </abbr>
+        ) : (
+          <span className={fired ? cn('font-medium', TONE_TEXT.reject) : 'text-muted-foreground'}>No IRN printed</span>
+        )}
+      </dd>
+      {fired && (
+        <dd className={BAD_LINE}>
+          <Lock className="size-3.5" strokeWidth={2.5} aria-hidden />
+          {short && 'Not a valid IRN. '}Required for this vendor
+        </dd>
       )}
     </div>
   )
@@ -153,7 +227,7 @@ function LinesTable({ lines }: { lines: InvoiceDoc['lines'] }) {
 }
 
 /** Everything Gemini read off the page, laid out like the ledger would file it. */
-function InvoiceCard({ inv, vendor }: { inv: InvoiceDoc; vendor: VendorRef | null }) {
+function InvoiceCard({ inv, vendor, control }: { inv: InvoiceDoc; vendor: VendorRef | null; control: CaptureControl | null }) {
   const bank = inv.bank_account
   return (
     <Section
@@ -165,7 +239,11 @@ function InvoiceCard({ inv, vendor }: { inv: InvoiceDoc; vendor: VendorRef | nul
       }
     >
       <div className="divide-y divide-rule border border-rule bg-card">
-        <VendorRow vendor={vendor} />
+        <VendorRow vendor={vendor} byName={gstinCheck(inv.supplier_gstin, vendor?.gstin) === 'mismatch'} />
+        <dl className="grid gap-x-6 gap-y-4 px-5 py-4 sm:grid-cols-2">
+          <GstinFact printed={inv.supplier_gstin} vendor={vendor} />
+          <IrnFact irn={inv.irn} control={control} />
+        </dl>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4 px-5 py-4 sm:grid-cols-4">
           <Fact label="Invoice">
             <Mono>{inv.invoice_number}</Mono>
@@ -207,11 +285,11 @@ function InvoiceCard({ inv, vendor }: { inv: InvoiceDoc; vendor: VendorRef | nul
 }
 
 export function CaptureResultView({ result, onReset }: { result: CaptureResult; onReset: () => void }) {
-  const o = captureOutcome(result)
+  const o = useCaptureOutcome(result)
   return (
     <div className="animate-rise space-y-8">
       <OutcomeBanner o={o} />
-      <InvoiceCard inv={result.extracted} vendor={result.vendor ?? null} />
+      <InvoiceCard inv={result.extracted} vendor={result.vendor ?? null} control={o.control} />
       <Button variant="outline" onClick={onReset} className="h-12 w-full md:h-10 md:w-auto">
         <RotateCcw data-icon="inline-start" /> Capture another
       </Button>

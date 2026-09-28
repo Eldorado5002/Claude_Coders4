@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { fixtureResponse, resetFixtureState } from './fixtures'
-import type { ExceptionDetail, ExceptionPage, Settings } from './types'
+import type { CaptureResult, ExceptionDetail, ExceptionPage, Settings } from './types'
 
 describe('fixture mode', () => {
   beforeEach(() => resetFixtureState())
@@ -52,5 +52,17 @@ describe('round-2 fixture endpoints', () => {
     const d = (await fixtureResponse('GET', '/api/exceptions/EXC-0010')) as ExceptionDetail
     expect(d.recommendation?.source).toBe('no_memory')
     expect(d.recommendation?.action).toBe('hold')
+  })
+  it('captures each sample invoice as the backend reads it, and opens that case', async () => {
+    const capture = (filename: string) =>
+      fixtureResponse('POST', '/api/invoices/capture', undefined, { filename }) as Promise<CaptureResult>
+    const noIrn = await capture('invoice-balaji-no-irn.png')
+    expect(noIrn.exception_id).toBe('EXC-0044')
+    const opened = (await fixtureResponse('GET', `/api/exceptions/${noIrn.exception_id}`)) as ExceptionDetail
+    expect(opened.primary_type).toBe('einvoice_missing')
+    expect(opened.blocking).toBe(true)
+    expect((await capture('invoice-balaji-bad-gstin.png')).exception_id).toBe('EXC-0045')
+    expect((await capture('invoice-balaji-freight.png')).exception_id).toBe('EXC-0043')
+    expect((await capture('scan.jpg')).exception_id).toBe('EXC-0011')
   })
 })

@@ -5,6 +5,7 @@
  */
 import type { Middleware } from 'openapi-fetch'
 import type {
+  CaptureResult,
   DemoState,
   DemoStageId,
   ExceptionDetail,
@@ -19,7 +20,10 @@ import type {
   VendorSummary,
 } from './types'
 
-const loaders = import.meta.glob<unknown>('../../../docs/mocks/*.json', { import: 'default' })
+// the Twist capture mocks too: what the backend reads from each sample invoice, and the case it opens
+const loaders = import.meta.glob<unknown>(['../../../docs/mocks/*.json', '../../../docs/mocks/twist/capture-*.json'], {
+  import: 'default',
+})
 
 async function mock<T>(name: string): Promise<T> {
   const key = Object.keys(loaders).find((k) => k.endsWith(`/${name}.json`))
@@ -33,10 +37,23 @@ type State = {
   stage?: DemoStageId
   resolved: Map<string, ResolveResult>
   revoked: Map<string, RevokeRequest>
+  /** case id → the mock of the case a sample capture opened */
+  captured: Map<string, string>
 }
-let state: State = { resolved: new Map(), revoked: new Map() }
+let state: State = { resolved: new Map(), revoked: new Map(), captured: new Map() }
 export function resetFixtureState() {
-  state = { resolved: new Map(), revoked: new Map() }
+  state = { resolved: new Map(), revoked: new Map(), captured: new Map() }
+}
+
+const SAMPLE_KINDS = ['freight', 'no-irn', 'bad-gstin'] as const
+
+/** A sample invoice (public/samples) gets the backend's real reading of it; any other file the Week 3 one. */
+async function capture(filename = ''): Promise<CaptureResult> {
+  const kind = SAMPLE_KINDS.find((k) => filename.includes(`-${k}.`))
+  if (!kind) return mock<CaptureResult>('capture-result')
+  const result = await mock<CaptureResult>(`twist/capture-${kind}`)
+  if (result.exception_id) state.captured.set(result.exception_id, `twist/capture-case-${kind}`)
+  return result
 }
 
 const STAGE_ORDER: DemoStageId[] = ['day1', 'week3', 'week8', 'twist']
@@ -80,6 +97,8 @@ async function listExceptions(q: Query): Promise<ExceptionPage> {
 async function detail(id: string): Promise<ExceptionDetail | null> {
   const done = state.resolved.get(id)
   if (done) return done.exception
+  const captured = state.captured.get(id)
+  if (captured) return mock<ExceptionDetail>(captured)
   if (state.memory === false) {
     // the real memory-off verdict of the open case (docs/mocks/exception-detail-memory-off.json)
     const off = await mock<ExceptionDetail>('exception-detail-memory-off')
@@ -207,7 +226,7 @@ const routes: [string, RegExp, Handler][] = [
   ['GET', /^\/api\/lessons$/, (_m, q) => lessons(q)],
   ['POST', /^\/api\/lessons\/([^/]+)\/revoke$/, (m, _q, b: RevokeRequest) => revoke(m[1], b)],
   ['POST', /^\/api\/copilot\/ask$/, () => mock('copilot-answer')],
-  ['POST', /^\/api\/invoices\/capture$/, () => mock('capture-result')],
+  ['POST', /^\/api\/invoices\/capture$/, (_m, _q, b?: { filename?: string }) => capture(b?.filename)],
   ['GET', /^\/api\/demo\/state$/, () => demoState()],
   [
     'POST',
@@ -259,8 +278,11 @@ export const fixtureMiddleware: Middleware = {
   async onRequest({ request }) {
     const url = new URL(request.url)
     let body: unknown
-    if (request.method !== 'GET' && request.headers.get('content-type')?.includes('application/json')) {
-      body = await request.clone().json()
+    const type = request.headers.get('content-type') ?? ''
+    if (request.method !== 'GET' && type.includes('application/json')) body = await request.clone().json()
+    if (request.method !== 'GET' && type.includes('multipart/form-data')) {
+      const file = (await request.clone().formData()).get('file')
+      body = { filename: file instanceof File ? file.name : undefined }
     }
     const data = await fixtureResponse(request.method, url.pathname, Object.fromEntries(url.searchParams), body)
     await new Promise((r) => setTimeout(r, 250 + Math.random() * 350))
