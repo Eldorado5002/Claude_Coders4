@@ -265,6 +265,7 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
 
     learned: list[Citation] = []
     playbook = None
+    memory = "ok"
     if base.exceptions_count:
         mem = get_memory()
         try:
@@ -282,6 +283,7 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
             learned = [Citation(id=str(f.id), kind=CitationKind.OBSERVATION, text=f.text) for f in facts[:8]]
         except Exception as e:  # noqa: BLE001
             log.warning("vendor memory unavailable: %s", e)
+            memory = "unavailable"
     return VendorProfile(
         **base.model_dump(),
         bank_account=bank_acct,
@@ -291,6 +293,7 @@ async def vendor_profile(vendor_id: str) -> VendorProfile:
         autonomy=autonomy,
         risk=risk,
         udyam=udyam,
+        memory=memory,
     )
 
 

@@ -162,15 +162,14 @@ class MemoryStore:
     # ---------------------------------------------------------------- bank setup
 
     async def health(self, bank_id: str) -> bool:
+        """True only when Hindsight answers an authenticated call. A 404 (the bank isn't created yet) still proves
+        the key works; 401/403, timeouts and network errors mean memory is unavailable. (The version endpoint
+        answers without a key, so it can't be used as a health check.)"""
         try:
-            await asyncio.wait_for(self.client.aget_bank_config(bank_id), timeout=8)
+            await asyncio.wait_for(self.client.aget_bank_config(bank_id), timeout=5)
             return True
-        except Exception:
-            try:
-                await asyncio.wait_for(self.client.aget_version(), timeout=8)
-                return True
-            except Exception:
-                return False
+        except Exception as e:  # noqa: BLE001
+            return getattr(e, "status", None) == 404
 
     async def ensure_bank(self, bank_id: str) -> None:
         if bank_id in self._ready:
