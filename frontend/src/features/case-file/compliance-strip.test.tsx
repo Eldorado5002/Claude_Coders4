@@ -41,6 +41,14 @@ describe('ComplianceStrip', () => {
     expect(tip).toHaveTextContent(/within 15 days of accepting the goods, or 45 with a written agreement/)
   })
 
+  it('drops the countdown once the case is decided: the invoice no longer waits on anyone', () => {
+    renderApp(<ComplianceStrip c={{ ...msme, status: 'resolved' }} />)
+    const m = item(/^MSME/)
+    expect(m).toHaveAttribute('data-tone', 'neutral')
+    expect(m).toHaveTextContent('MSMEmicro·43B(h) deadline 2 May·UDYAM-TS-22-0009561')
+    expect(m).not.toHaveTextContent(/at stake|days to/)
+  })
+
   it('turns reject and counts the days once the deadline has passed', () => {
     const late = { ...msme, compliance: { ...msme.compliance, msme: { ...msme.compliance.msme!, status: 'breached' as const, days_left: -4 } } }
     renderApp(<ComplianceStrip c={late} />)

@@ -46,7 +46,7 @@ const Sep = () => (
 function Msme({ c }: { c: ExceptionDetail }) {
   const m = c.compliance?.msme
   if (!m) return null
-  const l = msmeLine(m)
+  const l = msmeLine(m, { decided: c.status !== 'open' })
   return (
     <Item tone={l.tone} icon={<Clock strokeWidth={2.25} aria-hidden />} label="MSME">
       {l.category}
@@ -60,7 +60,7 @@ function Msme({ c }: { c: ExceptionDetail }) {
               l.tone === 'reject' && 'text-reject',
             )}
           >
-            <span className="font-semibold">{l.strong}</span>
+            {l.strong && <span className="font-semibold">{l.strong}</span>}
             {l.rest}
           </button>
         </TooltipTrigger>
@@ -69,8 +69,12 @@ function Msme({ c }: { c: ExceptionDetail }) {
           <span className="opacity-70">{l.detail}</span>
         </TooltipContent>
       </Tooltip>
-      <Sep />
-      <span className="tabular-nums">{l.tax}</span>
+      {l.tax && (
+        <>
+          <Sep />
+          <span className="tabular-nums">{l.tax}</span>
+        </>
+      )}
       {l.udyam && (
         <>
           <Sep />

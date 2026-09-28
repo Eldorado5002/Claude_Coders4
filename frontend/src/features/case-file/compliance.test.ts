@@ -19,6 +19,15 @@ describe('shortIrn', () => {
 })
 
 describe('msmeLine', () => {
+  it('once the case is decided: neutral, the deadline as a plain fact, nothing “at stake”', () => {
+    for (const days_left of [5, 0, -4]) {
+      const l = msmeLine({ ...msme, days_left, status: days_left < 0 ? 'breached' : 'due_soon' }, { decided: true })
+      expect(l.tone).toBe('neutral')
+      expect(text(l)).toBe('43B(h) deadline 2 May')
+      expect(l.tax).toBe('')
+    }
+  })
+
   it('reads the Twist case: micro, 5 days to 2 May, ₹46,476 at stake, hold tone', () => {
     const l = msmeLine(msme)
     expect(l.tone).toBe('hold')

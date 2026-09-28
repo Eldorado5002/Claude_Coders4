@@ -29,12 +29,18 @@ export type MsmeLine = {
 
 const MSME_TONE: Record<MsmeStatus['status'], StatusTone> = { ok: 'neutral', due_soon: 'hold', breached: 'reject' }
 
-/** "MSME · micro · **5 days** to the 43B(h) deadline (2 May) · ₹46,476 tax deduction at stake" */
-export function msmeLine(m: MsmeStatus): MsmeLine {
+/**
+ * "MSME · micro · **5 days** to the 43B(h) deadline (2 May) · ₹46,476 tax deduction at stake".
+ * Once the case is decided nothing waits on the clerk any more: the deadline stays as a plain fact, with no countdown.
+ */
+export function msmeLine(m: MsmeStatus, { decided = false }: { decided?: boolean } = {}): MsmeLine {
   const day = simDay(m.deadline)
   let strong: string
   let rest: string
-  if (m.days_left > 0) {
+  if (decided) {
+    strong = ''
+    rest = `43B(h) deadline ${day}`
+  } else if (m.days_left > 0) {
     strong = days(m.days_left)
     rest = ` to the 43B(h) deadline (${day})`
   } else if (m.days_left === 0) {
@@ -47,11 +53,11 @@ export function msmeLine(m: MsmeStatus): MsmeLine {
   const detail = [`Goods accepted ${simDay(m.accepted_on)}`, `${m.limit_days}-day limit`]
   if (m.terms_exceed_limit) detail.push('this vendor’s payment terms are longer than the limit')
   return {
-    tone: MSME_TONE[m.status],
+    tone: decided ? 'neutral' : MSME_TONE[m.status],
     category: m.category,
     strong,
     rest,
-    tax: `${inrCompact(m.tax_at_risk)} tax deduction at stake`,
+    tax: decided ? '' : `${inrCompact(m.tax_at_risk)} tax deduction at stake`,
     udyam: m.udyam,
     detail: detail.join(' · '),
   }
