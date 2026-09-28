@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Beliefs } from './vendor-beliefs'
 import { VendorHeader } from './vendor-header'
 import { Learned, Lessons, RecentCases, Trust, VendorWiki, type Phase } from './vendor-sections'
-import { placeholderProfile } from './vendors-view'
+import { learnedBeyondBeliefs, placeholderProfile } from './vendors-view'
 
 const is404 = (e: unknown) => e instanceof ApiError && e.status === 404
 /** The profile swallows Hindsight failures (learned: [], playbook: null); the beliefs call's 503 is how we know. */
@@ -66,6 +66,7 @@ export default function VendorPage() {
   // Beliefs are a second Hindsight call (~1.5 s): start it alongside the profile, not after the header paints.
   const beliefs = useQuery(beliefsQ(id))
   const memoryDown = hindsightDown(beliefs.error)
+  const learned = q.data ? learnedBeyondBeliefs(q.data.learned, beliefs) : null
 
   const backLink = (
     <Link to={back} className="mb-5 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
@@ -112,6 +113,9 @@ export default function VendorPage() {
     )
 
   const phase: Phase = q.isPlaceholderData ? 'loading' : q.data ? 'ready' : 'unavailable'
+  // hide Learned only when every lesson is already one of the beliefs above; wait for the beliefs before deciding
+  const learnedPhase: Phase = phase === 'ready' && learned === null ? 'loading' : phase
+  const allInBeliefs = phase === 'ready' && (q.data?.learned.length ?? 0) > 0 && learned?.length === 0
 
   return (
     <article className="@container mx-auto w-full max-w-[1240px] px-5 py-8 md:px-10">
@@ -135,7 +139,8 @@ export default function VendorPage() {
           <div className="mt-8 grid gap-10 @min-[880px]:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] @min-[880px]:gap-12">
             <div className="min-w-0 space-y-10">
               <Beliefs vendorId={v.id} />
-              <Learned items={v.learned} phase={phase} memoryDown={memoryDown} />
+              {/* only what the beliefs above don't already say; shown in full if the beliefs couldn't load */}
+              {!allInBeliefs && <Learned items={learned ?? v.learned} phase={learnedPhase} memoryDown={memoryDown} />}
               <VendorWiki
                 text={v.playbook}
                 phase={phase}
