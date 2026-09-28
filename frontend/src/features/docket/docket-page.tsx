@@ -18,7 +18,8 @@ import { insideDialogOrForm } from '@/lib/hotkeys'
 import { cn } from '@/lib/utils'
 import { CaseRow } from './case-row'
 import { DocketFilters } from './docket-filters'
-import { docketView, neighbour } from './docket-view'
+import { DocketSort } from './docket-sort'
+import { docketView, neighbour, parseSort, querySort } from './docket-view'
 import { useFresh } from './use-fresh'
 
 const TABS: { id: StatusFilter; label: string }[] = [
@@ -43,16 +44,17 @@ export default function DocketPage() {
   const status = (params.get('status') as StatusFilter) || 'open'
   const vendor = params.get('vendor') ?? undefined
   const type = (params.get('type') as ExceptionType | null) ?? undefined
+  const sort = parseSort(params.get('sort'))
   const { id: activeId } = useParams()
   const navigate = useNavigate()
   const { search } = useLocation()
   const isMobile = useIsMobile()
 
   const settings = useQuery(settingsQ())
-  const list = useQuery(exceptionsQ({ status: 'all', vendor_id: vendor, type }))
-  const { visible, counts } = useMemo(() => docketView(list.data?.items ?? [], status), [list.data, status])
+  const list = useQuery(exceptionsQ({ status: 'all', vendor_id: vendor, type, sort: querySort(sort) }))
+  const { visible, counts } = useMemo(() => docketView(list.data?.items ?? [], status, sort), [list.data, status, sort])
   const ids = useMemo(() => visible.map((c) => c.id), [visible])
-  const fresh = useFresh(ids, `${status}|${vendor ?? ''}|${type ?? ''}`)
+  const fresh = useFresh(ids, `${status}|${vendor ?? ''}|${type ?? ''}|${sort}`)
   const rowRefs = useRef(new Map<string, HTMLAnchorElement>())
 
   const setParam = (k: string, v?: string) => {
@@ -99,6 +101,7 @@ export default function DocketPage() {
           onVendor={(v) => setParam('vendor', v)}
           onType={(t) => setParam('type', t)}
         />
+        <DocketSort value={sort} onChange={(s) => setParam('sort', s === 'newest' ? undefined : s)} />
       </div>
       <ScrollArea className="min-h-0 flex-1">
         {list.isPending ? (

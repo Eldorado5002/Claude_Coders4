@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import type { ExceptionSummary } from '@/api/types'
-import { docketView, neighbour } from './docket-view'
+import type { ExceptionPage, ExceptionSummary } from '@/api/types'
+import msmeMock from '@mocks/twist/exceptions-by-msme-deadline.json'
+import { docketView, neighbour, parseSort, querySort } from './docket-view'
 
 const c = (id: string, status: ExceptionSummary['status'], blocking = false): ExceptionSummary => ({
   id,
@@ -30,6 +31,58 @@ describe('docketView', () => {
   })
   it('floats hard-control cases to the top of the open tab', () => {
     expect(docketView(items, 'open').visible.map((x) => x.id)).toEqual(['E2', 'E5'])
+  })
+})
+
+describe('docketView with a sort', () => {
+  // the Twist docket as the server sorted it by MSME deadline: EXC-0041 (5 days) first
+  const byDeadline = (msmeMock as unknown as ExceptionPage).items
+
+  it('keeps the server’s MSME-deadline order, even ahead of hard controls', () => {
+    expect(docketView(byDeadline, 'open', 'msme_deadline').visible.map((x) => x.id)).toEqual([
+      'EXC-0041',
+      'EXC-0039',
+      'EXC-0037',
+      'EXC-0038',
+      'EXC-0040',
+      'EXC-0042',
+    ])
+  })
+
+  it('still floats hard controls first when sorted by newest or amount', () => {
+    for (const sort of ['newest', 'amount'] as const) {
+      expect(docketView(byDeadline, 'open', sort).visible.map((x) => x.id)).toEqual([
+        'EXC-0039',
+        'EXC-0037',
+        'EXC-0038',
+        'EXC-0040',
+        'EXC-0041',
+        'EXC-0042',
+      ])
+    }
+  })
+
+  it('never reorders the other tabs', () => {
+    const items = [c('E3', 'resolved'), c('E2', 'open', true), c('E1', 'auto_resolved')]
+    expect(docketView(items, 'all', 'amount').visible.map((x) => x.id)).toEqual(['E3', 'E2', 'E1'])
+  })
+})
+
+describe('parseSort', () => {
+  it('reads ?sort= and falls back to newest for anything unknown', () => {
+    expect(parseSort('msme_deadline')).toBe('msme_deadline')
+    expect(parseSort('amount')).toBe('amount')
+    expect(parseSort('newest')).toBe('newest')
+    expect(parseSort(null)).toBe('newest')
+    expect(parseSort('oldest')).toBe('newest')
+  })
+})
+
+describe('querySort', () => {
+  it('leaves the default out, so the newest docket shares its cache with the sidebar and ⌘K lists', () => {
+    expect(querySort('newest')).toBeUndefined()
+    expect(querySort('msme_deadline')).toBe('msme_deadline')
+    expect(querySort('amount')).toBe('amount')
   })
 })
 

@@ -3,10 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { ExceptionDetail, Recommendation } from '@/api/types'
 import detailMock from '@mocks/exception-detail.json'
+import hardControlMock from '@mocks/twist/exception-detail-hard-control.json'
 import { renderApp } from '@/test/render'
 import { OpinionPanel } from './opinion-panel'
 
 const detail = detailMock as unknown as ExceptionDetail
+const hardControl = hardControlMock as unknown as ExceptionDetail
 
 describe('OpinionPanel', () => {
   it('shows the reasoning state instead of crashing while the recommendation is being written', () => {
@@ -53,6 +55,34 @@ describe('OpinionPanel', () => {
     await user.keyboard('{Enter}')
     const radios = await screen.findAllByRole('radio')
     expect(radios.every((r) => r.getAttribute('aria-checked') === 'false')).toBe(true)
+  })
+
+  it('footer tells the cost story: route, cost and latency (Week 3: fast path, about $0.001)', () => {
+    renderApp(<OpinionPanel c={detail} />)
+    expect(screen.getByText('Fast path')).toBeInTheDocument()
+    expect(screen.getByText('$0.001')).toBeInTheDocument()
+    expect(screen.getByText('2.0 s')).toBeInTheDocument()
+    expect(screen.getByText(detail.recommendation!.provider)).toBeInTheDocument()
+  })
+
+  it('puts the calibrated track record next to the confidence band, and omits it when unknown', () => {
+    const { unmount } = renderApp(<OpinionPanel c={detail} />)
+    expect(screen.getByText('right 67% of the time at this confidence')).toBeInTheDocument()
+    unmount()
+    const early: Recommendation = { ...detail.recommendation!, calibrated_confidence: null, cost_usd: null }
+    renderApp(<OpinionPanel c={{ ...detail, recommendation: early }} />)
+    expect(screen.queryByText(/of the time at this confidence/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/\$/)).not.toBeInTheDocument()
+  })
+
+  it('renders the Twist hard control inverted: forced action and "Memory alone would have said ~~Approve~~"', () => {
+    renderApp(<OpinionPanel c={hardControl} />)
+    const control = hardControl.issues.find((i) => i.blocking)!.message
+    expect(screen.getByText(control)).toBeInTheDocument()
+    expect(screen.getByText(/Action forced to/)).toHaveTextContent('Action forced to escalate.')
+    expect(screen.getByText(/Memory alone would have said/)).toBeInTheDocument()
+    expect(screen.getByText('Approve', { selector: 's' })).toBeInTheDocument()
+    expect(screen.getAllByText('Hard control').length).toBeGreaterThan(1) // source chip + route
   })
 
   it('does not count or show a playbook Hindsight is still writing', () => {

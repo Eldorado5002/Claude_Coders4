@@ -1,15 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation } from 'react-router'
+import { Link, useLocation, useSearchParams } from 'react-router'
 import { exceptionsQ } from '@/api/queries'
 import { AgentMark, EmptyState } from '@/components/precedent'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
+import { docketView, parseSort, querySort } from './docket-view'
 
 /** Right pane when no case is open. */
 export default function DocketIndex() {
-  const open = useQuery(exceptionsQ({ status: 'open' }))
+  const [params] = useSearchParams()
+  const sort = parseSort(params.get('sort'))
+  const open = useQuery(exceptionsQ({ status: 'open', sort: querySort(sort) }))
   const { search } = useLocation()
-  const first = open.data?.items[0]
+  // the case at the top of the docket, in the order the list shows it
+  const first = open.data ? docketView(open.data.items, 'open', sort).visible[0] : undefined
   return (
     <div className="flex h-full min-h-[70vh] items-center justify-center">
       <EmptyState
