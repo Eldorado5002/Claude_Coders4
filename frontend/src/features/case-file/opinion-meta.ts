@@ -1,17 +1,6 @@
 import type { RecRoute, Recommendation } from '@/api/types'
-import { pct, simTime } from '@/lib/format'
+import { pct, simTime, usdSmall } from '@/lib/format'
 import { ROUTE_LABEL } from '@/lib/labels'
-
-/**
- * "$0.001" to 3 decimals. When 3 decimals would read as zero, "< $0.001".
- * (The Week 3 fast path costs $0.000986: that is "about $0.001", so it rounds.)
- */
-export function formatCost(usd: number | null | undefined): string | null {
-  if (usd == null || Number.isNaN(usd)) return null
-  const shown = usd.toFixed(3)
-  if (usd > 0 && Number(shown) === 0) return '< $0.001'
-  return `$${shown}`
-}
 
 /** "right 67% of the time at this confidence": null until there is a track record. */
 export function calibratedCopy(c: number | null | undefined): string | null {
@@ -24,7 +13,7 @@ export function opinionMeta(rec: Pick<Recommendation, 'route' | 'cost_usd' | 'la
   const route = rec.route as RecRoute | undefined
   return [
     route ? (ROUTE_LABEL[route] ?? route) : null,
-    formatCost(rec.cost_usd),
+    usdSmall(rec.cost_usd),
     `${(rec.latency_ms / 1000).toFixed(1)} s`,
     simTime(rec.generated_at),
   ].filter((p): p is string => !!p)

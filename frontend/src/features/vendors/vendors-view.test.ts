@@ -148,7 +148,7 @@ describe('profileRisk', () => {
 describe('riskReason', () => {
   it('starts each reason with a capital, leaving the rest as the backend wrote it', () => {
     expect(riskReason('exception rate 91% vs 23% across all vendors')).toBe('Exception rate 91% vs 23% across all vendors')
-    expect(riskReason('1 duplicate invoice submission(s)')).toBe('1 duplicate invoice submission(s)')
+    expect(riskReason('1 duplicate invoice submission(s)')).toBe('1 duplicate invoice submission')
     expect(riskReason('')).toBe('')
   })
 })

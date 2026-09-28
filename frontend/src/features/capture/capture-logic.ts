@@ -1,6 +1,7 @@
 import { ApiError } from '@/api/client'
 import type { CaptureResult, ExceptionDetail, ExceptionType, Issue, VendorSummary } from '@/api/types'
 import { inr } from '@/lib/format'
+import { gstinMatch as gstinCheck, shortIrn } from '@/lib/gst'
 import { TYPE_LABEL } from '@/lib/labels'
 
 /** Same limits the backend enforces (415 / 413). */
@@ -100,29 +101,12 @@ export function captureErrorView(err: unknown): ErrorView {
 
 // ---------------------------------------------------------------- what was read: GSTIN and IRN
 
-const HEAD = 8
-const TAIL = 6
-
-/** An IRN is a 64-character hash: show it like one (first 8…last 6). null when none was printed. */
-export function shortIrn(irn: string | null | undefined): string | null {
-  const v = irn?.trim()
-  if (!v) return null
-  return v.length > HEAD + TAIL + 2 ? `${v.slice(0, HEAD)}…${v.slice(-TAIL)}` : v
-}
-
 /** Same test the backend applies: 64 lowercase hex characters. */
 const IRN_FORMAT = /^[0-9a-f]{64}$/
 const irnValid = (irn: string | null | undefined) => IRN_FORMAT.test(irn?.trim() ?? '')
 
-const normGstin = (g: string | null | undefined) => (g ?? '').replace(/\s+/g, '').toUpperCase()
-
-/** The GSTIN printed on the invoice vs the vendor master's. null = nothing to compare. */
-export function gstinCheck(printed: string | null | undefined, master: string | null | undefined): 'match' | 'mismatch' | null {
-  const p = normGstin(printed)
-  const m = normGstin(master)
-  if (!p || !m) return null
-  return p === m ? 'match' : 'mismatch'
-}
+// what was read is shortened and compared the way the case file does it
+export { gstinCheck, shortIrn }
 
 /** VendorRef doesn't say whether the vendor must e-invoice; the vendor list does. undefined = not known. */
 export function eInvoiceRequiredFor(vendors: readonly VendorSummary[] | undefined, vendorId: string | null | undefined) {

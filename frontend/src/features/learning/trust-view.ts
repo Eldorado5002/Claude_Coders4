@@ -1,5 +1,6 @@
 import type { AutonomyCertificate, Calibration, CalibrationBin, Metrics, Performance } from '@/api/types'
-import { pct } from '@/lib/format'
+import { decisionsNeeded } from '@/lib/certificate'
+import { pct, usdSmall } from '@/lib/format'
 
 /* ------------------------------------------------------------------ text segments */
 
@@ -76,35 +77,12 @@ export function autoRecord(c: AutonomyCertificate): Seg[] {
   return [{ b: String(c.auto_resolutions) }, ' paid automatically · ', { b: String(c.auto_errors) }, ' wrong']
 }
 
-/** P(X ≤ k) for X ~ Binomial(n, p), summed term by term. */
-function binomCdf(k: number, n: number, p: number): number {
-  let term = Math.pow(1 - p, n)
-  let sum = term
-  for (let i = 0; i < k; i++) {
-    term *= ((n - i) / (i + 1)) * (p / (1 - p))
-    sum += term
-  }
-  return sum
-}
-
-/**
- * Verified decisions needed to certify with `errors` wrong: the smallest n whose one-sided
- * Clopper-Pearson upper bound is at or below `target` (0 errors at 5% / 95% → 59).
- */
-export function decisionsNeeded(errors: number, target: number, confidence: number): number | null {
-  const alpha = 1 - confidence
-  for (let n = Math.max(1, errors + 1); n <= 100_000; n++) {
-    if (binomCdf(errors, n, target) <= alpha + 1e-12) return n
-  }
-  return null
-}
-
 export type Progress = { have: number; need: number; text: string }
 
 /** While collecting: "2 of 59 verified decisions", assuming no more are wrong. */
 export function certificateProgress(c: AutonomyCertificate): Progress | null {
   if (c.status !== 'collecting') return null
-  const need = decisionsNeeded(c.errors, c.target_error, c.confidence_level)
+  const need = decisionsNeeded(c)
   if (need == null || need <= c.decisions) return null
   return { have: c.decisions, need, text: `${c.decisions} of ${need} verified decisions` }
 }
@@ -205,9 +183,7 @@ export function usdPer1000(x: number | null | undefined): string {
 
 /** 0.0173 → "$0.017", 0.000986 → "< $0.001" */
 export function usdPerRec(x: number | null | undefined): string {
-  if (x == null) return '—'
-  if (x < 0.001) return '< $0.001'
-  return USD(3).format(x)
+  return usdSmall(x) ?? '—'
 }
 
 /** 2653 → "2.7 s", 11498 → "11 s", 850 → "850 ms" */

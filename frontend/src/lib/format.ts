@@ -49,3 +49,14 @@ export function simRelative(iso: string, simToday: string): string {
   if (diff === 1) return `Yesterday, ${format(when, 'HH:mm')}`
   return format(when, 'd MMM')
 }
+
+/**
+ * A model cost in dollars, the same on every screen: three decimals ("$0.034"; the fast path's $0.000986 reads
+ * "$0.001"), "< $0.001" only when three decimals would read zero, "$0" for a recommendation with no model call.
+ */
+export function usdSmall(usd: number | null | undefined): string | null {
+  if (usd == null || Number.isNaN(usd)) return null
+  if (usd === 0) return '$0'
+  const shown = usd.toFixed(3)
+  return Number(shown) === 0 ? '< $0.001' : `$${shown}`
+}
