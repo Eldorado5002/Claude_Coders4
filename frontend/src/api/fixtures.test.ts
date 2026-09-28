@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { fixtureResponse, resetFixtureState } from './fixtures'
-import type { CaptureResult, ExceptionDetail, ExceptionPage, Settings } from './types'
+import type { Belief, CaptureResult, ExceptionDetail, ExceptionPage, Settings, VendorProfile } from './types'
 
 describe('fixture mode', () => {
   beforeEach(() => resetFixtureState())
@@ -64,5 +64,28 @@ describe('round-2 fixture endpoints', () => {
     expect((await capture('invoice-balaji-bad-gstin.png')).exception_id).toBe('EXC-0045')
     expect((await capture('invoice-balaji-freight.png')).exception_id).toBe('EXC-0043')
     expect((await capture('scan.jpg')).exception_id).toBe('EXC-0011')
+  })
+  it('the same freight invoice captured twice is caught by the duplicate control', async () => {
+    const capture = () =>
+      fixtureResponse('POST', '/api/invoices/capture', undefined, { filename: 'invoice-balaji-freight.png' }) as Promise<CaptureResult>
+    expect((await capture()).exception_id).toBe('EXC-0043')
+    const again = await capture()
+    expect(again.exception_id).toBe('EXC-0046')
+    const dup = (await fixtureResponse('GET', '/api/exceptions/EXC-0046')) as ExceptionDetail
+    expect(dup).toMatchObject({ primary_type: 'duplicate_invoice', blocking: true, status: 'open' })
+    expect(dup.issues[0]).toMatchObject({ type: 'duplicate_invoice', blocking: true })
+    expect(dup.recommendation).toMatchObject({ action: 'reject', source: 'guardrail' })
+    expect(dup.recommendation!.rationale).toMatch(/^Hard control: .+ Action forced to reject\./)
+  })
+  it('keeps Balaji’s beliefs and risk signals on Balaji: other vendors get their own (or none)', async () => {
+    expect(((await fixtureResponse('GET', '/api/vendors/V001/beliefs')) as Belief[]).length).toBeGreaterThan(0)
+    expect(await fixtureResponse('GET', '/api/vendors/V002/beliefs')).toEqual([])
+    const [balaji, other] = (await Promise.all([
+      fixtureResponse('GET', '/api/vendors/V001'),
+      fixtureResponse('GET', '/api/vendors/V002'),
+    ])) as VendorProfile[]
+    expect(other.risk?.reasons).toEqual([])
+    expect(other.risk?.benford.n).toBe(0)
+    expect(other.risk?.benford).not.toEqual(balaji.risk?.benford)
   })
 })

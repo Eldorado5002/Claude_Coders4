@@ -37,12 +37,15 @@ type State = {
   stage?: DemoStageId
   resolved: Map<string, ResolveResult>
   revoked: Map<string, RevokeRequest>
-  /** case id → the mock of the case a sample capture opened */
-  captured: Map<string, string>
+  /** case id → the case a sample capture opened */
+  captured: Map<string, () => Promise<ExceptionDetail>>
+  /** samples captured so far: a second capture of one is a duplicate */
+  seen: Set<string>
 }
-let state: State = { resolved: new Map(), revoked: new Map(), captured: new Map() }
+const fresh = (): State => ({ resolved: new Map(), revoked: new Map(), captured: new Map(), seen: new Set() })
+let state: State = fresh()
 export function resetFixtureState() {
-  state = { resolved: new Map(), revoked: new Map(), captured: new Map() }
+  state = fresh()
 }
 
 const SAMPLE_KINDS = ['freight', 'no-irn', 'bad-gstin'] as const
@@ -52,8 +55,51 @@ async function capture(filename = ''): Promise<CaptureResult> {
   const kind = SAMPLE_KINDS.find((k) => filename.includes(`-${k}.`))
   if (!kind) return mock<CaptureResult>('capture-result')
   const result = await mock<CaptureResult>(`twist/capture-${kind}`)
-  if (result.exception_id) state.captured.set(result.exception_id, `twist/capture-case-${kind}`)
+  if (state.seen.has(kind)) {
+    // the same invoice again: the duplicate control rejects it (as the backend did at the Twist, EXC-0046)
+    const id = `EXC-${String(46 + state.captured.size - state.seen.size).padStart(4, '0')}`
+    state.captured.set(id, () => duplicateCase(kind, id))
+    return { ...result, exception_id: id }
+  }
+  state.seen.add(kind)
+  if (result.exception_id) state.captured.set(result.exception_id, () => mock<ExceptionDetail>(`twist/capture-case-${kind}`))
   return result
+}
+
+const dayMonthYear = (iso: string) =>
+  new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+
+/** The case the backend opens for a resubmitted invoice, worded like its duplicate guardrail. */
+async function duplicateCase(kind: string, id: string): Promise<ExceptionDetail> {
+  const first = await mock<ExceptionDetail>(`twist/capture-case-${kind}`)
+  const message = `Same invoice number ${first.invoice.invoice_number} as ${first.invoice.id} received on ${dayMonthYear(first.invoice.invoice_date)}.`
+  const rec = first.recommendation!
+  return {
+    ...first,
+    id,
+    status: 'open',
+    primary_type: 'duplicate_invoice',
+    issue_types: ['duplicate_invoice', ...first.issue_types.filter((t) => t !== 'duplicate_invoice')],
+    recommended_action: 'reject',
+    confidence: 0.99,
+    autonomy_level: 'locked',
+    blocking: true,
+    msme_days_left: null,
+    issues: [{ type: 'duplicate_invoice', message, blocking: true }, ...first.issues.filter((i) => !i.blocking)],
+    recommendation: {
+      ...rec,
+      action: 'reject',
+      confidence: 0.99,
+      adjusted_amount: null,
+      source: 'guardrail',
+      route: 'guardrail',
+      auto_resolved: false,
+      calibrated_confidence: null,
+      rationale: `Hard control: ${message} Action forced to reject. Past decisions for this vendor are shown for context; they cannot override this rule.`,
+    },
+    resolution: null,
+    autonomy: { ...first.autonomy, exception_type: 'duplicate_invoice', level: 'locked', streak: 0, accepted: 0, overruled: 0, auto_resolved: 0, updated_at: null },
+  }
 }
 
 const STAGE_ORDER: DemoStageId[] = ['day1', 'week3', 'week8', 'twist']
@@ -98,7 +144,7 @@ async function detail(id: string): Promise<ExceptionDetail | null> {
   const done = state.resolved.get(id)
   if (done) return done.exception
   const captured = state.captured.get(id)
-  if (captured) return mock<ExceptionDetail>(captured)
+  if (captured) return captured()
   if (state.memory === false) {
     // the real memory-off verdict of the open case (docs/mocks/exception-detail-memory-off.json)
     const off = await mock<ExceptionDetail>('exception-detail-memory-off')
@@ -170,7 +216,23 @@ async function vendor(id: string): Promise<VendorProfile | null> {
   const [base, list] = await Promise.all([mock<VendorProfile>('vendor-profile'), mock<VendorSummary[]>('vendors')])
   const v = list.find((x) => x.id === id)
   if (!v) return null
-  return id === base.id ? base : { ...base, ...v, learned: [], playbook: null, recent: [], autonomy: [] }
+  if (id === base.id) return base
+  // other vendors: their own index row; the sample's Hindsight notes, risk signals and Udyam number stay with it (the row has none)
+  const risk: VendorProfile['risk'] =
+    v.risk_score == null || !base.risk
+      ? null
+      : {
+          score: v.risk_score,
+          level: v.risk_level ?? 'low',
+          reasons: [],
+          benford: { ...base.risk.benford, n: 0, mad: null, conformity: 'insufficient data', observed: base.risk.benford.observed.map(() => 0) },
+        }
+  return { ...base, ...v, learned: [], playbook: null, recent: [], autonomy: [], risk, udyam: null }
+}
+
+/** The sample vendor (V001 in docs/mocks/vendor-profile.json): the only one whose beliefs the mocks hold. */
+async function vendorIsSample(id: string) {
+  return (await mock<VendorProfile>('vendor-profile')).id === id
 }
 
 async function lessons(q: Query): Promise<Lesson[]> {
@@ -215,7 +277,7 @@ const routes: [string, RegExp, Handler][] = [
   ['GET', /^\/api\/vendors\/([^/]+)$/, (m) => vendor(m[1])],
   ['GET', /^\/api\/autonomy$/, () => mock('autonomy')],
   ['GET', /^\/api\/autonomy\/certificate$/, () => mock('certificate')],
-  ['GET', /^\/api\/vendors\/([^/]+)\/beliefs$/, () => mock('beliefs')],
+  ['GET', /^\/api\/vendors\/([^/]+)\/beliefs$/, async (m) => ((await vendorIsSample(m[1])) ? mock('beliefs') : [])],
   ['GET', /^\/api\/knowledge$/, () => mock('knowledge')],
   ['GET', /^\/api\/knowledge\/([^/]+)$/, () => mock('knowledge-page')],
   ['GET', /^\/api\/risk$/, () => mock('risk')],
