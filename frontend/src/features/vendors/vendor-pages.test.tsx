@@ -20,6 +20,7 @@ vi.mock('@/api/client', async (importOriginal) => {
 const profile = profileMock as unknown as VendorProfile
 
 const vendor = (id: string, name: string, city: string, touchless_rate: number | null, open = 0): VendorSummary => ({
+  e_invoice_required: false,
   id,
   name,
   gstin: `36${id}GSTIN1Z`,
@@ -157,12 +158,14 @@ describe('Vendor file', () => {
   })
 
   it('shows what was learned, the trust lane, recent cases, and a pending playbook with a retry', async () => {
+    mockApi({ vendor: () => ok({ ...profile, playbook: null }) }) // Hindsight still writing the wiki
     renderAt('/vendors/V001')
-    expect(await screen.findByText(/freight charges under/)).toBeInTheDocument()
+    expect((await screen.findAllByText(profile.learned[0].text.slice(0, 40), { exact: false })).length).toBeGreaterThan(0)
     expect(screen.getByText('HDFC Bank')).toBeInTheDocument()
     expect(screen.getByText('HDFC0001234')).toBeInTheDocument()
-    expect(screen.getByText('2 accepted · 1 overruled · 0 auto')).toBeInTheDocument()
-    expect(screen.getByText('EXC-0014')).toBeInTheDocument()
+    const lane = profile.autonomy[0]
+    expect(screen.getByText(`${lane.accepted} accepted · ${lane.overruled} overruled · ${lane.auto_resolved} auto`)).toBeInTheDocument()
+    expect(screen.getByText(profile.recent[0].id)).toBeInTheDocument()
     expect(screen.getByText('Drafting the playbook…')).toBeInTheDocument()
 
     const calls = () => (vi.mocked(api.GET).mock.calls as unknown[][]).filter((c) => c[0] === '/api/vendors/{vendor_id}').length

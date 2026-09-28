@@ -9,6 +9,8 @@ import { qk } from '@/api/keys'
 import type { Lesson, MemoryItem, RevokeResult } from '@/api/types'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import lessonsMock from '@mocks/lessons.json'
+import { simDate } from '@/lib/format'
+import { groupByDay, lessonStats, lessonsHeadline } from './lessons-view'
 import memoryMock from '@mocks/memory-recent.json'
 import revokeMock from '@mocks/revoke-result.json'
 import { LessonsTab } from './lessons-tab'
@@ -47,14 +49,22 @@ beforeEach(() => {
 describe('LessonsTab', () => {
   it('heads the ledger with counts and groups lessons under day markers', () => {
     renderWith(<LessonsTab onVendor={() => {}} />, [[qk.lessons(), lessons]])
-    expect(screen.getByText('8 lessons · 2 taught by the agent itself · 0 revoked')).toBeInTheDocument()
+    expect(screen.getByText(lessonsHeadline(lessonStats(lessons)))).toBeInTheDocument()
     const days = screen.getAllByRole('heading', { level: 2 })
-    expect(days).toHaveLength(5)
-    expect(days[0]).toHaveTextContent('Mon, 27 Apr 2026')
+    expect(days).toHaveLength(groupByDay(lessons).length)
+    expect(days[0]).toHaveTextContent(simDate(groupByDay(lessons)[0].day))
   })
 
   it('shows auto lessons without the boilerplate, as taught by Precedent itself', () => {
-    renderWith(<LessonsTab onVendor={() => {}} />, [[qk.lessons(), lessons]])
+    const auto = (l: Lesson, case_id: string, why: string): Lesson => ({
+      ...l,
+      case_id,
+      auto: true,
+      taught_by: 'Precedent (auto)',
+      reason: `Auto-resolved under earned autonomy. ${why}`,
+    })
+    const withAuto = [auto(lessons[0], 'EXC-0046', 'Freight under the ₹5,000 cap.'), auto(lessons[1], 'EXC-0047', 'Rounding within ₹10.'), ...lessons.slice(2)]
+    renderWith(<LessonsTab onVendor={() => {}} />, [[qk.lessons(), withAuto]])
     expect(screen.getAllByText('taught by Precedent itself')).toHaveLength(2)
     expect(screen.queryByText(/Auto-resolved under earned autonomy/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Open case EXC-0046' })).toHaveAttribute('href', '/exceptions/EXC-0046')

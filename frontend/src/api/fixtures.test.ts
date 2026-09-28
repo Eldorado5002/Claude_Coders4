@@ -31,3 +31,26 @@ describe('fixture mode', () => {
     expect(await fixtureResponse('GET', '/api/nope')).toBeNull()
   })
 })
+
+describe('round-2 fixture endpoints', () => {
+  beforeEach(() => resetFixtureState())
+  it('answers risk, Benford, certificate, beliefs and knowledge pages', async () => {
+    expect(((await fixtureResponse('GET', '/api/risk')) as unknown[]).length).toBeGreaterThan(0)
+    expect(await fixtureResponse('GET', '/api/benford')).toMatchObject({ conformity: expect.any(String) })
+    expect(await fixtureResponse('GET', '/api/autonomy/certificate')).toMatchObject({ status: expect.any(String) })
+    expect(((await fixtureResponse('GET', '/api/vendors/V001/beliefs')) as unknown[]).length).toBeGreaterThan(0)
+    const pages = (await fixtureResponse('GET', '/api/knowledge')) as { id: string }[]
+    expect(await fixtureResponse('GET', `/api/knowledge/${pages[0].id}`)).toMatchObject({ id: pages[0].id })
+  })
+  it('sorts the docket by amount at risk when asked', async () => {
+    const page = (await fixtureResponse('GET', '/api/exceptions', { status: 'all', sort: 'amount' })) as ExceptionPage
+    const amounts = page.items.map((c) => c.amount_at_risk)
+    expect(amounts).toEqual([...amounts].sort((a, b) => b - a))
+  })
+  it('shows the real memory-off verdict of the open case when memory is switched off', async () => {
+    await fixtureResponse('PATCH', '/api/settings', undefined, { memory_enabled: false })
+    const d = (await fixtureResponse('GET', '/api/exceptions/EXC-0010')) as ExceptionDetail
+    expect(d.recommendation?.source).toBe('no_memory')
+    expect(d.recommendation?.action).toBe('hold')
+  })
+})

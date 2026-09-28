@@ -6,6 +6,8 @@ import { ApiError } from '@/api/client'
 import { qk } from '@/api/keys'
 import type { Metrics } from '@/api/types'
 import metricsMock from '@mocks/metrics.json'
+import twistMetrics from '@mocks/twist/metrics.json'
+import { isHardControl } from '@/lib/labels'
 import LearningPage from './learning-page'
 
 const failure = vi.hoisted(() => ({ error: null as Error | null }))
@@ -43,7 +45,7 @@ describe('LearningPage', () => {
   it('leads with the replay headline and cites its footnote', () => {
     renderPage(metrics)
     const h1 = screen.getByRole('heading', { level: 1 })
-    expect(h1).toHaveTextContent('In months 5–6, Precedent was right 96% of the time with memory, 35% without.')
+    expect(h1).toHaveTextContent('In months 5–6, Precedent was right 98% of the time with memory, 50% without.')
     expect(within(h1).getByRole('link', { name: 'Note 5' })).toHaveAttribute('href', '#learning-note-5')
   })
 
@@ -73,10 +75,16 @@ describe('LearningPage', () => {
   })
 
   it('never draws a bar for hard controls', () => {
-    renderPage(metrics)
-    // duplicate, bank change, over ₹5L in the mock
-    expect(screen.getAllByText('0% by design — always human')).toHaveLength(3)
-    expect(screen.getByRole('img', { name: 'Freight: 30% resolved without a human' })).toBeInTheDocument()
+    // Week 3 has no hard-control cases yet; the Twist does
+    const twist = twistMetrics as unknown as Metrics
+    renderPage(twist)
+    const hard = twist.by_type.filter((t) => isHardControl(t.type))
+    expect(hard.length).toBeGreaterThan(0)
+    expect(screen.getAllByText('0% by design — always human')).toHaveLength(hard.length)
+    const freight = twist.by_type.find((t) => t.type === 'freight_charge')!
+    expect(
+      screen.getByRole('img', { name: `Freight: ${Math.round(freight.touchless_rate * 100)}% resolved without a human` }),
+    ).toBeInTheDocument()
   })
 
   it('lists every assumption as a numbered footnote', () => {

@@ -9,6 +9,7 @@ import answerMock from '@mocks/copilot-answer.json'
 import vendorsMock from '@mocks/vendors.json'
 import { useUi } from '@/stores/ui'
 import { renderApp } from '@/test/render'
+import { answeredIn } from './ask-model'
 import AskSheet from './ask-sheet'
 
 const { mutateAsync } = vi.hoisted(() => ({ mutateAsync: vi.fn() }))
@@ -66,7 +67,7 @@ describe('AskSheet', () => {
     expect(screen.getByRole('textbox', { name: /question/i })).toBeDisabled()
 
     await act(async () => resolve(answer))
-    expect(screen.getByText('Answered from memory in 3.1 s')).toBeInTheDocument()
+    expect(screen.getByText(answeredIn(answer.latency_ms))).toBeInTheDocument()
     expect(screen.getByText('Precedents cited')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Precedent 1' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Precedent 2' })).toBeInTheDocument()
@@ -82,7 +83,7 @@ describe('AskSheet', () => {
         <AskSheet />
       </StrictMode>,
     )
-    await screen.findByText('Answered from memory in 3.1 s')
+    await screen.findByText(answeredIn(answer.latency_ms))
     expect(mutateAsync).toHaveBeenCalledTimes(1)
     expect(mutateAsync).toHaveBeenCalledWith({ question: 'What limits do we apply?', vendor_id: null })
     expect(useUi.getState().askQuestion).toBeNull()
@@ -97,7 +98,7 @@ describe('AskSheet', () => {
 
     expect(await screen.findByText('Hindsight is unreachable right now, so there’s no memory to answer from.')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /Try again/ }))
-    await screen.findByText('Answered from memory in 3.1 s')
+    await screen.findByText(answeredIn(answer.latency_ms))
     expect(mutateAsync).toHaveBeenCalledTimes(2)
     expect(screen.getAllByText('Which vendors bill GST at the wrong rate?')).toHaveLength(1)
   })
@@ -126,7 +127,7 @@ describe('AskSheet', () => {
 
     await user.type(box, '{Enter}')
     expect(mutateAsync).toHaveBeenCalledWith({ question: 'Freight rules\nfor Balaji?', vendor_id: null })
-    await screen.findByText('Answered from memory in 3.1 s')
+    await screen.findByText(answeredIn(answer.latency_ms))
     expect(box).toHaveValue('')
   })
 
@@ -134,7 +135,7 @@ describe('AskSheet', () => {
     mutateAsync.mockResolvedValue(answer)
     renderApp(<AskSheet />)
     open({ question: 'Freight policy?' })
-    await screen.findByText('Answered from memory in 3.1 s')
+    await screen.findByText(answeredIn(answer.latency_ms))
 
     act(() => useUi.getState().closeAsk())
     act(() => useUi.setState({ askOpen: true }))
@@ -153,12 +154,13 @@ describe('AskSheet', () => {
       scrolled.push(this)
     }
     try {
-      mutateAsync.mockResolvedValue(answer)
+      // the regenerated mock cites no case, so give its first source one to test the link
+      mutateAsync.mockResolvedValue({ ...answer, citations: [{ ...answer.citations[0], exception_id: 'EXC-0007' }, ...answer.citations.slice(1)] })
       renderApp(<AskSheet />)
       open({ question: 'First question?' })
-      await screen.findByText('Answered from memory in 3.1 s')
+      await screen.findByText(answeredIn(answer.latency_ms))
       await user.type(screen.getByRole('textbox', { name: /question/i }), 'Second question?{Enter}')
-      await waitFor(() => expect(screen.getAllByText('Answered from memory in 3.1 s')).toHaveLength(2))
+      await waitFor(() => expect(screen.getAllByText(answeredIn(answer.latency_ms))).toHaveLength(2))
 
       const second = document.querySelector('[data-turn="2"]')!
       await user.click(second.querySelector('a[href="#cite-1"]')!)

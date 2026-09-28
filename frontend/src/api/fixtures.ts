@@ -66,12 +66,25 @@ async function listExceptions(q: Query): Promise<ExceptionPage> {
     .filter((c) => status === 'all' || c.status === status)
     .filter((c) => !q.vendor_id || c.vendor.id === q.vendor_id)
     .filter((c) => !q.type || c.primary_type === q.type)
+  if (q.sort === 'amount') items.sort((a, b) => b.amount_at_risk - a.amount_at_risk)
+  if (q.sort === 'msme_deadline')
+    items.sort(
+      (a, b) =>
+        Number(a.msme_days_left == null) - Number(b.msme_days_left == null) ||
+        (a.msme_days_left ?? 0) - (b.msme_days_left ?? 0) ||
+        b.amount_at_risk - a.amount_at_risk,
+    )
   return { items, total: items.length }
 }
 
 async function detail(id: string): Promise<ExceptionDetail | null> {
   const done = state.resolved.get(id)
   if (done) return done.exception
+  if (state.memory === false) {
+    // the real memory-off verdict of the open case (docs/mocks/exception-detail-memory-off.json)
+    const off = await mock<ExceptionDetail>('exception-detail-memory-off')
+    if (off.id === id) return off
+  }
   const [base, page] = await Promise.all([mock<ExceptionDetail>('exception-detail'), mock<ExceptionPage>('exceptions')])
   const s = page.items.find((c) => c.id === id)
   if (!s) return id === base.id ? base : null
@@ -182,6 +195,12 @@ const routes: [string, RegExp, Handler][] = [
   ['GET', /^\/api\/vendors$/, () => mock('vendors')],
   ['GET', /^\/api\/vendors\/([^/]+)$/, (m) => vendor(m[1])],
   ['GET', /^\/api\/autonomy$/, () => mock('autonomy')],
+  ['GET', /^\/api\/autonomy\/certificate$/, () => mock('certificate')],
+  ['GET', /^\/api\/vendors\/([^/]+)\/beliefs$/, () => mock('beliefs')],
+  ['GET', /^\/api\/knowledge$/, () => mock('knowledge')],
+  ['GET', /^\/api\/knowledge\/([^/]+)$/, () => mock('knowledge-page')],
+  ['GET', /^\/api\/risk$/, () => mock('risk')],
+  ['GET', /^\/api\/benford$/, () => mock('benford')],
   ['GET', /^\/api\/metrics$/, () => mock('metrics')],
   ['GET', /^\/api\/memory\/recent$/, () => mock('memory-recent')],
   ['GET', /^\/api\/memory\/policy$/, () => mock('policy')],

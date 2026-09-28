@@ -13,6 +13,7 @@ import {
 } from './vendors-view'
 
 const v = (id: string, over: Partial<VendorSummary> = {}): VendorSummary => ({
+  e_invoice_required: false,
   id,
   name: 'Shree Balaji Steel Traders Pvt Ltd',
   gstin: '36ASICS1238O1ZX',
@@ -174,5 +175,12 @@ describe('sortLanes', () => {
     const rows = [lane('tax_mismatch', 'suggest', 1), lane('freight_charge', 'suggest', 1)]
     expect(sortLanes(rows).map((r) => r.exception_type)).toEqual(['freight_charge', 'tax_mismatch'])
     expect(rows[0].exception_type).toBe('tax_mismatch')
+  })
+})
+
+describe('sortLanes with a type the UI has never seen', () => {
+  it('does not crash on an unknown exception type', () => {
+    const lane = (t: string) => ({ vendor_id: 'V1', vendor_name: 'V', exception_type: t, level: 'locked', streak: 0, required_streak: 3, accepted: 0, overruled: 0, auto_resolved: 0, updated_at: null }) as unknown as Parameters<typeof sortLanes>[0][number]
+    expect(() => sortLanes([lane('future_a'), lane('duplicate_invoice'), lane('future_b')])).not.toThrow()
   })
 })

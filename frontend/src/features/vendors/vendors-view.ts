@@ -78,6 +78,6 @@ export function sortLanes(rows: AutonomyState[]): AutonomyState[] {
     (a, b) =>
       LEVEL_RANK[a.level] - LEVEL_RANK[b.level] ||
       b.streak - a.streak ||
-      TYPE_LABEL[a.exception_type].localeCompare(TYPE_LABEL[b.exception_type]),
+      (TYPE_LABEL[a.exception_type] ?? a.exception_type).localeCompare(TYPE_LABEL[b.exception_type] ?? b.exception_type),
   )
 }

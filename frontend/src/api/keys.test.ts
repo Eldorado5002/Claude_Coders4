@@ -36,3 +36,16 @@ describe('eventInvalidations', () => {
     expect(eventInvalidations('something.else', {})).toEqual([])
   })
 })
+
+describe('round-2 invalidations', () => {
+  it('refreshes the autonomy certificate when decisions or trust change', () => {
+    for (const e of ['exception.updated', 'autonomy.changed', 'memory.revoked'])
+      expect(eventInvalidations(e, { id: 'EXC-1', vendor_id: 'V001' })).toEqual(expect.arrayContaining([['certificate']]))
+  })
+  it('refreshes that vendor’s beliefs when a lesson is retained', () => {
+    expect(eventInvalidations('memory.retained', { vendor_id: 'V001' })).toEqual(expect.arrayContaining([['beliefs', 'V001']]))
+  })
+  it('refreshes vendor risk when a new exception arrives', () => {
+    expect(eventInvalidations('exception.created', { id: 'EXC-9' })).toEqual(expect.arrayContaining([['risk']]))
+  })
+})

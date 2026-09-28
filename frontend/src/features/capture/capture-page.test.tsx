@@ -49,7 +49,7 @@ describe('CapturePage', () => {
     expect(await screen.findByText('Reading the invoice…')).toBeInTheDocument()
     expect(screen.getByText('invoice.png')).toBeInTheDocument()
     finish(captureMock as unknown as CaptureResult)
-    expect(await screen.findByRole('link', { name: /open case/i })).toHaveAttribute('href', '/exceptions/EXC-0140')
+    expect(await screen.findByRole('link', { name: /open case/i })).toHaveAttribute('href', `/exceptions/${captureMock.exception_id}`)
   })
 
   it('413: plain message and no retry with the same file', async () => {
