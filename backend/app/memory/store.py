@@ -5,6 +5,7 @@ four things the agent does with memory: retain a resolution, reflect for a
 recommendation, recall observations about a vendor, and read the vendor playbook.
 """
 
+import ast
 import asyncio
 import contextlib
 import logging
@@ -19,6 +20,7 @@ from app.config import Settings, get_settings
 from app.schemas import Citation, CitationKind, ExceptionType
 
 log = logging.getLogger("precedent.memory")
+NL = chr(10)
 
 BANK_MISSION = (
     "Institutional memory of the accounts-payable team at Deccan Precision Components, a Hyderabad manufacturer. "
@@ -509,7 +511,29 @@ def strip_frontmatter(md: str | None) -> str | None:
         end = md.find("---", 3)
         if end != -1:
             md = md[end + 3 :]
-    return md.strip() or None
+    return normalise_page(md.strip()) or None
+
+
+def normalise_page(md: str) -> str:
+    """Hindsight sometimes writes a page's sections as Python dict literals
+    ({'level': 2, 'heading': ..., 'blocks': [...]}) instead of markdown. Render those as markdown."""
+    out = []
+    for chunk in md.split(NL + NL):
+        s = chunk.strip()
+        section = None
+        if s.startswith("{") and s.endswith("}") and "blocks" in s:
+            try:
+                section = ast.literal_eval(s)
+            except (ValueError, SyntaxError):
+                section = None
+        if not isinstance(section, dict):
+            out.append(chunk)
+            continue
+        if section.get("heading"):
+            level = min(max(int(section.get("level") or 2), 1), 6)
+            out.append("#" * level + " " + str(section["heading"]).strip())
+        out.extend(str(b).strip() for b in section.get("blocks") or [] if str(b).strip())
+    return (NL + NL).join(out).strip()
 
 
 def _mm_content(mm: Any) -> str | None:
@@ -528,6 +552,8 @@ def citations_from(resp: Any, limit: int = 6) -> list[Citation]:
     if not bo:
         return out
     for mm in (bo.mental_models or [])[:2]:
+        if pending_text(mm.text):
+            continue  # Hindsight is still writing this summary: it isn't evidence yet
         out.append(Citation(id=str(mm.id), kind=CitationKind.MENTAL_MODEL, text=_clip(mm.text)))
     for d in bo.directives or []:
         out.append(Citation(id=str(d.id), kind=CitationKind.DIRECTIVE, text=_clip(f"{d.name}: {d.content}")))
@@ -552,6 +578,12 @@ def citations_from(resp: Any, limit: int = 6) -> list[Citation]:
     }
     out.sort(key=lambda c: order[c.kind])
     return out[:limit]
+
+
+def pending_text(text: str | None) -> bool:
+    """True for an empty summary or Hindsight's 'Generating content…' placeholder."""
+    body = (text or "").split(":", 1)[-1] if "generating content" in (text or "").lower() else (text or "")
+    return not body.strip() or "generating content" in body.lower()
 
 
 def _clip(text: str | None, n: int = 400) -> str:

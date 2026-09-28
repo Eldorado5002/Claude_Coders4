@@ -25,6 +25,7 @@ from app.memory.store import MemoryStore, get_memory
 from app.ml.anomaly import anomaly_score
 from app.models import Autonomy, ExceptionCase, GoodsReceipt, Invoice, PurchaseOrder, Vendor
 from app.schemas import (
+    HARD_CONTROL_TYPES,
     Action,
     AutonomyLevel,
     BankAccount,
@@ -166,6 +167,31 @@ def case_msme(session: Session, case: ExceptionCase, today) -> MsmeStatus | None
     inv = session.get(Invoice, case.invoice_id)
     grn = grn_for(session, inv)
     return msme_status(v.profile, row_dict(inv), row_dict(grn) if grn else None, today, v.payment_terms_days)
+
+
+def precedent_decision(session: Session, case: ExceptionCase) -> str | None:
+    """For a hard-control case: how the team last decided this vendor's *other* issue (e.g. the freight line on
+    an invoice whose bank account changed). Shown as what memory alone would have done."""
+    if not case.blocking:
+        return None
+    other = [t for t in case.issue_types if ExceptionType(t) not in HARD_CONTROL_TYPES]
+    if not other:
+        return None
+    rows = session.exec(
+        select(ExceptionCase)
+        .where(
+            ExceptionCase.vendor_id == case.vendor_id,
+            col(ExceptionCase.primary_type).in_(other),
+            col(ExceptionCase.status).in_([CaseStatus.RESOLVED, CaseStatus.AUTO_RESOLVED]),
+            ExceptionCase.created_at < case.created_at,
+        )
+        .order_by(col(ExceptionCase.created_at).desc())
+    ).all()
+    for r in rows:
+        res = r.resolution or {}
+        if res.get("decision") and not res.get("revoked_at"):
+            return str(res["decision"])
+    return None
 
 
 def current_rec(case: ExceptionCase, mem_on: bool) -> dict | None:
@@ -381,7 +407,10 @@ class CaseService:
             anomaly=score,
             typical_total=typical,
             history_count=len(history),
-            extra={"msme": case_msme(session, case, inv.arrival_date)},
+            extra={
+                "msme": case_msme(session, case, inv.arrival_date),
+                "precedent_decision": precedent_decision(session, case),
+            },
         )
 
     async def recommend_case(self, case_id: str, *, force: bool = False, mem_on: bool | None = None) -> Recommendation:

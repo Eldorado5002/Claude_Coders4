@@ -225,11 +225,14 @@ class Recommender:
                 if has_context
                 else ""
             )
+            # what the team's own precedent says about the rest of this invoice (from the database, no model call)
+            said = ctx.extra.get("precedent_decision") if memory_enabled else None
+            overridden = f" (Memory alone would have suggested {said}.)" if said and said != forced.value else ""
             draft = RecDraft(
                 action=forced,
                 confidence=0.99,
                 adjusted_amount=None,
-                rationale=f"Hard control: {msg} Action: {forced.value}.{context}",
+                rationale=f"Hard control: {msg} Action forced to {forced.value}.{overridden}{context}",
                 precedent_found=False,
             )
             provider, route, source = "guardrail", "guardrail", RecSource.GUARDRAIL

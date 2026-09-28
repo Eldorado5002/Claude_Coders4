@@ -13,7 +13,6 @@ from datetime import timedelta
 from sqlmodel import Session, col, select
 
 from app.agent.autonomy import same_outcome
-from app.config import get_settings
 from app.db import get_engine, get_state, set_state
 from app.models import ExceptionCase, Invoice
 from app.schemas import Action, CaseStatus, ResolveRequest
@@ -105,9 +104,9 @@ class Simulator:
                     await on_day(day)
         finally:
             self.busy = False
-        bus.publish(
-            "sim.changed", {"sim_day": target, "sim_date": str(get_settings().sim_start + timedelta(days=target))}
-        )
+        from app.services.demo import demo_state
+
+        bus.publish("sim.changed", demo_state())  # same DemoState payload as POST /api/demo/advance
 
 
 _sim: Simulator | None = None
