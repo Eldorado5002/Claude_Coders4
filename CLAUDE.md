@@ -53,15 +53,25 @@ uv run ruff check . && uv run ruff format .
 
 Evaluations (live APIs, cost real money — ask before rerunning): `scripts/build_demo.py` (demo snapshots +
 learning curve, ~$4–5 of Hindsight), `scripts/ablation.py` (~$4.60), `scripts/eval_capture.py` (~$0.05 of Gemini).
-Method and results: `docs/EVALUATION.md`. `scripts/make_mocks.py` regenerates `docs/mocks/` from the running app.
+Method and results: `docs/EVALUATION.md`. `scripts/make_mocks.py` regenerates `docs/mocks/` from the running app
+(~$0.06; it deletes the lessons it writes into the demo banks afterwards).
+
+Contract with the frontend: the UI parses fixed sentences out of a recommendation's rationale (hard control,
+"Memory alone would have suggested", ML check, MSME note; all listed in `docs/api-contract.md`). The hard-control
+ones are pinned by `tests/test_frontend_contract.py`. Change any of them only together with
+`frontend/src/lib/parse-rationale.ts`. After changing recommendation wording, update the stored demo
+snapshots for free with `uv run python -m scripts.refresh_stage day1 week3 week8 twist --text-only`.
 
 ## Frontend (`frontend/`)
 
 - Vite 8 + React 19 + TypeScript, vite-plugin-pwa (`injectManifest`), Tailwind v4 + shadcn/ui,
   TanStack Query + TanStack Table, Zustand, React Router 7, Recharts, openapi-typescript + openapi-fetch.
 - **Desktop-first** (≥1280px is the primary layout, judged on a projector), fully responsive down to phones.
-- Build against `docs/mocks/*.json` until the backend is running; then point `VITE_API_BASE_URL` at it.
-- Generate API types from the running backend: `npx openapi-typescript http://localhost:8000/openapi.json -o src/api/schema.d.ts`.
+- Build against the mocks until the backend is running; then point `VITE_API_BASE_URL` at it.
+  `docs/mocks/*.json` is Week 3 (fixture mode, `?fixtures=1`); `docs/mocks/twist/` and `docs/mocks/replay-end/` hold
+  real responses for the Twist and the end of the replay (hard controls, MSME, risk, captures, certified certificate).
+- Generate API types from the running backend: `npm run gen:api`.
+- Screen-by-screen work for the newer backend features: `docs/frontend-integration.md`.
 
 ## Conventions
 

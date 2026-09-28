@@ -1,0 +1,151 @@
+{
+  "items": [
+    {
+      "id": "EXC-0041",
+      "status": "open",
+      "primary_type": "rounding_difference",
+      "issue_types": [
+        "rounding_difference"
+      ],
+      "vendor": {
+        "id": "V011",
+        "name": "Ananth Electricals & Controls",
+        "gstin": "36BDWFA3626X1Z3",
+        "city": "Secunderabad",
+        "category": "components"
+      },
+      "invoice_number": "AEC/2627/0799",
+      "invoice_total": 217876.17,
+      "amount_at_risk": 7.0,
+      "created_at": "2026-04-27T09:49:00",
+      "recommended_action": "approve",
+      "confidence": 0.9,
+      "autonomy_level": "suggest",
+      "blocking": false,
+      "msme_days_left": 5
+    },
+    {
+      "id": "EXC-0039",
+      "status": "open",
+      "primary_type": "over_threshold",
+      "issue_types": [
+        "over_threshold"
+      ],
+      "vendor": {
+        "id": "V002",
+        "name": "Sri Venkateswara Alloys & Castings",
+        "gstin": "36CTNFS1710S1ZH",
+        "city": "Medchal",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SVAC/2627/1068",
+      "invoice_total": 577065.34,
+      "amount_at_risk": 77065.33999999997,
+      "created_at": "2026-04-27T09:14:00",
+      "recommended_action": "escalate",
+      "confidence": 0.99,
+      "autonomy_level": "locked",
+      "blocking": true,
+      "msme_days_left": 37
+    },
+    {
+      "id": "EXC-0037",
+      "status": "open",
+      "primary_type": "bank_details_changed",
+      "issue_types": [
+        "bank_details_changed",
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2627/1165",
+      "invoice_total": 333203.68,
+      "amount_at_risk": 333203.68,
+      "created_at": "2026-04-27T09:00:00",
+      "recommended_action": "escalate",
+      "confidence": 0.99,
+      "autonomy_level": "locked",
+      "blocking": true,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0038",
+      "status": "open",
+      "primary_type": "duplicate_invoice",
+      "issue_types": [
+        "duplicate_invoice",
+        "freight_charge"
+      ],
+      "vendor": {
+        "id": "V001",
+        "name": "Shree Balaji Steel Traders Pvt Ltd",
+        "gstin": "36ASICS1238O1ZX",
+        "city": "Hyderabad",
+        "category": "raw_materials"
+      },
+      "invoice_number": "SBST/2526/0953",
+      "invoice_total": 112039.71,
+      "amount_at_risk": 112039.71,
+      "created_at": "2026-04-27T09:07:00",
+      "recommended_action": "reject",
+      "confidence": 0.99,
+      "autonomy_level": "locked",
+      "blocking": true,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0040",
+      "status": "open",
+      "primary_type": "duplicate_invoice",
+      "issue_types": [
+        "duplicate_invoice"
+      ],
+      "vendor": {
+        "id": "V005",
+        "name": "Deccan Freight Carriers",
+        "gstin": "36EGSFD1100V1ZI",
+        "city": "Hyderabad",
+        "category": "logistics"
+      },
+      "invoice_number": "DFC/2627/0534",
+      "invoice_total": 47151.26,
+      "amount_at_risk": 47151.26,
+      "created_at": "2026-04-27T09:42:00",
+      "recommended_action": "reject",
+      "confidence": 0.99,
+      "autonomy_level": "locked",
+      "blocking": true,
+      "msme_days_left": null
+    },
+    {
+      "id": "EXC-0042",
+      "status": "open",
+      "primary_type": "quantity_variance",
+      "issue_types": [
+        "quantity_variance"
+      ],
+      "vendor": {
+        "id": "V014",
+        "name": "Hi-Tech Tooling Solutions",
+        "gstin": "29RFQCH3157B1ZQ",
+        "city": "Bengaluru",
+        "category": "components"
+      },
+      "invoice_number": "HTTS/2627/0424",
+      "invoice_total": 146621.61,
+      "amount_at_risk": 15709.46,
+      "created_at": "2026-04-27T10:03:00",
+      "recommended_action": "approve_adjusted",
+      "confidence": 0.9,
+      "autonomy_level": "suggest",
+      "blocking": false,
+      "msme_days_left": null
+    }
+  ],
+  "total": 6
+}

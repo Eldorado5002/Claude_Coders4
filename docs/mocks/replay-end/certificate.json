@@ -1,0 +1,50 @@
+{
+  "status": "certified",
+  "target_error": 0.05,
+  "confidence_level": 0.95,
+  "threshold": 0.75,
+  "decisions": 73,
+  "errors": 0,
+  "error_upper_bound": 0.0402,
+  "auto_resolutions": 46,
+  "auto_errors": 0,
+  "auto_error_upper_bound": 0.063,
+  "table": [
+    {
+      "threshold": 0.95,
+      "decisions": 66,
+      "errors": 0,
+      "upper_bound": 0.0444,
+      "certified": true
+    },
+    {
+      "threshold": 0.9,
+      "decisions": 72,
+      "errors": 0,
+      "upper_bound": 0.0408,
+      "certified": true
+    },
+    {
+      "threshold": 0.85,
+      "decisions": 73,
+      "errors": 0,
+      "upper_bound": 0.0402,
+      "certified": true
+    },
+    {
+      "threshold": 0.8,
+      "decisions": 73,
+      "errors": 0,
+      "upper_bound": 0.0402,
+      "certified": true
+    },
+    {
+      "threshold": 0.75,
+      "decisions": 73,
+      "errors": 0,
+      "upper_bound": 0.0402,
+      "certified": true
+    }
+  ],
+  "explanation": "Of 73 verified pay recommendations at confidence ≥ 0.75, 0 were wrong. With 95% confidence the true wrong-payment rate is at most 4.0% (target 5%), so auto-approval is allowed at or above 0.75."
+}

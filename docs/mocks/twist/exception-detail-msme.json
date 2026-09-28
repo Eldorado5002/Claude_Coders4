@@ -1,0 +1,213 @@
+{
+  "id": "EXC-0041",
+  "status": "open",
+  "primary_type": "rounding_difference",
+  "issue_types": [
+    "rounding_difference"
+  ],
+  "vendor": {
+    "id": "V011",
+    "name": "Ananth Electricals & Controls",
+    "gstin": "36BDWFA3626X1Z3",
+    "city": "Secunderabad",
+    "category": "components"
+  },
+  "invoice_number": "AEC/2627/0799",
+  "invoice_total": 217876.17,
+  "amount_at_risk": 7.0,
+  "created_at": "2026-04-27T09:49:00",
+  "recommended_action": "approve",
+  "confidence": 0.9,
+  "autonomy_level": "suggest",
+  "blocking": false,
+  "msme_days_left": 5,
+  "invoice": {
+    "id": "INV-0176",
+    "invoice_number": "AEC/2627/0799",
+    "vendor_id": "V011",
+    "po_number": "PO-2026-0164",
+    "invoice_date": "2026-04-27",
+    "due_date": "2026-06-11",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "CBL-4C16",
+        "description": "Cable 4C x 16 sqmm Armoured",
+        "hsn": "8544",
+        "qty": 250.0,
+        "uom": "Mtr",
+        "unit_price": 526.8,
+        "tax_rate": 18.0,
+        "amount": 131700.0
+      },
+      {
+        "line_no": 2,
+        "sku": "MCB-32-4P",
+        "description": "MCB 32A 4P C-curve",
+        "hsn": "8536",
+        "qty": 25.0,
+        "uom": "Nos",
+        "unit_price": 2117.87,
+        "tax_rate": 18.0,
+        "amount": 52946.75
+      }
+    ],
+    "subtotal": 184646.75,
+    "tax_total": 33236.42,
+    "total": 217876.17,
+    "currency": "INR",
+    "bank_account": {
+      "bank_name": "Union Bank of India",
+      "account_number": "XXXXXX4969",
+      "ifsc": "UBIN0551234"
+    },
+    "supplier_gstin": "36BDWFA3626X1Z3",
+    "irn": null,
+    "source": "erp"
+  },
+  "purchase_order": {
+    "po_number": "PO-2026-0164",
+    "vendor_id": "V011",
+    "po_date": "2026-03-14",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "CBL-4C16",
+        "description": "Cable 4C x 16 sqmm Armoured",
+        "hsn": "8544",
+        "qty": 250.0,
+        "uom": "Mtr",
+        "unit_price": 526.8,
+        "tax_rate": 18.0,
+        "amount": 131700.0
+      },
+      {
+        "line_no": 2,
+        "sku": "MCB-32-4P",
+        "description": "MCB 32A 4P C-curve",
+        "hsn": "8536",
+        "qty": 25.0,
+        "uom": "Nos",
+        "unit_price": 2117.87,
+        "tax_rate": 18.0,
+        "amount": 52946.75
+      }
+    ],
+    "subtotal": 184646.75,
+    "tax_total": 33236.42,
+    "total": 217883.17
+  },
+  "goods_receipt": {
+    "grn_number": "GRN-2026-0164",
+    "po_number": "PO-2026-0164",
+    "received_date": "2026-03-18",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "CBL-4C16",
+        "description": "Cable 4C x 16 sqmm Armoured",
+        "qty_received": 250.0,
+        "uom": "Mtr"
+      },
+      {
+        "line_no": 2,
+        "sku": "MCB-32-4P",
+        "description": "MCB 32A 4P C-curve",
+        "qty_received": 25.0,
+        "uom": "Nos"
+      }
+    ]
+  },
+  "vendor_bank_on_file": {
+    "bank_name": "Union Bank of India",
+    "account_number": "XXXXXX4969",
+    "ifsc": "UBIN0551234"
+  },
+  "issues": [
+    {
+      "type": "rounding_difference",
+      "message": "Invoice total is ₹-7.00 off the sum of its lines + GST.",
+      "line_no": null,
+      "expected": 217883.17,
+      "actual": 217876.17,
+      "variance_amount": 7.0,
+      "variance_pct": null,
+      "blocking": false
+    }
+  ],
+  "recommendation": {
+    "action": "approve",
+    "confidence": 0.9,
+    "adjusted_amount": null,
+    "rationale": "The rounding difference of ₹7.00 is within the company's ₹10 tolerance threshold, consistent with the precedent set by Bharat Fasteners Co. (V019).",
+    "citations": [
+      {
+        "id": "9d194e70-43cf-45d7-b3a2-29a08d9619f1",
+        "kind": "observation",
+        "text": "The company maintains a ₹10 tolerance threshold for rounding differences on invoices.",
+        "occurred_at": "2026-03-30T10:40:00Z",
+        "exception_id": null
+      },
+      {
+        "id": "02602d0d-16ad-4629-a4a3-d0f2d404ff51",
+        "kind": "observation",
+        "text": "The AP agent Precedent's recommendations can be overruled by clerks, as demonstrated when a clerk approved an invoice despite Precedent's recommendation to hold it.",
+        "occurred_at": "2026-03-30T10:40:00.010000Z",
+        "exception_id": null
+      },
+      {
+        "id": "00b7482c-a479-4735-a871-31f287e64bc7",
+        "kind": "world",
+        "text": "Priya (AP) approved invoice BFC/2526/1361 for Bharat Fasteners Co. (V019) despite a ₹5.00 rounding difference, as it was within the ₹10 tolerance limit. | When: 2026-03-30 | Involving: Priya (AP), Bharat Fasteners Co. (V019) | The rounding difference was within the company's ₹10 tolerance threshold.",
+        "occurred_at": "2026-03-30T10:40:00Z",
+        "exception_id": null
+      },
+      {
+        "id": "105111e6-9520-4363-a687-a0b27c71bb2a",
+        "kind": "experience",
+        "text": "The AP agent Precedent recommended holding the invoice with 30% confidence, but the clerk overruled this recommendation. | When: 2026-03-30 | Involving: Precedent (AP agent), clerk | The clerk decided to approve the invoice instead of holding it.",
+        "occurred_at": "2026-03-30T10:40:00.010000Z",
+        "exception_id": null
+      }
+    ],
+    "source": "memory",
+    "anomaly_score": null,
+    "auto_resolved": false,
+    "provider": "hindsight-reflect",
+    "latency_ms": 5683,
+    "generated_at": "2026-04-27T09:51:00",
+    "route": "reflect",
+    "calibrated_confidence": 0.733,
+    "cost_usd": 0.05
+  },
+  "resolution": null,
+  "autonomy": {
+    "vendor_id": "V011",
+    "vendor_name": "Ananth Electricals & Controls",
+    "exception_type": "rounding_difference",
+    "level": "suggest",
+    "streak": 0,
+    "required_streak": 3,
+    "accepted": 0,
+    "overruled": 0,
+    "auto_resolved": 0,
+    "updated_at": null
+  },
+  "compliance": {
+    "msme": {
+      "category": "micro",
+      "udyam": "UDYAM-TS-22-0009561",
+      "limit_days": 45,
+      "accepted_on": "2026-03-18",
+      "deadline": "2026-05-02",
+      "days_left": 5,
+      "status": "due_soon",
+      "tax_at_risk": 46475.59,
+      "terms_exceed_limit": false
+    },
+    "e_invoice": {
+      "required": false,
+      "irn_present": false
+    }
+  }
+}

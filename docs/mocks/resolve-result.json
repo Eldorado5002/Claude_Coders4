@@ -1,143 +1,232 @@
 {
   "exception": {
-    "id": "EXC-0040",
+    "id": "EXC-0010",
     "status": "resolved",
-    "primary_type": "duplicate_invoice",
+    "primary_type": "freight_charge",
     "issue_types": [
-      "duplicate_invoice"
+      "freight_charge"
     ],
     "vendor": {
-      "id": "V005",
-      "name": "Deccan Freight Carriers",
-      "gstin": "36EGSFD1100V1ZI",
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36ASICS1238O1ZX",
       "city": "Hyderabad",
-      "category": "logistics"
+      "category": "raw_materials"
     },
-    "invoice_number": "DFC/2627/0534",
-    "invoice_total": 47151.26,
-    "amount_at_risk": 47151.26,
-    "created_at": "2026-04-27T09:42:00",
-    "recommended_action": "reject",
-    "confidence": 0.99,
-    "autonomy_level": "locked",
-    "blocking": true,
+    "invoice_number": "SBST/2526/0953",
+    "invoice_total": 112039.71,
+    "amount_at_risk": 4956.0,
+    "created_at": "2026-03-18T09:00:00",
+    "recommended_action": "approve",
+    "confidence": 0.95,
+    "autonomy_level": "auto",
+    "blocking": false,
     "msme_days_left": null,
     "invoice": {
-      "id": "INV-0175",
-      "invoice_number": "DFC/2627/0534",
-      "vendor_id": "V005",
-      "po_number": "PO-2026-0115",
-      "invoice_date": "2026-04-09",
-      "due_date": "2026-04-24",
+      "id": "INV-0047",
+      "invoice_number": "SBST/2526/0953",
+      "vendor_id": "V001",
+      "po_number": "PO-2026-0045",
+      "invoice_date": "2026-03-16",
+      "due_date": "2026-04-30",
       "lines": [
         {
           "line_no": 1,
-          "sku": "FTL-16",
-          "description": "FTL 16MT Hyderabad - Pune",
+          "sku": "HR-COIL-3",
+          "description": "HR Coil 3mm IS2062",
+          "hsn": "7208",
+          "qty": 1.5,
+          "uom": "MT",
+          "unit_price": 48358.96,
+          "tax_rate": 18.0,
+          "amount": 72538.44
+        },
+        {
+          "line_no": 2,
+          "sku": "MS-ANG-50",
+          "description": "MS Angle 50x50x6mm",
+          "hsn": "7216",
+          "qty": 0.5,
+          "uom": "MT",
+          "unit_price": 36420.93,
+          "tax_rate": 18.0,
+          "amount": 18210.47
+        },
+        {
+          "line_no": 3,
+          "sku": null,
+          "description": "Freight charges - Medchal to Unit 2",
           "hsn": "996511",
           "qty": 1.0,
           "uom": "Trip",
-          "unit_price": 44905.96,
-          "tax_rate": 5.0,
-          "amount": 44905.96
+          "unit_price": 4200.0,
+          "tax_rate": 18.0,
+          "amount": 4200.0
         }
       ],
-      "subtotal": 44905.96,
-      "tax_total": 2245.3,
-      "total": 47151.26,
+      "subtotal": 94948.91,
+      "tax_total": 17090.8,
+      "total": 112039.71,
       "currency": "INR",
       "bank_account": {
-        "bank_name": "ICICI Bank",
-        "account_number": "XXXXXX6094",
-        "ifsc": "ICIC0000456"
+        "bank_name": "HDFC Bank",
+        "account_number": "XXXXXX2071",
+        "ifsc": "HDFC0001234"
       },
-      "supplier_gstin": "36EGSFD1100V1ZI",
-      "irn": null,
+      "supplier_gstin": "36ASICS1238O1ZX",
+      "irn": "1a9d7bc45699b8a8c24791bc16073a2a98508167eec94d39a65ae3832afbac44",
       "source": "erp"
     },
     "purchase_order": {
-      "po_number": "PO-2026-0115",
-      "vendor_id": "V005",
-      "po_date": "2026-02-19",
+      "po_number": "PO-2026-0045",
+      "vendor_id": "V001",
+      "po_date": "2026-01-09",
       "lines": [
         {
           "line_no": 1,
-          "sku": "FTL-16",
-          "description": "FTL 16MT Hyderabad - Pune",
-          "hsn": "996511",
-          "qty": 1.0,
-          "uom": "Trip",
-          "unit_price": 44905.96,
-          "tax_rate": 5.0,
-          "amount": 44905.96
+          "sku": "HR-COIL-3",
+          "description": "HR Coil 3mm IS2062",
+          "hsn": "7208",
+          "qty": 1.5,
+          "uom": "MT",
+          "unit_price": 48358.96,
+          "tax_rate": 18.0,
+          "amount": 72538.44
+        },
+        {
+          "line_no": 2,
+          "sku": "MS-ANG-50",
+          "description": "MS Angle 50x50x6mm",
+          "hsn": "7216",
+          "qty": 0.5,
+          "uom": "MT",
+          "unit_price": 36420.93,
+          "tax_rate": 18.0,
+          "amount": 18210.47
         }
       ],
-      "subtotal": 44905.96,
-      "tax_total": 2245.3,
-      "total": 47151.26
+      "subtotal": 90748.91,
+      "tax_total": 16334.8,
+      "total": 107083.71
     },
     "goods_receipt": {
-      "grn_number": "GRN-2026-0115",
-      "po_number": "PO-2026-0115",
-      "received_date": "2026-02-28",
+      "grn_number": "GRN-2026-0045",
+      "po_number": "PO-2026-0045",
+      "received_date": "2026-02-06",
       "lines": [
         {
           "line_no": 1,
-          "sku": "FTL-16",
-          "description": "FTL 16MT Hyderabad - Pune",
-          "qty_received": 1.0,
-          "uom": "Trip"
+          "sku": "HR-COIL-3",
+          "description": "HR Coil 3mm IS2062",
+          "qty_received": 1.5,
+          "uom": "MT"
+        },
+        {
+          "line_no": 2,
+          "sku": "MS-ANG-50",
+          "description": "MS Angle 50x50x6mm",
+          "qty_received": 0.5,
+          "uom": "MT"
         }
       ]
     },
     "vendor_bank_on_file": {
-      "bank_name": "ICICI Bank",
-      "account_number": "XXXXXX6094",
-      "ifsc": "ICIC0000456"
+      "bank_name": "HDFC Bank",
+      "account_number": "XXXXXX2071",
+      "ifsc": "HDFC0001234"
     },
     "issues": [
       {
-        "type": "duplicate_invoice",
-        "message": "Same invoice number DFC/2627/0534 as INV-0121 received on 09 Apr 2026.",
-        "line_no": null,
-        "expected": null,
-        "actual": 47151.26,
-        "variance_amount": 47151.26,
-        "variance_pct": null,
-        "blocking": true
+        "type": "freight_charge",
+        "message": "Line 3 'Freight charges - Medchal to Unit 2' (₹4,200.00 + GST) is not on the purchase order.",
+        "line_no": 3,
+        "expected": 0.0,
+        "actual": 4200.0,
+        "variance_amount": 4956.0,
+        "variance_pct": 4.63,
+        "blocking": false
       }
     ],
     "recommendation": {
-      "action": "reject",
-      "confidence": 0.99,
+      "action": "approve",
+      "confidence": 0.95,
       "adjusted_amount": null,
-      "rationale": "Hard control: Same invoice number DFC/2627/0534 as INV-0121 received on 09 Apr 2026. Action: reject.",
+      "rationale": "The team has a consistent precedent for Shree Balaji Steel Traders Pvt Ltd (V001) to approve freight charges that are ₹5,000 or less per trip, even when not on the purchase order. The current freight charge of ₹4,200.00 is within this ₹5,000.00 cap.",
       "citations": [
         {
-          "id": "directive-duplicate_invoice",
-          "kind": "directive",
-          "text": "Duplicates: Never recommend approving a possible duplicate invoice (same vendor and invoice number, or same amount and date as an earlier invoice). Recommend reject and name the earlier invoice.",
+          "id": "1ac1b7cc-741f-4967-9cbc-dd2fddd8b905",
+          "kind": "observation",
+          "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges are approved by the team when they are ₹5,000 or less per trip, regardless of whether AP agents like Precedent recommend holding or approving the invoice.",
           "occurred_at": null,
           "exception_id": null
+        },
+        {
+          "id": "78801f7b-0be7-427e-b478-3d7bf517d061",
+          "kind": "world",
+          "text": "Sneha (AP Lead) approved invoice SBST/2526/0948 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-03-12 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹2,900.00 was under the ₹5,000.00 cap for usual freight lines.",
+          "occurred_at": null,
+          "exception_id": "EXC-0005"
+        },
+        {
+          "id": "5c73a317-d8f5-483b-b0bc-84cda3d7864c",
+          "kind": "world",
+          "text": "Arjun approved invoice SBST/2526/0945 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge of ₹4,100.00 plus GST not being on the purchase order PO-2026-0013. | When: 2026-03-07 | Involving: Arjun (AP), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge is under the ₹5,000 cap for this vendor.",
+          "occurred_at": null,
+          "exception_id": "EXC-0003"
+        },
+        {
+          "id": "4f16ba6d-eb56-4b6d-93e2-b8d8a7a2b77f",
+          "kind": "world",
+          "text": "Priya approved invoice SBST/2526/0938 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-03-02 | Involving: Priya (AP), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,850.00 is within the standing agreement limit of ₹5,000 per trip.",
+          "occurred_at": null,
+          "exception_id": "EXC-0001"
+        },
+        {
+          "id": "8ea06aa1-7453-4927-bcae-8c3e5ea482db",
+          "kind": "world",
+          "text": "Arjun approved invoice ILW/2526/0183 for Indus Logistics & Warehousing (V017) despite a freight charge exception. | When: 2026-03-10 | Involving: Arjun (AP clerk), Indus Logistics & Warehousing (vendor) | The 4.8% fuel surcharge is within the 6% limit allowed by the Indus rate contract.",
+          "occurred_at": null,
+          "exception_id": "EXC-0004"
+        },
+        {
+          "id": "8cd95018-19d0-41fe-adb3-72f91b01865e",
+          "kind": "experience",
+          "text": "Precedent (the AP agent) recommended approving the invoice exception with 100% confidence, and the clerk agreed with this recommendation. | When: 2026-03-07 | Involving: Precedent (AP agent), clerk",
+          "occurred_at": null,
+          "exception_id": "EXC-0003"
+        },
+        {
+          "id": "b34937ea-fef5-47c3-bcb0-341fc91023f0",
+          "kind": "experience",
+          "text": "Precedent (AP agent) recommended holding invoice ILW/2526/0183 with 30% confidence, but the clerk overruled this recommendation. | When: 2026-03-10 | Involving: Precedent (AP agent), Arjun (AP clerk)",
+          "occurred_at": null,
+          "exception_id": "EXC-0004"
+        },
+        {
+          "id": "32b377cb-19dc-47d2-b065-2e30fd412480",
+          "kind": "experience",
+          "text": "Precedent (AP agent) recommended holding invoice SBST/2526/0938 with 30% confidence, but Priya overruled this recommendation. | When: 2026-03-02 | Involving: Precedent (AP agent), Priya (AP)",
+          "occurred_at": null,
+          "exception_id": "EXC-0001"
         }
       ],
-      "source": "guardrail",
-      "anomaly_score": 0.375,
+      "source": "memory",
+      "anomaly_score": null,
       "auto_resolved": false,
-      "provider": "guardrail",
-      "latency_ms": 366,
-      "generated_at": "2026-04-27T09:44:00",
-      "route": "guardrail",
-      "calibrated_confidence": 0.905,
-      "cost_usd": 0.0005
+      "provider": "hindsight-recall+gemini:gemini-3.1-flash-lite",
+      "latency_ms": 2048,
+      "generated_at": "2026-03-18T09:02:00",
+      "route": "fast",
+      "calibrated_confidence": 0.667,
+      "cost_usd": 0.000986
     },
     "resolution": {
-      "decision": "escalate",
-      "reason": "Called the vendor on the number in our master record: they never changed banks.",
+      "decision": "approve",
+      "reason": "Freight within the ₹5,000 per-trip agreement with Balaji.",
       "adjusted_amount": null,
-      "resolved_by": "Priya",
-      "resolved_at": "2026-04-27T09:48:00",
-      "agent_action": "reject",
+      "resolved_by": "Priya (AP)",
+      "resolved_at": "2026-03-18T11:14:00",
+      "agent_action": "approve",
       "agreed_with_agent": true,
       "redacted": [],
       "revoked_at": null,
@@ -145,39 +234,39 @@
       "revoke_reason": null
     },
     "autonomy": {
-      "vendor_id": "V005",
-      "vendor_name": "Deccan Freight Carriers",
-      "exception_type": "duplicate_invoice",
-      "level": "locked",
-      "streak": 1,
+      "vendor_id": "V001",
+      "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+      "exception_type": "freight_charge",
+      "level": "auto",
+      "streak": 3,
       "required_streak": 3,
-      "accepted": 1,
-      "overruled": 0,
+      "accepted": 3,
+      "overruled": 1,
       "auto_resolved": 0,
-      "updated_at": "2026-04-27T09:48:00"
+      "updated_at": "2026-03-18T11:14:00"
     },
     "compliance": {
       "msme": null,
       "e_invoice": {
-        "required": false,
-        "irn_present": false
+        "required": true,
+        "irn_present": true
       }
     }
   },
-  "memory_id": "EXC-0040",
-  "lesson": "Deccan Freight Carriers · duplicate invoice: escalate — “Called the vendor on the number in our master record: they never changed banks.”",
+  "memory_id": "EXC-0010",
+  "lesson": "Shree Balaji Steel Traders Pvt Ltd · freight charge: approve — “Freight within the ₹5,000 per-trip agreement with Balaji.”",
   "autonomy": {
-    "vendor_id": "V005",
-    "vendor_name": "Deccan Freight Carriers",
-    "exception_type": "duplicate_invoice",
-    "level": "locked",
-    "streak": 1,
+    "vendor_id": "V001",
+    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+    "exception_type": "freight_charge",
+    "level": "auto",
+    "streak": 3,
     "required_streak": 3,
-    "accepted": 1,
-    "overruled": 0,
+    "accepted": 3,
+    "overruled": 1,
     "auto_resolved": 0,
-    "updated_at": "2026-04-27T09:48:00"
+    "updated_at": "2026-03-18T11:14:00"
   },
-  "promoted": false,
+  "promoted": true,
   "demoted": false
 }

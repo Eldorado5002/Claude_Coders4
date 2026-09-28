@@ -1,48 +1,48 @@
 {
-  "answer": "The team has a standing agreement with **Shree Balaji Steel Traders Pvt Ltd (V001)** regarding freight charges that are not explicitly listed on a purchase order:\n\n*   **Freight Limit:** We approve freight charges up to **₹5,000.00 per trip**.\n*   **Approval Protocol:** Charges within this limit are approved as invoiced (see precedents SBST/2627/1162 on 2026-04-22 and SBST/2627/1160 on 2026-04-15).\n*   **Hold Protocol:** Charges exceeding the ₹5,000.00 limit are considered outside the purchase order and must be held, as demonstrated in case SBST/2526/0956 (dated 2026-03-25), where a charge of ₹7,400.00 resulted in a hold.\n\nThis policy has been consistently applied throughout the first quarter of 2026 by team members including Arjun, Sneha, and Priya, as well as by the automated system.",
+  "answer": "Our standing agreement with Shree Balaji Steel Traders Pvt Ltd (V001) allows for the approval of freight charges that are **₹5,000 or less per trip**, even when those charges are not explicitly included on the purchase order.\n\nThe team has consistently applied this policy to resolve exceptions for this vendor:\n\n*   **12 March 2026**: Approved invoice SBST/2526/0948 (₹2,900 freight charge) because it was under the ₹5,000 cap.\n*   **07 March 2026**: Approved invoice SBST/2526/0945 (₹4,100 freight charge) because it was under the ₹5,000 cap.\n*   **02 March 2026**: Approved invoice SBST/2526/0938 (₹3,850 freight charge) as it was within the standing agreement limit of ₹5,000 per trip.\n\nAll freight charges exceeding this limit or invoices requiring further exception handling must be managed in accordance with standard organizational controls, including escalation to the Finance Controller for invoices exceeding ₹5,00,000.",
   "citations": [
     {
-      "id": "adfd32a9-f4cc-416d-b9ca-6719c7839ffd",
+      "id": "1a5b0ed8-95e8-4ffa-8ba5-cefea9830f4a",
       "kind": "observation",
-      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) has a standing agreement allowing for freight charges up to ₹5,000 per trip, which the AP team approves even when the charges are not explicitly listed on the purchase order.",
+      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) invoices often include freight charges not on the purchase order; the team approves these charges when they are under the ₹5,000.00 per trip limit.",
       "occurred_at": "2026-03-02T12:36:00Z",
       "exception_id": null
     },
     {
-      "id": "d90f2803-ddf4-4803-ac4d-a5e5bf85088e",
-      "kind": "observation",
-      "text": "Shree Balaji Steel Traders Pvt Ltd (V001) has a standing agreement limit of ₹5,000.00 for freight charges per trip; charges exceeding this amount are not on the purchase order and require a hold.",
-      "occurred_at": "2026-03-25T09:02:05Z",
-      "exception_id": null
-    },
-    {
-      "id": "88763152-7162-4ffa-b116-78fcb86db792",
-      "kind": "world",
-      "text": "Sneha (AP Lead) approved invoice SBST/2627/1160 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a missing freight charge on the PO. | When: 2026-04-15 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹4,650.00 is under the ₹5,000 cap for this vendor.",
-      "occurred_at": "2026-04-15T12:43:00Z",
-      "exception_id": null
-    },
-    {
-      "id": "7cf5b568-733a-4767-8f61-346093526265",
-      "kind": "world",
-      "text": "Arjun approved invoice SBST/2526/0953 for Shree Balaji Steel Traders Pvt Ltd due to a freight charge exception. | When: 2026-03-18 | Involving: Arjun (AP), Shree Balaji Steel Traders Pvt Ltd (vendor) | The freight charge of ₹4,200.00 is within the standing agreement limit of ₹5,000 per trip.",
-      "occurred_at": "2026-03-18T11:50:00Z",
-      "exception_id": null
-    },
-    {
-      "id": "78410993-c936-46ae-9c20-a852fbccf081",
+      "id": "6abe61b5-3dad-418e-acbc-36e9dba6a579",
       "kind": "world",
       "text": "Sneha (AP Lead) approved invoice SBST/2526/0948 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-03-12 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹2,900.00 was under the ₹5,000.00 cap for usual freight lines.",
       "occurred_at": "2026-03-12T12:30:00Z",
       "exception_id": null
     },
     {
-      "id": "12df3f88-afcc-45f5-8f89-27dc9a8952a2",
+      "id": "bde40f61-1cde-45cc-8390-b6974473b162",
       "kind": "world",
       "text": "Arjun approved invoice SBST/2526/0945 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge of ₹4,100.00 plus GST not being on the purchase order PO-2026-0013. | When: 2026-03-07 | Involving: Arjun (AP), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge is under the ₹5,000 cap for this vendor.",
       "occurred_at": "2026-03-07T11:57:00Z",
       "exception_id": null
+    },
+    {
+      "id": "af4abaea-988c-4fb2-a901-56786bea6706",
+      "kind": "world",
+      "text": "Priya approved invoice SBST/2526/0938 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-03-02 | Involving: Priya (AP), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,850.00 is within the standing agreement limit of ₹5,000 per trip.",
+      "occurred_at": "2026-03-02T12:36:00Z",
+      "exception_id": null
+    },
+    {
+      "id": "71296ea6-88c0-4c5b-91b4-04b87a902133",
+      "kind": "experience",
+      "text": "Precedent (AP agent) recommended holding invoice SBST/2526/0938 with 30% confidence, but Priya overruled this recommendation. | When: 2026-03-02 | Involving: Precedent (AP agent), Priya (AP)",
+      "occurred_at": "2026-03-02T12:36:00.010000Z",
+      "exception_id": null
+    },
+    {
+      "id": "fe2bde06-66dc-4e78-b9c3-19af8c02706b",
+      "kind": "experience",
+      "text": "Precedent (the AP agent) recommended approving the invoice exception with 100% confidence, and the clerk agreed with this recommendation. | When: 2026-03-07 | Involving: Precedent (AP agent), clerk",
+      "occurred_at": "2026-03-07T11:57:00.010000Z",
+      "exception_id": null
     }
   ],
-  "latency_ms": 4559
+  "latency_ms": 5018
 }

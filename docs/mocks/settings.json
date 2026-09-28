@@ -1,11 +1,11 @@
 {
   "memory_enabled": true,
-  "bank_id": "precedent-ap-week8",
+  "bank_id": "precedent-ap-week3",
   "llm_chain": [
     "groq:openai/gpt-oss-120b",
     "gemini:gemini-3.1-flash-lite",
     "nvidia:nvidia/nemotron-3-super-120b-a12b"
   ],
-  "sim_date": "2026-04-22",
-  "stage": "week8"
+  "sim_date": "2026-03-18",
+  "stage": "week3"
 }

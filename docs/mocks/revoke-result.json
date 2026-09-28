@@ -1,21 +1,21 @@
 {
   "lesson": {
-    "case_id": "EXC-0034",
+    "case_id": "EXC-0009",
     "vendor": {
-      "id": "V001",
-      "name": "Shree Balaji Steel Traders Pvt Ltd",
-      "gstin": "36ASICS1238O1ZX",
+      "id": "V024",
+      "name": "Vijaya Canteen & Catering",
+      "gstin": "36GAFFV4579J1ZE",
       "city": "Hyderabad",
-      "category": "raw_materials"
+      "category": "services"
     },
-    "exception_type": "freight_charge",
-    "decision": "approve",
-    "reason": "Auto-resolved under earned autonomy. The freight charge of ₹3,600.00 is well within the standing agreement limit of ₹5,000.00 per trip for Shree Balaji Steel Traders Pvt Ltd (V001), consistent with multiple past approvals for this vendor.",
-    "taught_by": "Precedent (auto)",
-    "taught_at": "2026-04-22T09:02:05",
-    "auto": true,
+    "exception_type": "missing_po",
+    "decision": "hold",
+    "reason": "No-PO spend above ₹60,000 needs a purchase order; asked the requester to raise one.",
+    "taught_by": "Priya (AP)",
+    "taught_at": "2026-03-16T13:28:00",
+    "auto": false,
     "revoked": true,
-    "revoked_by": "Meera (AP lead)",
+    "revoked_by": "Sneha (AP Lead)",
     "revoke_reason": "Agreement ended in June; freight now needs a PO line."
   },
   "autonomy": {
@@ -25,10 +25,10 @@
     "level": "suggest",
     "streak": 0,
     "required_streak": 3,
-    "accepted": 4,
+    "accepted": 2,
     "overruled": 1,
-    "auto_resolved": 3,
-    "updated_at": "2026-04-22T09:02:05"
+    "auto_resolved": 0,
+    "updated_at": "2026-03-12T12:30:00"
   },
   "memory_deleted": true,
   "invalidated_recommendations": 1

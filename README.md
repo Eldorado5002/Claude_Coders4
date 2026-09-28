@@ -331,7 +331,7 @@ If you only have a minute, here's how we'd sum up what we delivered in each area
 |---|---|
 | **Innovation** | An agent that **earns autonomy** per vendor and exception type, and must **prove it statistically** before paying on its own · learns *limits*, not just approvals (the ₹7,400 auto-hold) · beliefs that show their evidence and a wiki that writes itself · **a photo of a paper invoice, auto-resolved in about 11 seconds** · built for Indian AP: MSME 43B(h) deadlines, e-invoice IRNs, GSTIN checks |
 | **Use of Hindsight Memory** | Memory *is* the product: **98% vs 50%** with and without it · **15 Hindsight features** across writing, reading, understanding and governing memory, from `reflect` with typed output and `based_on` citations to observation history, Knowledge Pages, time-anchored `recall`, directives, `clone_bank` and document deletion · an **ablation study** of which part of memory does the work · full write-up in [`docs/HINDSIGHT.md`](docs/HINDSIGHT.md) |
-| **Technical Implementation** | About 9,500 lines of typed Python · **51 automated tests**, including one that checks the matcher against all 576 invoices, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · three reproducible evaluations ([`docs/EVALUATION.md`](docs/EVALUATION.md)) · cost-aware routing, three-provider failover, money in code |
+| **Technical Implementation** | About 9,500 lines of typed Python · **54 backend tests**, including one that checks the matcher against all 576 invoices and contract tests that pin the hard-control text the app parses, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · three reproducible evaluations ([`docs/EVALUATION.md`](docs/EVALUATION.md)) · cost-aware routing, three-provider failover, money in code |
 | **User Experience** | Every recommendation explains itself with cited precedents and a calibrated confidence · one-click approve, or correct it with a reason · a beliefs timeline and a vendor wiki · a queue sortable by MSME deadline · live updates over SSE · instant demo acts and memory switch · invoice photo capture · push notifications |
 | **Real-world Impact** | Solves an everyday finance problem that companies already pay to fix · about **$17 per 1,000 exceptions** in AI and memory costs · keeps institutional knowledge when staff leave · catches duplicates and bank-detail fraud · protects MSME tax deductions · a natural path to adoption as an ERP add-on for shared-services finance teams |
 
@@ -349,7 +349,9 @@ We'd rather you hear these from us:
 
 Want to try it? Here's how to run Precedent on your own machine.
 
-**You'll need:** Python 3.12, [uv](https://docs.astral.sh/uv/), a Hindsight Cloud API key, and at least one LLM key (Groq, Gemini or NVIDIA). Invoice capture needs Gemini.
+**You'll need:** Python 3.12, [uv](https://docs.astral.sh/uv/), Node 22+, a Hindsight Cloud API key, and at least one LLM key (Groq, Gemini or NVIDIA). Invoice capture needs Gemini.
+
+**1. Start the backend**
 
 ```bash
 cd backend
@@ -358,7 +360,20 @@ uv sync                         # install dependencies
 uv run fastapi dev app/main.py  # API + interactive docs at http://localhost:8000/docs
 ```
 
-On first start, the API loads the dataset and opens **Act 1 (Day 1)**. You can move through the demo with:
+On first start, the API loads the dataset and opens **Act 1 (Day 1)**.
+
+**2. Start the app**
+
+```bash
+cd frontend
+npm install
+cp .env.example .env            # VITE_API_BASE_URL=http://localhost:8000
+npm run dev                     # the app at http://localhost:5173
+```
+
+Move through the demo with the stage rail at the top of the app (Day 1 → Week 3 → Week 8 → The twist), or press `P` for presenter mode and `1`–`4` to jump between stages. No backend at hand? Open `http://localhost:5173/?fixtures=1` and the whole app runs from the real API responses saved in [`docs/mocks/`](docs/mocks/).
+
+The stages can also be driven from the API:
 
 ```bash
 curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json" -d '{"stage":"week3"}'
@@ -367,7 +382,8 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 
 | Command | What it does |
 |---|---|
-| `uv run pytest` | Runs the 51 offline tests (no network, no cost) |
+| `uv run pytest` | Runs the 54 backend tests (no network, no cost) |
+| `npm test` (in `frontend/`) | Runs the frontend unit tests |
 | `uv run python -m scripts.smoke --days 10` | A live smoke test against Hindsight and the LLMs |
 | `uv run python -m scripts.build_demo` | Rebuilds every demo snapshot and the memory ON/OFF evaluation (about 20 minutes, live APIs) |
 | `uv run python -m scripts.ablation` | Runs the ablation study in its own database and memory bank (about 15 minutes) |
@@ -436,10 +452,10 @@ backend/
     services/     case lifecycle, simulator, demo stages, metrics, capture, compliance, risk, push
     api/          FastAPI routes
   scripts/        demo builder, ablation, capture eval, BPI calibration, charts, mocks, smoke test
-  tests/          51 offline tests with a fake memory and fake LLM
+  tests/          54 offline tests with a fake memory and fake LLM
   data/           demo snapshots, BPI calibration + evaluation results
-frontend/         Progressive Web App
-docs/             Hindsight write-up, evaluation, API contract, mocks, charts, sample invoices
+frontend/         the app: React 19 PWA, "Case Law" design, fixture mode for offline demos
+docs/             Hindsight write-up, evaluation, API contract, frontend guide, mocks, charts, sample invoices
 ```
 
 </details>
@@ -457,7 +473,7 @@ For reference, here's everything we built Precedent with, and why we chose it.
 | **Machine learning and statistics** | scikit-learn IsolationForest · SciPy | Per-vendor anomaly scores; exact Clopper–Pearson bounds for the autonomy certificate |
 | **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications |
 | **Notifications** | Web Push (VAPID) | Alerts for blocked and auto-resolved invoices |
-| **Quality** | pytest · ruff · API contract generated from the Pydantic models | 51 offline tests; the frontend's types come straight from the backend |
+| **Quality** | pytest · ruff · Vitest · Playwright · API contract generated from the Pydantic models | 54 backend tests and the frontend's own unit tests; the frontend's types come straight from the backend |
 
 ## What's next
 

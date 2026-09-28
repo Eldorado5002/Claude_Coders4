@@ -1,0 +1,14 @@
+{
+  "touchless_rate": 0.319,
+  "acceptance_rate": 0.847,
+  "exceptions_total": 144,
+  "auto_resolved": 46,
+  "blocked_by_controls": 12,
+  "false_approvals": 0,
+  "memories": 309,
+  "minutes_saved": 820.0,
+  "citation_relevance": 0.939,
+  "lessons_revoked": 0,
+  "msme_open_at_risk": 0,
+  "msme_tax_at_risk": 0.0
+}

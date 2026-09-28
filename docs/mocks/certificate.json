@@ -3,20 +3,20 @@
   "target_error": 0.05,
   "confidence_level": 0.95,
   "threshold": 0.95,
-  "decisions": 13,
+  "decisions": 2,
   "errors": 0,
-  "error_upper_bound": 0.2058,
-  "auto_resolutions": 3,
+  "error_upper_bound": 0.7764,
+  "auto_resolutions": 0,
   "auto_errors": 0,
-  "auto_error_upper_bound": 0.6316,
+  "auto_error_upper_bound": 1.0,
   "table": [
     {
       "threshold": 0.95,
-      "decisions": 13,
+      "decisions": 2,
       "errors": 0,
-      "upper_bound": 0.2058,
+      "upper_bound": 0.7764,
       "certified": false
     }
   ],
-  "explanation": "13 verified pay recommendations at confidence ≥ 0.95 so far, 0 wrong. Certifying a wrong-payment rate below 5% with 95% confidence takes 59 of them if no more are wrong. Until then autonomy runs in strict provisional mode (confidence ≥ 0.95 and an earned per-vendor streak)."
+  "explanation": "2 verified pay recommendations at confidence ≥ 0.95 so far, 0 wrong. Certifying a wrong-payment rate below 5% with 95% confidence takes 59 of them if no more are wrong. Until then autonomy runs in strict provisional mode (confidence ≥ 0.95 and an earned per-vendor streak)."
 }

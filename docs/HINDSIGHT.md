@@ -161,7 +161,9 @@ Duplicate invoices (exact, reformatted, resubmitted with a suffix, or with trans
 changes, a GSTIN that fails its checksum or differs from the vendor master, a missing e-invoice IRN,
 first-time vendors and invoices over ₹5,00,000 are detected in code before any model runs. Their action is
 forced (reject, escalate or hold) whatever memory suggests. The matching directive and the precedent that was
-overridden are both shown as citations.
+overridden are both shown as citations, and the rationale says what memory alone would have done, taken from the
+team's last decision on the invoice's other issue: *"Action forced to escalate. (Memory alone would have suggested
+approve.)"* on a routine Balaji freight invoice that asks to be paid into a new bank account.
 
 ## 9. Which part of memory does the work? (ablation)
 

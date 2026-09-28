@@ -1,0 +1,42 @@
+{
+  "n": 123,
+  "ece": 0.0715,
+  "pooled_accuracy": 0.896,
+  "bins": [
+    {
+      "low": 0.0,
+      "high": 0.5,
+      "n": 9,
+      "stated": 0.406,
+      "actual": 0.364
+    },
+    {
+      "low": 0.5,
+      "high": 0.7,
+      "n": 11,
+      "stated": 0.6,
+      "actual": 0.923
+    },
+    {
+      "low": 0.7,
+      "high": 0.85,
+      "n": 1,
+      "stated": 0.8,
+      "actual": null
+    },
+    {
+      "low": 0.85,
+      "high": 0.95,
+      "n": 17,
+      "stated": 0.891,
+      "actual": 0.789
+    },
+    {
+      "low": 0.95,
+      "high": 1.0,
+      "n": 85,
+      "stated": 0.955,
+      "actual": 0.966
+    }
+  ]
+}

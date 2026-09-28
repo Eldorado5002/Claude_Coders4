@@ -1,17 +1,17 @@
 {
   "kpis": {
-    "touchless_rate": 0.0,
-    "acceptance_rate": 0.667,
-    "exceptions_total": 10,
-    "auto_resolved": 0,
-    "blocked_by_controls": 0,
+    "touchless_rate": 0.095,
+    "acceptance_rate": 0.688,
+    "exceptions_total": 42,
+    "auto_resolved": 4,
+    "blocked_by_controls": 4,
     "false_approvals": 0,
     "memories": 27,
-    "minutes_saved": 36.0,
-    "citation_relevance": 0.692,
+    "minutes_saved": 160.0,
+    "citation_relevance": 0.833,
     "lessons_revoked": 0,
-    "msme_open_at_risk": 0,
-    "msme_tax_at_risk": 0.0
+    "msme_open_at_risk": 1,
+    "msme_tax_at_risk": 46475.59
   },
   "touchless_by_week": [
     {
@@ -332,17 +332,47 @@
   "by_type": [
     {
       "type": "freight_charge",
-      "count": 5,
-      "touchless_rate": 0.0
-    },
-    {
-      "type": "price_variance",
-      "count": 3,
-      "touchless_rate": 0.0
+      "count": 11,
+      "touchless_rate": 0.273
     },
     {
       "type": "missing_po",
+      "count": 10,
+      "touchless_rate": 0.1
+    },
+    {
+      "type": "price_variance",
+      "count": 9,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "quantity_variance",
+      "count": 4,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "rounding_difference",
       "count": 2,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "tax_mismatch",
+      "count": 2,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "duplicate_invoice",
+      "count": 2,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "bank_details_changed",
+      "count": 1,
+      "touchless_rate": 0.0
+    },
+    {
+      "type": "over_threshold",
+      "count": 1,
       "touchless_rate": 0.0
     }
   ],
@@ -358,34 +388,34 @@
     "target_error": 0.05,
     "confidence_level": 0.95,
     "threshold": 0.95,
-    "decisions": 2,
+    "decisions": 15,
     "errors": 0,
-    "error_upper_bound": 0.7764,
-    "auto_resolutions": 0,
+    "error_upper_bound": 0.181,
+    "auto_resolutions": 4,
     "auto_errors": 0,
-    "auto_error_upper_bound": 1.0,
+    "auto_error_upper_bound": 0.5271,
     "table": [
       {
         "threshold": 0.95,
-        "decisions": 2,
+        "decisions": 15,
         "errors": 0,
-        "upper_bound": 0.7764,
+        "upper_bound": 0.181,
         "certified": false
       }
     ],
-    "explanation": "2 verified pay recommendations at confidence ≥ 0.95 so far, 0 wrong. Certifying a wrong-payment rate below 5% with 95% confidence takes 59 of them if no more are wrong. Until then autonomy runs in strict provisional mode (confidence ≥ 0.95 and an earned per-vendor streak)."
+    "explanation": "15 verified pay recommendations at confidence ≥ 0.95 so far, 0 wrong. Certifying a wrong-payment rate below 5% with 95% confidence takes 59 of them if no more are wrong. Until then autonomy runs in strict provisional mode (confidence ≥ 0.95 and an earned per-vendor streak)."
   },
   "calibration": {
-    "n": 4,
-    "ece": 0.0375,
-    "pooled_accuracy": 0.667,
+    "n": 28,
+    "ece": 0.0857,
+    "pooled_accuracy": 0.733,
     "bins": [
       {
         "low": 0.0,
         "high": 0.5,
-        "n": 2,
-        "stated": 0.425,
-        "actual": null
+        "n": 7,
+        "stated": 0.407,
+        "actual": 0.222
       },
       {
         "low": 0.5,
@@ -404,25 +434,25 @@
       {
         "low": 0.85,
         "high": 0.95,
-        "n": 0,
-        "stated": null,
+        "n": 2,
+        "stated": 0.875,
         "actual": null
       },
       {
         "low": 0.95,
         "high": 1.0,
-        "n": 2,
-        "stated": 1.0,
-        "actual": null
+        "n": 19,
+        "stated": 0.963,
+        "actual": 0.905
       }
     ]
   },
   "performance": {
-    "recommendations": 10,
-    "fast_share": 0.0,
-    "latency_p50_ms": 6741,
-    "latency_p95_ms": 11498,
-    "avg_cost_usd": 0.04503,
-    "cost_per_1000_exceptions_usd": 45.03
+    "recommendations": 42,
+    "fast_share": 0.19,
+    "latency_p50_ms": 6241,
+    "latency_p95_ms": 10269,
+    "avg_cost_usd": 0.03353,
+    "cost_per_1000_exceptions_usd": 33.53
   }
 }

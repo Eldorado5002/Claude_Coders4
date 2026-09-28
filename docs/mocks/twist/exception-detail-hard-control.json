@@ -1,0 +1,225 @@
+{
+  "id": "EXC-0037",
+  "status": "open",
+  "primary_type": "bank_details_changed",
+  "issue_types": [
+    "bank_details_changed",
+    "freight_charge"
+  ],
+  "vendor": {
+    "id": "V001",
+    "name": "Shree Balaji Steel Traders Pvt Ltd",
+    "gstin": "36ASICS1238O1ZX",
+    "city": "Hyderabad",
+    "category": "raw_materials"
+  },
+  "invoice_number": "SBST/2627/1165",
+  "invoice_total": 333203.68,
+  "amount_at_risk": 333203.68,
+  "created_at": "2026-04-27T09:00:00",
+  "recommended_action": "escalate",
+  "confidence": 0.99,
+  "autonomy_level": "locked",
+  "blocking": true,
+  "msme_days_left": null,
+  "invoice": {
+    "id": "INV-0169",
+    "invoice_number": "SBST/2627/1165",
+    "vendor_id": "V001",
+    "po_number": "PO-2026-0159",
+    "invoice_date": "2026-04-27",
+    "due_date": "2026-06-11",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "MS-CH-100",
+        "description": "MS Channel ISMC 100",
+        "hsn": "7216",
+        "qty": 1.0,
+        "uom": "MT",
+        "unit_price": 69303.17,
+        "tax_rate": 18.0,
+        "amount": 69303.17
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-PL-10",
+        "description": "MS Plate 10mm IS2062 E250",
+        "hsn": "7208",
+        "qty": 2.5,
+        "uom": "MT",
+        "unit_price": 83669.13,
+        "tax_rate": 18.0,
+        "amount": 209172.83
+      },
+      {
+        "line_no": 3,
+        "sku": null,
+        "description": "Freight charges - Medchal to Unit 2",
+        "hsn": "996511",
+        "qty": 1.0,
+        "uom": "Trip",
+        "unit_price": 3900.0,
+        "tax_rate": 18.0,
+        "amount": 3900.0
+      }
+    ],
+    "subtotal": 282376.0,
+    "tax_total": 50827.68,
+    "total": 333203.68,
+    "currency": "INR",
+    "bank_account": {
+      "bank_name": "Yes Bank",
+      "account_number": "XXXXXX9083",
+      "ifsc": "YESB0000871"
+    },
+    "supplier_gstin": "36ASICS1238O1ZX",
+    "irn": "5da2f0595a0f9afa16c43e1655ab01582f814760246cff27c066e8e0a3f5cbb8",
+    "source": "erp"
+  },
+  "purchase_order": {
+    "po_number": "PO-2026-0159",
+    "vendor_id": "V001",
+    "po_date": "2026-03-31",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "MS-CH-100",
+        "description": "MS Channel ISMC 100",
+        "hsn": "7216",
+        "qty": 1.0,
+        "uom": "MT",
+        "unit_price": 69303.17,
+        "tax_rate": 18.0,
+        "amount": 69303.17
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-PL-10",
+        "description": "MS Plate 10mm IS2062 E250",
+        "hsn": "7208",
+        "qty": 2.5,
+        "uom": "MT",
+        "unit_price": 83669.13,
+        "tax_rate": 18.0,
+        "amount": 209172.83
+      }
+    ],
+    "subtotal": 278476.0,
+    "tax_total": 50125.68,
+    "total": 328601.68
+  },
+  "goods_receipt": {
+    "grn_number": "GRN-2026-0159",
+    "po_number": "PO-2026-0159",
+    "received_date": "2026-04-09",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "MS-CH-100",
+        "description": "MS Channel ISMC 100",
+        "qty_received": 1.0,
+        "uom": "MT"
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-PL-10",
+        "description": "MS Plate 10mm IS2062 E250",
+        "qty_received": 2.5,
+        "uom": "MT"
+      }
+    ]
+  },
+  "vendor_bank_on_file": {
+    "bank_name": "HDFC Bank",
+    "account_number": "XXXXXX2071",
+    "ifsc": "HDFC0001234"
+  },
+  "issues": [
+    {
+      "type": "bank_details_changed",
+      "message": "Pay-to account Yes Bank XXXXXX9083 (YESB0000871) differs from vendor master HDFC Bank XXXXXX2071 (HDFC0001234).",
+      "line_no": null,
+      "expected": null,
+      "actual": 333203.68,
+      "variance_amount": 333203.68,
+      "variance_pct": null,
+      "blocking": true
+    },
+    {
+      "type": "freight_charge",
+      "message": "Line 3 'Freight charges - Medchal to Unit 2' (₹3,900.00 + GST) is not on the purchase order.",
+      "line_no": 3,
+      "expected": 0.0,
+      "actual": 3900.0,
+      "variance_amount": 4602.0,
+      "variance_pct": 1.4,
+      "blocking": false
+    }
+  ],
+  "recommendation": {
+    "action": "escalate",
+    "confidence": 0.99,
+    "adjusted_amount": null,
+    "rationale": "Hard control: Pay-to account Yes Bank XXXXXX9083 (YESB0000871) differs from vendor master HDFC Bank XXXXXX2071 (HDFC0001234). Action forced to escalate. (Memory alone would have suggested approve.) Past decisions for this vendor are shown for context; they cannot override this rule.",
+    "citations": [
+      {
+        "id": "directive-bank_details_changed",
+        "kind": "directive",
+        "text": "Bank change: Never recommend approving an invoice whose pay-to bank account differs from the vendor master. Recommend escalate so treasury verifies the change by phone callback on the registered number.",
+        "occurred_at": null,
+        "exception_id": null
+      },
+      {
+        "id": "d1f8dcea-1bba-44f9-9b03-1c9f6037bb37",
+        "kind": "experience",
+        "text": "Precedent (AP agent) approved invoice SBST/2627/1162 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-04-22 | Involving: Precedent (AP agent), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,600.00 is within the ₹5,000.00 per trip agreement limit.",
+        "occurred_at": null,
+        "exception_id": "EXC-0034"
+      },
+      {
+        "id": "cba15c5a-ca78-4cdf-a71f-2881f3072ef6",
+        "kind": "world",
+        "text": "Sneha (AP Lead) approved invoice SBST/2627/1160 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a missing freight charge on the PO. | When: 2026-04-15 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹4,650.00 is under the ₹5,000 cap for this vendor.",
+        "occurred_at": null,
+        "exception_id": "EXC-0028"
+      },
+      {
+        "id": "1ac1b7cc-741f-4967-9cbc-dd2fddd8b905",
+        "kind": "observation",
+        "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges are approved by the team when they are ₹5,000 or less per trip, regardless of whether AP agents like Precedent recommend holding or approving the invoice.",
+        "occurred_at": null,
+        "exception_id": null
+      }
+    ],
+    "source": "guardrail",
+    "anomaly_score": 0.778,
+    "auto_resolved": false,
+    "provider": "guardrail",
+    "latency_ms": 4511,
+    "generated_at": "2026-04-27T09:02:00",
+    "route": "guardrail",
+    "calibrated_confidence": 0.905,
+    "cost_usd": 0.0005
+  },
+  "resolution": null,
+  "autonomy": {
+    "vendor_id": "V001",
+    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+    "exception_type": "bank_details_changed",
+    "level": "locked",
+    "streak": 0,
+    "required_streak": 3,
+    "accepted": 0,
+    "overruled": 0,
+    "auto_resolved": 0,
+    "updated_at": null
+  },
+  "compliance": {
+    "msme": null,
+    "e_invoice": {
+      "required": true,
+      "irn_present": true
+    }
+  }
+}

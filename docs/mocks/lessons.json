@@ -1,120 +1,6 @@
 [
   {
-    "case_id": "EXC-0034",
-    "vendor": {
-      "id": "V001",
-      "name": "Shree Balaji Steel Traders Pvt Ltd",
-      "gstin": "36ASICS1238O1ZX",
-      "city": "Hyderabad",
-      "category": "raw_materials"
-    },
-    "exception_type": "freight_charge",
-    "decision": "approve",
-    "reason": "Auto-resolved under earned autonomy. The freight charge of ₹3,600.00 is well within the standing agreement limit of ₹5,000.00 per trip for Shree Balaji Steel Traders Pvt Ltd (V001), consistent with multiple past approvals for this vendor.",
-    "taught_by": "Precedent (auto)",
-    "taught_at": "2026-04-22T09:02:05",
-    "auto": true,
-    "revoked": false,
-    "revoked_by": null,
-    "revoke_reason": null
-  },
-  {
-    "case_id": "EXC-0033",
-    "vendor": {
-      "id": "V017",
-      "name": "Indus Logistics & Warehousing",
-      "gstin": "27ZCCCI8712C1Z0",
-      "city": "Nagpur",
-      "category": "logistics"
-    },
-    "exception_type": "freight_charge",
-    "decision": "approve",
-    "reason": "Fuel surcharge of 5.1% is within the 6% allowed in the Indus rate contract.",
-    "taught_by": "Rahul (AP)",
-    "taught_at": "2026-04-21T12:12:00",
-    "auto": false,
-    "revoked": false,
-    "revoked_by": null,
-    "revoke_reason": null
-  },
-  {
-    "case_id": "EXC-0030",
-    "vendor": {
-      "id": "V002",
-      "name": "Sri Venkateswara Alloys & Castings",
-      "gstin": "36CTNFS1710S1ZH",
-      "city": "Medchal",
-      "category": "raw_materials"
-    },
-    "exception_type": "price_variance",
-    "decision": "approve",
-    "reason": "Rate contract with Sri Venkateswara Alloys & Castings has a raw-material escalation clause up to 4%; this 1.8% increase is within it.",
-    "taught_by": "Arjun (AP)",
-    "taught_at": "2026-04-20T12:59:00",
-    "auto": false,
-    "revoked": false,
-    "revoked_by": null,
-    "revoke_reason": null
-  },
-  {
-    "case_id": "EXC-0031",
-    "vendor": {
-      "id": "V012",
-      "name": "Gujarat Chemical Traders",
-      "gstin": "24LMPFG9073A1ZE",
-      "city": "Ahmedabad",
-      "category": "raw_materials"
-    },
-    "exception_type": "price_variance",
-    "decision": "approve",
-    "reason": "Rate contract with Gujarat Chemical Traders has a raw-material escalation clause up to 2.5%; this 2.0% increase is within it.",
-    "taught_by": "Priya (AP)",
-    "taught_at": "2026-04-20T10:53:00",
-    "auto": false,
-    "revoked": false,
-    "revoked_by": null,
-    "revoke_reason": null
-  },
-  {
-    "case_id": "EXC-0032",
-    "vendor": {
-      "id": "V015",
-      "name": "Metro Office Mart",
-      "gstin": "36QGLFM5940Y1ZA",
-      "city": "Hyderabad",
-      "category": "office_supplies"
-    },
-    "exception_type": "missing_po",
-    "decision": "approve",
-    "reason": "Auto-resolved under earned autonomy. The invoice amount of ₹6,171.73 is within the established ₹10,000 limit for no-PO spend with Metro Office Mart (V015), consistent with previous approvals for this vendor.",
-    "taught_by": "Precedent (auto)",
-    "taught_at": "2026-04-20T09:51:05",
-    "auto": true,
-    "revoked": false,
-    "revoked_by": null,
-    "revoke_reason": null
-  },
-  {
-    "case_id": "EXC-0028",
-    "vendor": {
-      "id": "V001",
-      "name": "Shree Balaji Steel Traders Pvt Ltd",
-      "gstin": "36ASICS1238O1ZX",
-      "city": "Hyderabad",
-      "category": "raw_materials"
-    },
-    "exception_type": "freight_charge",
-    "decision": "approve",
-    "reason": "Usual Balaji freight line (₹4,650); under the ₹5,000 cap, so approve.",
-    "taught_by": "Sneha (AP Lead)",
-    "taught_at": "2026-04-15T12:43:00",
-    "auto": false,
-    "revoked": false,
-    "revoked_by": null,
-    "revoke_reason": null
-  },
-  {
-    "case_id": "EXC-0029",
+    "case_id": "EXC-0009",
     "vendor": {
       "id": "V024",
       "name": "Vijaya Canteen & Catering",
@@ -125,34 +11,34 @@
     "exception_type": "missing_po",
     "decision": "hold",
     "reason": "No-PO spend above ₹60,000 needs a purchase order; asked the requester to raise one.",
-    "taught_by": "Rahul (AP)",
-    "taught_at": "2026-04-15T12:39:00",
+    "taught_by": "Priya (AP)",
+    "taught_at": "2026-03-16T13:28:00",
     "auto": false,
     "revoked": false,
     "revoked_by": null,
     "revoke_reason": null
   },
   {
-    "case_id": "EXC-0027",
+    "case_id": "EXC-0008",
     "vendor": {
-      "id": "V007",
-      "name": "Nexa Telecom Enterprise Services",
-      "gstin": "36XKKCN7666E1ZU",
-      "city": "Hyderabad",
-      "category": "utilities"
+      "id": "V023",
+      "name": "Omkar Paints & Coatings",
+      "gstin": "27LWYCO3952C1ZH",
+      "city": "Mumbai",
+      "category": "raw_materials"
     },
-    "exception_type": "missing_po",
-    "decision": "approve",
-    "reason": "Monthly utilities bill from Nexa Telecom Enterprise Services — no PO by design and the amount is in the usual range.",
-    "taught_by": "Arjun (AP)",
-    "taught_at": "2026-04-10T10:41:00",
+    "exception_type": "price_variance",
+    "decision": "hold",
+    "reason": "Unit price 11.4% above PO with no agreed revision; asked Omkar Paints & Coatings for a revised invoice.",
+    "taught_by": "Rahul (AP)",
+    "taught_at": "2026-03-16T11:40:00",
     "auto": false,
     "revoked": false,
     "revoked_by": null,
     "revoke_reason": null
   },
   {
-    "case_id": "EXC-0026",
+    "case_id": "EXC-0007",
     "vendor": {
       "id": "V012",
       "name": "Gujarat Chemical Traders",
@@ -162,28 +48,123 @@
     },
     "exception_type": "price_variance",
     "decision": "approve",
-    "reason": "Rate contract with Gujarat Chemical Traders has a raw-material escalation clause up to 2.5%; this 2.0% increase is within it.",
-    "taught_by": "Arjun (AP)",
-    "taught_at": "2026-04-09T11:12:00",
+    "reason": "Rate contract with Gujarat Chemical Traders has a raw-material escalation clause up to 2.5%; this 1.5% increase is within it.",
+    "taught_by": "Priya (AP)",
+    "taught_at": "2026-03-16T10:00:00",
     "auto": false,
     "revoked": false,
     "revoked_by": null,
     "revoke_reason": null
   },
   {
-    "case_id": "EXC-0025",
+    "case_id": "EXC-0006",
     "vendor": {
-      "id": "V004",
-      "name": "Kaveri Packaging Industries",
-      "gstin": "29QRZFK8615D1ZB",
-      "city": "Bengaluru",
-      "category": "packaging"
+      "id": "V009",
+      "name": "Chola Industrial Supplies",
+      "gstin": "33HBNFC3544J1Z5",
+      "city": "Chennai",
+      "category": "mro"
     },
-    "exception_type": "tax_mismatch",
+    "exception_type": "price_variance",
     "decision": "hold",
-    "reason": "GST on corrugated boxes (HSN 4819) is 5% after GST 2.0 but Kaveri charged 18%; sent back for a revised invoice — do not pay excess GST.",
+    "reason": "Unit price 9.8% above PO with no agreed revision; asked Chola Industrial Supplies for a revised invoice.",
+    "taught_by": "Sneha (AP Lead)",
+    "taught_at": "2026-03-13T11:56:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0005",
+    "vendor": {
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36ASICS1238O1ZX",
+      "city": "Hyderabad",
+      "category": "raw_materials"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Usual Balaji freight line (₹2,900); under the ₹5,000 cap, so approve.",
+    "taught_by": "Sneha (AP Lead)",
+    "taught_at": "2026-03-12T12:30:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0004",
+    "vendor": {
+      "id": "V017",
+      "name": "Indus Logistics & Warehousing",
+      "gstin": "27ZCCCI8712C1Z0",
+      "city": "Nagpur",
+      "category": "logistics"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Fuel surcharge of 4.8% is within the 6% allowed in the Indus rate contract.",
     "taught_by": "Arjun (AP)",
-    "taught_at": "2026-04-08T12:35:00",
+    "taught_at": "2026-03-10T13:15:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0003",
+    "vendor": {
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36ASICS1238O1ZX",
+      "city": "Hyderabad",
+      "category": "raw_materials"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Usual Balaji freight line (₹4,100); under the ₹5,000 cap, so approve.",
+    "taught_by": "Arjun (AP)",
+    "taught_at": "2026-03-07T11:57:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0002",
+    "vendor": {
+      "id": "V015",
+      "name": "Metro Office Mart",
+      "gstin": "36QGLFM5940Y1ZA",
+      "city": "Hyderabad",
+      "category": "office_supplies"
+    },
+    "exception_type": "missing_po",
+    "decision": "hold",
+    "reason": "No-PO spend above ₹10,000 needs a purchase order; asked the requester to raise one.",
+    "taught_by": "Rahul (AP)",
+    "taught_at": "2026-03-06T11:50:00",
+    "auto": false,
+    "revoked": false,
+    "revoked_by": null,
+    "revoke_reason": null
+  },
+  {
+    "case_id": "EXC-0001",
+    "vendor": {
+      "id": "V001",
+      "name": "Shree Balaji Steel Traders Pvt Ltd",
+      "gstin": "36ASICS1238O1ZX",
+      "city": "Hyderabad",
+      "category": "raw_materials"
+    },
+    "exception_type": "freight_charge",
+    "decision": "approve",
+    "reason": "Balaji bills freight separately on the last line — our standing agreement covers freight up to ₹5,000 per trip. ₹3,850 is fine.",
+    "taught_by": "Priya (AP)",
+    "taught_at": "2026-03-02T12:36:00",
     "auto": false,
     "revoked": false,
     "revoked_by": null,

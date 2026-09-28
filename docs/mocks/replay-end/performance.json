@@ -1,0 +1,8 @@
+{
+  "recommendations": 144,
+  "fast_share": 0.583,
+  "latency_p50_ms": 2653,
+  "latency_p95_ms": 9443,
+  "avg_cost_usd": 0.0173,
+  "cost_per_1000_exceptions_usd": 17.3
+}

@@ -1,0 +1,225 @@
+{
+  "id": "EXC-0044",
+  "status": "open",
+  "primary_type": "einvoice_missing",
+  "issue_types": [
+    "einvoice_missing",
+    "freight_charge"
+  ],
+  "vendor": {
+    "id": "V001",
+    "name": "Shree Balaji Steel Traders Pvt Ltd",
+    "gstin": "36ASICS1238O1ZX",
+    "city": "Hyderabad",
+    "category": "raw_materials"
+  },
+  "invoice_number": "SBST/2627/0618",
+  "invoice_total": 244631.16,
+  "amount_at_risk": 244631.16,
+  "created_at": "2026-04-27T09:00:00",
+  "recommended_action": "hold",
+  "confidence": 0.99,
+  "autonomy_level": "locked",
+  "blocking": true,
+  "msme_days_left": null,
+  "invoice": {
+    "id": "INV-C002",
+    "invoice_number": "SBST/2627/0618",
+    "vendor_id": "V001",
+    "po_number": "PO-2026-0208",
+    "invoice_date": "2026-04-27",
+    "due_date": "2026-06-11",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "HR-COIL-3",
+        "description": "HR Coil 3mm IS2062",
+        "hsn": "7208",
+        "qty": 1.5,
+        "uom": "MT",
+        "unit_price": 58514.9,
+        "tax_rate": 18.0,
+        "amount": 87772.35
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-ANG-50",
+        "description": "MS Angle 50x50x6mm",
+        "hsn": "7216",
+        "qty": 1.5,
+        "uom": "MT",
+        "unit_price": 77094.79,
+        "tax_rate": 18.0,
+        "amount": 115642.18
+      },
+      {
+        "line_no": 3,
+        "sku": null,
+        "description": "Freight charges - Medchal to Unit 2",
+        "hsn": "996511",
+        "qty": 1.0,
+        "uom": "Trip",
+        "unit_price": 3900.0,
+        "tax_rate": 18.0,
+        "amount": 3900.0
+      }
+    ],
+    "subtotal": 207314.53,
+    "tax_total": 37316.62,
+    "total": 244631.16,
+    "currency": "INR",
+    "bank_account": {
+      "bank_name": "HDFC Bank",
+      "account_number": "XXXXXX2071",
+      "ifsc": "HDFC0001234"
+    },
+    "supplier_gstin": "36ASICS1238O1ZX",
+    "irn": null,
+    "source": "capture"
+  },
+  "purchase_order": {
+    "po_number": "PO-2026-0208",
+    "vendor_id": "V001",
+    "po_date": "2026-03-11",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "HR-COIL-3",
+        "description": "HR Coil 3mm IS2062",
+        "hsn": "7208",
+        "qty": 1.5,
+        "uom": "MT",
+        "unit_price": 58514.9,
+        "tax_rate": 18.0,
+        "amount": 87772.35
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-ANG-50",
+        "description": "MS Angle 50x50x6mm",
+        "hsn": "7216",
+        "qty": 1.5,
+        "uom": "MT",
+        "unit_price": 77094.79,
+        "tax_rate": 18.0,
+        "amount": 115642.19
+      }
+    ],
+    "subtotal": 203414.54,
+    "tax_total": 36614.62,
+    "total": 240029.16
+  },
+  "goods_receipt": {
+    "grn_number": "GRN-2026-0208",
+    "po_number": "PO-2026-0208",
+    "received_date": "2026-04-03",
+    "lines": [
+      {
+        "line_no": 1,
+        "sku": "HR-COIL-3",
+        "description": "HR Coil 3mm IS2062",
+        "qty_received": 1.5,
+        "uom": "MT"
+      },
+      {
+        "line_no": 2,
+        "sku": "MS-ANG-50",
+        "description": "MS Angle 50x50x6mm",
+        "qty_received": 1.5,
+        "uom": "MT"
+      }
+    ]
+  },
+  "vendor_bank_on_file": {
+    "bank_name": "HDFC Bank",
+    "account_number": "XXXXXX2071",
+    "ifsc": "HDFC0001234"
+  },
+  "issues": [
+    {
+      "type": "einvoice_missing",
+      "message": "Supplier must issue GST e-invoices (turnover above ₹5 crore), but this invoice has no valid IRN — it is not a valid tax invoice and input tax credit would be lost.",
+      "line_no": null,
+      "expected": null,
+      "actual": 244631.16,
+      "variance_amount": 244631.16,
+      "variance_pct": null,
+      "blocking": true
+    },
+    {
+      "type": "freight_charge",
+      "message": "Line 3 'Freight charges - Medchal to Unit 2' (₹3,900.00 + GST) is not on the purchase order.",
+      "line_no": 3,
+      "expected": 0.0,
+      "actual": 3900.0,
+      "variance_amount": 4602.0,
+      "variance_pct": 1.92,
+      "blocking": false
+    }
+  ],
+  "recommendation": {
+    "action": "hold",
+    "confidence": 0.99,
+    "adjusted_amount": null,
+    "rationale": "Hard control: Supplier must issue GST e-invoices (turnover above ₹5 crore), but this invoice has no valid IRN — it is not a valid tax invoice and input tax credit would be lost. Action forced to hold. (Memory alone would have suggested approve.) Past decisions for this vendor are shown for context; they cannot override this rule.",
+    "citations": [
+      {
+        "id": "directive-einvoice_missing",
+        "kind": "directive",
+        "text": "E-invoicing: Suppliers above Rs 5 crore turnover must issue GST e-invoices with an IRN and signed QR code. An invoice from such a supplier without a valid IRN is not a valid tax invoice: recommend hold and ask for an IRP-registered invoice.",
+        "occurred_at": null,
+        "exception_id": null
+      },
+      {
+        "id": "722eab0d-c73f-4eb7-bacc-7ce4b7eb8e62",
+        "kind": "experience",
+        "text": "Precedent (AP agent) approved invoice SBST/2627/0612 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-04-27 | Involving: Precedent (AP agent), Shree Balaji Steel Traders Pvt Ltd (vendor) | The freight charge of ₹3,700 is within the standing agreement limit of ₹5,000 per trip for this vendor.",
+        "occurred_at": null,
+        "exception_id": "EXC-0043"
+      },
+      {
+        "id": "028d7041-ac12-40ff-8b75-83c0dd44c061",
+        "kind": "experience",
+        "text": "Precedent (AP agent) approved invoice SBST/2627/1162 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-04-22 | Involving: Precedent (AP agent), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,600.00 is within the ₹5,000.00 per trip agreement limit.",
+        "occurred_at": null,
+        "exception_id": "EXC-0034"
+      },
+      {
+        "id": "88763152-7162-4ffa-b116-78fcb86db792",
+        "kind": "world",
+        "text": "Sneha (AP Lead) approved invoice SBST/2627/1160 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a missing freight charge on the PO. | When: 2026-04-15 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹4,650.00 is under the ₹5,000 cap for this vendor.",
+        "occurred_at": null,
+        "exception_id": "EXC-0028"
+      }
+    ],
+    "source": "guardrail",
+    "anomaly_score": 0.667,
+    "auto_resolved": false,
+    "provider": "guardrail",
+    "latency_ms": 3715,
+    "generated_at": "2026-04-27T09:02:00",
+    "route": "guardrail",
+    "calibrated_confidence": 0.905,
+    "cost_usd": 0.0005
+  },
+  "resolution": null,
+  "autonomy": {
+    "vendor_id": "V001",
+    "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
+    "exception_type": "einvoice_missing",
+    "level": "locked",
+    "streak": 0,
+    "required_streak": 3,
+    "accepted": 0,
+    "overruled": 0,
+    "auto_resolved": 0,
+    "updated_at": null
+  },
+  "compliance": {
+    "msme": null,
+    "e_invoice": {
+      "required": true,
+      "irn_present": false
+    }
+  }
+}

@@ -1,8 +1,8 @@
 {
   "status": "exception",
   "extracted": {
-    "id": "INV-C001",
-    "invoice_number": "SBST/2627/0612",
+    "id": "INV-C002",
+    "invoice_number": "SBST/2627/0618",
     "vendor_id": "V001",
     "po_number": "PO-2026-0208",
     "invoice_date": "2026-04-27",
@@ -37,14 +37,14 @@
         "hsn": "996511",
         "qty": 1.0,
         "uom": "Trip",
-        "unit_price": 3700.0,
+        "unit_price": 3900.0,
         "tax_rate": 18.0,
-        "amount": 3700.0
+        "amount": 3900.0
       }
     ],
-    "subtotal": 207114.53,
-    "tax_total": 37280.62,
-    "total": 244395.16,
+    "subtotal": 207314.53,
+    "tax_total": 37316.62,
+    "total": 244631.16,
     "currency": "INR",
     "bank_account": {
       "bank_name": "HDFC Bank",
@@ -52,7 +52,7 @@
       "ifsc": "HDFC0001234"
     },
     "supplier_gstin": "36ASICS1238O1ZX",
-    "irn": "2c7f2257cbb206bfcee0db8ca2b44a52d5ec60e713f6f2388e1a67e909c6ac5c",
+    "irn": null,
     "source": "capture"
   },
   "vendor": {
@@ -62,5 +62,5 @@
     "city": "Hyderabad",
     "category": "raw_materials"
   },
-  "exception_id": "EXC-0011"
+  "exception_id": "EXC-0044"
 }

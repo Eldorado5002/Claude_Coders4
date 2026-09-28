@@ -2,8 +2,8 @@
   {
     "event": "exception.created",
     "data": {
-      "id": "EXC-0034",
-      "status": "auto_resolved",
+      "id": "EXC-0010",
+      "status": "open",
       "primary_type": "freight_charge",
       "issue_types": [
         "freight_charge"
@@ -15,13 +15,13 @@
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2627/1162",
-      "invoice_total": 69101.32,
-      "amount_at_risk": 4248.0,
-      "created_at": "2026-04-22T09:00:00",
+      "invoice_number": "SBST/2526/0953",
+      "invoice_total": 112039.71,
+      "amount_at_risk": 4956.0,
+      "created_at": "2026-03-18T09:00:00",
       "recommended_action": "approve",
       "confidence": 0.95,
-      "autonomy_level": "auto",
+      "autonomy_level": "suggest",
       "blocking": false,
       "msme_days_left": null
     }
@@ -29,8 +29,8 @@
   {
     "event": "exception.updated",
     "data": {
-      "id": "EXC-0034",
-      "status": "auto_resolved",
+      "id": "EXC-0010",
+      "status": "resolved",
       "primary_type": "freight_charge",
       "issue_types": [
         "freight_charge"
@@ -42,13 +42,13 @@
         "city": "Hyderabad",
         "category": "raw_materials"
       },
-      "invoice_number": "SBST/2627/1162",
-      "invoice_total": 69101.32,
-      "amount_at_risk": 4248.0,
-      "created_at": "2026-04-22T09:00:00",
+      "invoice_number": "SBST/2526/0953",
+      "invoice_total": 112039.71,
+      "amount_at_risk": 4956.0,
+      "created_at": "2026-03-18T09:00:00",
       "recommended_action": "approve",
       "confidence": 0.95,
-      "autonomy_level": "auto",
+      "autonomy_level": "suggest",
       "blocking": false,
       "msme_days_left": null
     }
@@ -56,12 +56,12 @@
   {
     "event": "memory.retained",
     "data": {
-      "id": "bd9c095a-71fb-4be1-9230-7de36c5dc32f",
-      "kind": "experience",
-      "text": "Precedent (AP agent) approved invoice SBST/2627/1162 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-04-22 | Involving: Precedent (AP agent), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,600.00 is within the ₹5,000.00 per trip agreement limit.",
-      "vendor_id": "V001",
-      "exception_type": "freight_charge",
-      "occurred_at": "2026-04-22T09:02:05Z"
+      "id": "f63c5581-8770-4c1f-ad45-90879c1cae80",
+      "kind": "observation",
+      "text": "Vijaya Canteen & Catering invoices exceeding ₹60,000 require a purchase order for 3-way matching; invoices lacking a PO above this threshold are placed on hold.",
+      "vendor_id": "V024",
+      "exception_type": "missing_po",
+      "occurred_at": "2026-03-16T13:28:00Z"
     }
   },
   {
@@ -71,19 +71,19 @@
       "vendor_name": "Shree Balaji Steel Traders Pvt Ltd",
       "exception_type": "freight_charge",
       "level": "auto",
-      "streak": 4,
+      "streak": 3,
       "required_streak": 3,
-      "accepted": 4,
+      "accepted": 3,
       "overruled": 1,
-      "auto_resolved": 3,
-      "updated_at": "2026-04-22T09:02:05"
+      "auto_resolved": 0,
+      "updated_at": "2026-03-18T11:14:00"
     }
   },
   {
     "event": "sim.changed",
     "data": {
-      "stage": "twist",
-      "sim_date": "2026-04-27",
+      "stage": "week3",
+      "sim_date": "2026-03-18",
       "busy": false,
       "stages": [
         {
@@ -105,14 +105,14 @@
           "label": "Week 8",
           "description": "Earned autonomy",
           "sim_date": "2026-04-22",
-          "reached": true
+          "reached": false
         },
         {
           "id": "twist",
           "label": "The twist",
           "description": "Controls hold",
           "sim_date": "2026-04-27",
-          "reached": true
+          "reached": false
         }
       ]
     }
@@ -120,22 +120,22 @@
   {
     "event": "memory.revoked",
     "data": {
-      "case_id": "EXC-0034",
+      "case_id": "EXC-0009",
       "vendor": {
-        "id": "V001",
-        "name": "Shree Balaji Steel Traders Pvt Ltd",
-        "gstin": "36ASICS1238O1ZX",
+        "id": "V024",
+        "name": "Vijaya Canteen & Catering",
+        "gstin": "36GAFFV4579J1ZE",
         "city": "Hyderabad",
-        "category": "raw_materials"
+        "category": "services"
       },
-      "exception_type": "freight_charge",
-      "decision": "approve",
-      "reason": "Auto-resolved under earned autonomy. The freight charge of ₹3,600.00 is well within the standing agreement limit of ₹5,000.00 per trip for Shree Balaji Steel Traders Pvt Ltd (V001), consistent with multiple past approvals for this vendor.",
-      "taught_by": "Precedent (auto)",
-      "taught_at": "2026-04-22T09:02:05",
-      "auto": true,
+      "exception_type": "missing_po",
+      "decision": "hold",
+      "reason": "No-PO spend above ₹60,000 needs a purchase order; asked the requester to raise one.",
+      "taught_by": "Priya (AP)",
+      "taught_at": "2026-03-16T13:28:00",
+      "auto": false,
       "revoked": true,
-      "revoked_by": "Meera (AP lead)",
+      "revoked_by": "Sneha (AP Lead)",
       "revoke_reason": null
     }
   }

@@ -16,8 +16,8 @@
   "invoice_total": 112039.71,
   "amount_at_risk": 4956.0,
   "created_at": "2026-03-18T09:00:00",
-  "recommended_action": "approve",
-  "confidence": 0.95,
+  "recommended_action": "hold",
+  "confidence": 0.4,
   "autonomy_level": "suggest",
   "blocking": false,
   "msme_days_left": null,
@@ -147,77 +147,20 @@
     }
   ],
   "recommendation": {
-    "action": "approve",
-    "confidence": 0.95,
+    "action": "hold",
+    "confidence": 0.4,
     "adjusted_amount": null,
-    "rationale": "The team has a consistent precedent for Shree Balaji Steel Traders Pvt Ltd (V001) to approve freight charges that are ₹5,000 or less per trip, even when not on the purchase order. The current freight charge of ₹4,200.00 is within this ₹5,000.00 cap.",
-    "citations": [
-      {
-        "id": "1ac1b7cc-741f-4967-9cbc-dd2fddd8b905",
-        "kind": "observation",
-        "text": "Shree Balaji Steel Traders Pvt Ltd (V001) freight charges are approved by the team when they are ₹5,000 or less per trip, regardless of whether AP agents like Precedent recommend holding or approving the invoice.",
-        "occurred_at": null,
-        "exception_id": null
-      },
-      {
-        "id": "78801f7b-0be7-427e-b478-3d7bf517d061",
-        "kind": "world",
-        "text": "Sneha (AP Lead) approved invoice SBST/2526/0948 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-03-12 | Involving: Sneha (AP Lead), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹2,900.00 was under the ₹5,000.00 cap for usual freight lines.",
-        "occurred_at": null,
-        "exception_id": "EXC-0005"
-      },
-      {
-        "id": "5c73a317-d8f5-483b-b0bc-84cda3d7864c",
-        "kind": "world",
-        "text": "Arjun approved invoice SBST/2526/0945 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge of ₹4,100.00 plus GST not being on the purchase order PO-2026-0013. | When: 2026-03-07 | Involving: Arjun (AP), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge is under the ₹5,000 cap for this vendor.",
-        "occurred_at": null,
-        "exception_id": "EXC-0003"
-      },
-      {
-        "id": "4f16ba6d-eb56-4b6d-93e2-b8d8a7a2b77f",
-        "kind": "world",
-        "text": "Priya approved invoice SBST/2526/0938 for Shree Balaji Steel Traders Pvt Ltd (V001) despite a freight charge discrepancy. | When: 2026-03-02 | Involving: Priya (AP), Shree Balaji Steel Traders Pvt Ltd (V001) | The freight charge of ₹3,850.00 is within the standing agreement limit of ₹5,000 per trip.",
-        "occurred_at": null,
-        "exception_id": "EXC-0001"
-      },
-      {
-        "id": "8ea06aa1-7453-4927-bcae-8c3e5ea482db",
-        "kind": "world",
-        "text": "Arjun approved invoice ILW/2526/0183 for Indus Logistics & Warehousing (V017) despite a freight charge exception. | When: 2026-03-10 | Involving: Arjun (AP clerk), Indus Logistics & Warehousing (vendor) | The 4.8% fuel surcharge is within the 6% limit allowed by the Indus rate contract.",
-        "occurred_at": null,
-        "exception_id": "EXC-0004"
-      },
-      {
-        "id": "8cd95018-19d0-41fe-adb3-72f91b01865e",
-        "kind": "experience",
-        "text": "Precedent (the AP agent) recommended approving the invoice exception with 100% confidence, and the clerk agreed with this recommendation. | When: 2026-03-07 | Involving: Precedent (AP agent), clerk",
-        "occurred_at": null,
-        "exception_id": "EXC-0003"
-      },
-      {
-        "id": "b34937ea-fef5-47c3-bcb0-341fc91023f0",
-        "kind": "experience",
-        "text": "Precedent (AP agent) recommended holding invoice ILW/2526/0183 with 30% confidence, but the clerk overruled this recommendation. | When: 2026-03-10 | Involving: Precedent (AP agent), Arjun (AP clerk)",
-        "occurred_at": null,
-        "exception_id": "EXC-0004"
-      },
-      {
-        "id": "32b377cb-19dc-47d2-b065-2e30fd412480",
-        "kind": "experience",
-        "text": "Precedent (AP agent) recommended holding invoice SBST/2526/0938 with 30% confidence, but Priya overruled this recommendation. | When: 2026-03-02 | Involving: Precedent (AP agent), Priya (AP)",
-        "occurred_at": null,
-        "exception_id": "EXC-0001"
-      }
-    ],
-    "source": "memory",
+    "rationale": "The freight charge is not present on the purchase order, and there is no established precedent or contract terms provided to authorize unlisted charges. The invoice should be held pending clarification from the procurement team or vendor regarding the validity of the freight cost.",
+    "citations": [],
+    "source": "no_memory",
     "anomaly_score": null,
     "auto_resolved": false,
-    "provider": "hindsight-recall+gemini:gemini-3.1-flash-lite",
-    "latency_ms": 2048,
+    "provider": "gemini:gemini-3.1-flash-lite",
+    "latency_ms": 1645,
     "generated_at": "2026-03-18T09:02:00",
-    "route": "fast",
+    "route": "no_memory",
     "calibrated_confidence": 0.667,
-    "cost_usd": 0.000986
+    "cost_usd": 0.000281
   },
   "resolution": null,
   "autonomy": {
