@@ -29,11 +29,11 @@ import { lessonReason, sortLanes } from './vendors-view'
 export type Phase = 'loading' | 'ready' | 'unavailable'
 
 /** A section-sized empty or unavailable note: quieter than a page EmptyState. */
-function Quiet({ children }: { children: ReactNode }) {
+export function Quiet({ children }: { children: ReactNode }) {
   return <p className="border border-dashed border-rule px-4 py-3 text-sm text-pretty text-muted-foreground">{children}</p>
 }
 
-function Lines({ n = 3, tall }: { n?: number; tall?: boolean }) {
+export function Lines({ n = 3, tall }: { n?: number; tall?: boolean }) {
   return (
     <div className="space-y-5 pt-1" aria-busy>
       {Array.from({ length: n }, (_, i) => (
@@ -94,7 +94,8 @@ export function Learned({ items, phase }: { items: Citation[]; phase: Phase }) {
   )
 }
 
-export function Playbook({
+/** The vendor's Hindsight Knowledge Page (`VendorProfile.playbook`): markdown with `##` headings. */
+export function VendorWiki({
   text,
   phase,
   retrying,
@@ -107,10 +108,10 @@ export function Playbook({
 }) {
   return (
     <Section
-      title="Playbook"
+      title="Vendor wiki"
       aside={
         <span className="inline-flex items-center gap-1.5 border border-rule px-1.5 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase">
-          <AgentMark /> Maintained by Hindsight
+          <AgentMark /> Written by Hindsight
         </span>
       }
     >
@@ -120,11 +121,11 @@ export function Playbook({
         <Quiet>{UNAVAILABLE}</Quiet>
       ) : isPendingContent(text) ? (
         <div className="space-y-3 pt-1" role="status">
-          <p className="font-serif text-[1.05rem] text-muted-foreground">Drafting the playbook…</p>
+          <p className="font-serif text-[1.05rem] text-muted-foreground">Hindsight is writing the wiki…</p>
           <div className="writing-rule" aria-hidden />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-pretty text-muted-foreground">
-              Hindsight writes it in the background from this vendor’s decided cases.
+              It writes in the background from this vendor’s decided cases.
             </p>
             <Button variant="outline" size="xs" onClick={onRetry} disabled={retrying}>
               <RefreshCw className={cn(retrying && 'animate-spin')} aria-hidden /> Retry
@@ -132,7 +133,7 @@ export function Playbook({
           </div>
         </div>
       ) : (
-        <ErrorBoundary fallback={<Quiet>The playbook couldn’t be displayed.</Quiet>}>
+        <ErrorBoundary fallback={<Quiet>The wiki couldn’t be displayed.</Quiet>}>
           <Markdown>{text ?? ''}</Markdown>
         </ErrorBoundary>
       )}

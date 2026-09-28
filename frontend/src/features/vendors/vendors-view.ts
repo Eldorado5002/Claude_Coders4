@@ -1,9 +1,9 @@
 import type { SortingState } from '@tanstack/react-table'
-import type { AutonomyLevel, AutonomyState, Lesson, VendorProfile, VendorSummary } from '@/api/types'
+import type { AutonomyLevel, AutonomyState, BenfordResult, Lesson, VendorProfile, VendorSummary } from '@/api/types'
 import { TYPE_LABEL } from '@/lib/labels'
 
 /** Column ids the vendor table can sort by (and the only ones the URL may name). */
-export const SORT_COLUMNS = ['name', 'gstin', 'terms', 'invoices', 'exceptions', 'open', 'touchless'] as const
+export const SORT_COLUMNS = ['name', 'gstin', 'terms', 'invoices', 'exceptions', 'open', 'touchless', 'risk'] as const
 export type SortColumn = (typeof SORT_COLUMNS)[number]
 
 const ACRONYMS: Record<string, string> = { it: 'IT', mro: 'MRO', gst: 'GST' }
@@ -69,6 +69,88 @@ const AUTO_PREFIX = /^Auto-resolved under earned autonomy\.\s*/i
 export function lessonReason(l: Pick<Lesson, 'reason' | 'auto'>): string {
   return l.auto ? l.reason.replace(AUTO_PREFIX, '') : l.reason
 }
+
+// ── Risk ────────────────────────────────────────────────────────────────────
+
+export type RiskLevel = NonNullable<VendorSummary['risk_level']>
+/** Low risk stays quiet; medium borrows the warning tone, high the breach tone. */
+export type RiskTone = 'muted' | 'hold' | 'reject'
+
+const RISK_META: Record<RiskLevel, { label: string; tone: RiskTone }> = {
+  low: { label: 'Low', tone: 'muted' },
+  medium: { label: 'Medium', tone: 'hold' },
+  high: { label: 'High', tone: 'reject' },
+}
+
+/** Literal class names so Tailwind sees them. */
+export const RISK_TEXT: Record<RiskTone, string> = {
+  muted: 'text-muted-foreground',
+  hold: 'text-hold',
+  reject: 'text-reject',
+}
+
+export type RiskFigure = { score: number; level: RiskLevel; label: string; tone: RiskTone }
+
+/** 58 + "high" → the figure the UI draws. Nothing to draw without both. */
+export function riskFigure(score: number | null | undefined, level: RiskLevel | null | undefined): RiskFigure | null {
+  if (score == null || Number.isNaN(score) || !level || !RISK_META[level]) return null
+  return { score: Math.round(Math.min(100, Math.max(0, score))), level, ...RISK_META[level] }
+}
+
+export type ProfileRisk = RiskFigure & { reasons: string[]; benford: BenfordResult | null }
+
+/**
+ * The header's risk: the profile's own when it has loaded (null means "no risk data": hide it),
+ * otherwise the index row's score and level, without reasons, while Hindsight is still answering.
+ */
+export function profileRisk(v: VendorProfile): ProfileRisk | null {
+  if (v.risk) {
+    const f = riskFigure(v.risk.score, v.risk.level)
+    return f && { ...f, reasons: v.risk.reasons ?? [], benford: v.risk.benford ?? null }
+  }
+  if (v.risk === null) return null
+  const f = riskFigure(v.risk_score, v.risk_level)
+  return f && { ...f, reasons: [], benford: null }
+}
+
+/** Reasons arrive as clauses ("exception rate 91% vs …"); in a list each starts with a capital. */
+export const riskReason = (r: string) => r.charAt(0).toUpperCase() + r.slice(1)
+
+/** "First digits (Benford): marginal · MAD 0.0146 · 212 amounts" */
+export function benfordLine(b: BenfordResult | null | undefined): string | null {
+  if (!b) return null
+  const mad = b.mad != null ? ` · MAD ${b.mad.toFixed(4)}` : ''
+  return `First digits (Benford): ${b.conformity}${mad} · ${b.n} amounts`
+}
+
+/** Table accessor: vendors without a score become undefined, which the table always sorts last. */
+export const riskSortValue = (v: Pick<VendorSummary, 'risk_score'>): number | undefined => v.risk_score ?? undefined
+
+// ── India compliance ────────────────────────────────────────────────────────
+
+type MsmeCategory = NonNullable<VendorSummary['msme_category']>
+const MSME_LABEL: Record<MsmeCategory, string> = { micro: 'Micro', small: 'Small' }
+
+export const msmeLabel = (c: MsmeCategory | null | undefined): string | null => (c ? (MSME_LABEL[c] ?? c) : null)
+
+export type ComplianceBadge = { id: 'msme' | 'einvoice'; label: string; hint: string }
+
+/** The index's compliance badges: MSME suppliers (43B(h) deadline) and e-invoicing (IRN required). */
+export function complianceBadges(v: Pick<VendorSummary, 'msme_category' | 'e_invoice_required'>): ComplianceBadge[] {
+  const out: ComplianceBadge[] = []
+  const msme = msmeLabel(v.msme_category)
+  if (msme)
+    out.push({
+      id: 'msme',
+      label: `MSME · ${msme}`,
+      hint: `${msme} enterprise: pay on time or lose the tax deduction (section 43B(h)).`,
+    })
+  if (v.e_invoice_required)
+    out.push({ id: 'einvoice', label: 'E-invoice', hint: 'E-invoicing required: every invoice needs an IRN.' })
+  return out
+}
+
+// ── Trust lanes ─────────────────────────────────────────────────────────────
 
 const LEVEL_RANK: Record<AutonomyLevel, number> = { auto: 0, suggest: 1, locked: 2 }
 
