@@ -1,0 +1,313 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ Case Law tokens
+   Paper and ink. Colour only where it carries meaning (decisions, status). */
+
+:root {
+  --background: #fbfbfa;
+  --foreground: #15171a;
+  --card: #ffffff;
+  --card-foreground: #15171a;
+  --popover: #ffffff;
+  --popover-foreground: #15171a;
+  --primary: #15171a;
+  --primary-foreground: #fbfbfa;
+  --secondary: #f3f3f1;
+  --secondary-foreground: #15171a;
+  --muted: #f3f3f1;
+  --muted-foreground: #5e636b;
+  --accent: #efefec;
+  --accent-foreground: #15171a;
+  --destructive: #b91c1c;
+  --border: #e3e3e0;
+  --input: #d6d6d2;
+  --ring: #15171a;
+  --radius: 0rem;
+
+  --chart-1: #15171a; /* with memory */
+  --chart-2: #8a9099; /* without memory (≥3:1 on paper) */
+  --chart-3: #5e636b;
+  --chart-4: #c9ccd1;
+  --chart-5: #e3e3e0;
+
+  --sidebar: #f6f6f4;
+  --sidebar-foreground: #15171a;
+  --sidebar-primary: #15171a;
+  --sidebar-primary-foreground: #fbfbfa;
+  --sidebar-accent: #ebebe8;
+  --sidebar-accent-foreground: #15171a;
+  --sidebar-border: #e3e3e0;
+  --sidebar-ring: #15171a;
+
+  /* decisions: always paired with an icon + label */
+  --approve: #15803d;
+  --adjusted: #0f766e;
+  --hold: #b45309;
+  --reject: #b91c1c;
+  --escalate: #1d4ed8;
+  --rule: #e3e3e0;
+  --hatch: #15171a14;
+}
+
+.dark {
+  --background: #111214;
+  --foreground: #edeef0;
+  --card: #18191c;
+  --card-foreground: #edeef0;
+  --popover: #1b1c20;
+  --popover-foreground: #edeef0;
+  --primary: #edeef0;
+  --primary-foreground: #111214;
+  --secondary: #1e2023;
+  --secondary-foreground: #edeef0;
+  --muted: #1e2023;
+  --muted-foreground: #9ba1a9;
+  --accent: #24262a;
+  --accent-foreground: #edeef0;
+  --destructive: #ff6369;
+  --border: #2a2c30;
+  --input: #33363b;
+  --ring: #edeef0;
+
+  --chart-1: #edeef0;
+  --chart-2: #6b7079;
+  --chart-3: #9ba1a9;
+  --chart-4: #3a3d43;
+  --chart-5: #2a2c30;
+
+  --sidebar: #141518;
+  --sidebar-foreground: #edeef0;
+  --sidebar-primary: #edeef0;
+  --sidebar-primary-foreground: #111214;
+  --sidebar-accent: #202226;
+  --sidebar-accent-foreground: #edeef0;
+  --sidebar-border: #2a2c30;
+  --sidebar-ring: #edeef0;
+
+  --approve: #3dd68c;
+  --adjusted: #2dd4bf;
+  --hold: #ffb224;
+  --reject: #ff6369;
+  --escalate: #6ea8fe;
+  --rule: #2a2c30;
+  --hatch: #edeef014;
+}
+
+@theme inline {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader Variable", Georgia, "Times New Roman", serif;
+  --font-heading: var(--font-serif);
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, monospace;
+
+  --color-approve: var(--approve);
+  --color-adjusted: var(--adjusted);
+  --color-hold: var(--hold);
+  --color-reject: var(--reject);
+  --color-escalate: var(--escalate);
+  --color-approve-soft: color-mix(in oklch, var(--approve) 11%, var(--card));
+  --color-adjusted-soft: color-mix(in oklch, var(--adjusted) 11%, var(--card));
+  --color-hold-soft: color-mix(in oklch, var(--hold) 12%, var(--card));
+  --color-reject-soft: color-mix(in oklch, var(--reject) 10%, var(--card));
+  --color-escalate-soft: color-mix(in oklch, var(--escalate) 10%, var(--card));
+  --color-rule: var(--rule);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 6px;
+  --radius-4xl: 8px;
+}
+
+@theme {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-rise: rise 220ms var(--ease-out) both;
+  --animate-stamp: stamp 520ms var(--ease-out) both;
+  --animate-arrive: rise 220ms var(--ease-out) both, fresh 1800ms ease-out both;
+
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fresh {
+    from {
+      background-color: var(--color-hold-soft);
+    }
+    to {
+      background-color: transparent;
+    }
+  }
+  @keyframes stamp {
+    0% {
+      opacity: 0;
+      transform: scale(1.35) rotate(-8deg);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(0.96) rotate(-4deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(-4deg);
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+  html {
+    @apply font-sans;
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  html[data-presenter="true"] {
+    font-size: 115%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "ss01";
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--foreground) 16%, transparent);
+  }
+  /* quiet scrollbars: hairline, paper-coloured track */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--foreground) 22%, transparent) transparent;
+  }
+}
+
+@layer utilities {
+  /* diagonal rule pattern: hard controls, memory-off strip */
+  .hatch {
+    background-image: repeating-linear-gradient(135deg, var(--hatch) 0 1px, transparent 1px 7px);
+  }
+  /* "being written" rule: a hairline with an ink segment travelling along it */
+  .writing-rule {
+    height: 1px;
+    background-color: var(--rule);
+    background-image: linear-gradient(90deg, transparent 0%, var(--foreground) 50%, transparent 100%);
+    background-size: 40% 100%;
+    background-repeat: no-repeat;
+    animation: writing 1.4s var(--ease-in-out) infinite;
+  }
+  @keyframes writing {
+    from {
+      background-position: -40% 0;
+    }
+    to {
+      background-position: 140% 0;
+    }
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .serif-display {
+    font-family: var(--font-serif);
+    font-variation-settings: "opsz" 72;
+    letter-spacing: -0.015em;
+  }
+  .press {
+    transition: transform 140ms var(--ease-out);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+}
+
+/* serif long-form for the agent's voice (playbook, policy, answers) */
+.prose-case {
+  @apply prose prose-neutral max-w-none font-serif dark:prose-invert;
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-links: var(--foreground);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+.prose-case :where(h1, h2, h3) {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.prose-case :where(code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .writing-rule {
+    animation: none;
+    background-image: none;
+  }
+}
