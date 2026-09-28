@@ -21,7 +21,7 @@ const NARRATION: Record<DemoStageId, { title: string; body: string }> = {
   },
   twist: {
     title: 'Someone changes Balaji’s bank account.',
-    body: 'Balaji’s freight is on autopilot, yet this invoice stops cold: a changed bank account and a resubmitted duplicate hit hard controls, which run before memory and never bend.',
+    body: 'Balaji’s freight is on autopilot, yet this invoice stops cold: a changed bank account and a resubmitted duplicate hit hard controls, which run before memory and never bend. Sort the docket by MSME deadline: a micro supplier’s invoice is days from its 43B(h) deadline.',
   },
 }
 
