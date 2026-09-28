@@ -37,7 +37,7 @@ accepts the open case, which is the third accepted recommendation in a row, so `
 
 | Method | Path | Body | Returns | Mock |
 |---|---|---|---|---|
-| GET | `/api/health` | — | `Health` | `health.json` |
+| GET | `/api/health` | — | `Health` (`hindsight: "down"` when Hindsight rejects the key, times out or is unreachable; cached 30 s) | `health.json` |
 | GET | `/api/settings` | — | `Settings` (includes `bank_id`, `llm_chain`, `sim_date`) | `settings.json` |
 | PATCH | `/api/settings` | `SettingsPatch` `{memory_enabled}` | `Settings` | `settings.json` |
 | GET | `/api/exceptions?status=open\|auto_resolved\|resolved\|all&vendor_id=&type=&sort=newest\|msme_deadline\|amount&limit=50&offset=0` | — | `Page<ExceptionSummary>` | `exceptions.json`, `twist/exceptions-by-msme-deadline.json` |
@@ -45,7 +45,7 @@ accepts the open case, which is the third accepted recommendation in a row, so `
 | POST | `/api/exceptions/{id}/recommend` | — | `ExceptionDetail` (fresh recommendation) | `exception-detail.json` |
 | POST | `/api/exceptions/{id}/resolve` | `ResolveRequest` | `ResolveResult` | `resolve-result.json` |
 | GET | `/api/vendors` | — | `VendorSummary[]` | `vendors.json`, `twist/vendors.json` |
-| GET | `/api/vendors/{id}` | — | `VendorProfile` (learned observations, wiki page as `playbook`, risk, MSME / e-invoice status) | `vendor-profile.json`, `twist/vendor-profile.json` |
+| GET | `/api/vendors/{id}` | — | `VendorProfile` (learned observations, wiki page as `playbook`, risk, MSME / e-invoice status, `memory: ok \| unavailable`) | `vendor-profile.json`, `twist/vendor-profile.json` |
 | GET | `/api/vendors/{id}/beliefs` | — | `Belief[]` (what the agent believes about the vendor, the evidence count, and how each belief changed) | `beliefs.json`, `twist/beliefs.json` |
 | GET | `/api/knowledge` | — | `KnowledgePageSummary[]` (the vendor wiki) | `knowledge.json` |
 | GET | `/api/knowledge/{page_id}` | — | `KnowledgePage` (`markdown` is null while Hindsight is still writing it) | `knowledge-page.json` |
@@ -140,9 +140,10 @@ out with `frontend/src/lib/parse-rationale.ts`; change both together. The hard-c
 
 - `Resolution.redacted`: kinds of personal data removed from the clerk's reason before storage (e.g. `["phone"]`). Show a small "PII redacted" badge. `Resolution.revoked_at/by/revoke_reason` are set when a lesson is revoked.
 - `Kpis.citation_relevance`: share of cited memories that refer to the same vendor or exception type. `Kpis.lessons_revoked`: count of revoked lessons.
-- `ExceptionSummary.msme_days_left`: days before the Section 43B(h) payment deadline (MSME vendors only; negative = breached; `null` for duplicates, which are never paid). `ExceptionDetail.compliance`: `{msme: MsmeStatus | null, e_invoice: {required, irn_present}}`.
+- `ExceptionSummary.msme_days_left`: days before the Section 43B(h) payment deadline (MSME vendors only; negative = breached; `null` for duplicates, which are never paid). `ExceptionDetail.compliance`: `{msme: MsmeStatus | null, e_invoice: {required, irn_present}}`. Like `msme_days_left`, `compliance.msme` is only set while the case is open.
 - `InvoiceDoc.supplier_gstin` / `InvoiceDoc.irn`: the GSTIN printed on the invoice and its e-invoice IRN (64 hex characters) when there is one.
 - `VendorSummary.msme_category`, `e_invoice_required`, `risk_score`, `risk_level`; `VendorProfile.risk` (score, level, reasons, the vendor's Benford result) and `udyam`.
 - `VendorProfile.playbook`: the vendor's Hindsight **Knowledge Page** as markdown (falls back to a playbook mental model while the page is first being written). Treat `null` or "Generating content…" as pending.
+- `VendorProfile.memory`: `ok`, or `unavailable` when Hindsight couldn't be reached; then an empty `learned` and a null `playbook` mean "unknown", not "nothing learned yet".
 - `Recommendation.route`, `calibrated_confidence` (how often past recommendations at this stated confidence were right) and `cost_usd` (what producing it cost, in US dollars).
 - `Metrics.certificate`, `Metrics.calibration` (`ece` = expected calibration error; bins of stated vs actual accuracy) and `Metrics.performance` (fast-path share, p50/p95 latency, cost per 1,000 exceptions). `Kpis.msme_open_at_risk` / `msme_tax_at_risk`: open MSME cases due soon or breached, and the tax deduction at stake.

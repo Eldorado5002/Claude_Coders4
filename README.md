@@ -331,7 +331,7 @@ If you only have a minute, here's how we'd sum up what we delivered in each area
 |---|---|
 | **Innovation** | An agent that **earns autonomy** per vendor and exception type, and must **prove it statistically** before paying on its own · learns *limits*, not just approvals (the ₹7,400 auto-hold) · beliefs that show their evidence and a wiki that writes itself · **a photo of a paper invoice, auto-resolved in about 11 seconds** · built for Indian AP: MSME 43B(h) deadlines, e-invoice IRNs, GSTIN checks |
 | **Use of Hindsight Memory** | Memory *is* the product: **98% vs 50%** with and without it · **15 Hindsight features** across writing, reading, understanding and governing memory, from `reflect` with typed output and `based_on` citations to observation history, Knowledge Pages, time-anchored `recall`, directives, `clone_bank` and document deletion · an **ablation study** of which part of memory does the work · full write-up in [`docs/HINDSIGHT.md`](docs/HINDSIGHT.md) |
-| **Technical Implementation** | About 9,500 lines of typed Python · **54 backend tests**, including one that checks the matcher against all 576 invoices and contract tests that pin the hard-control text the app parses, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · three reproducible evaluations ([`docs/EVALUATION.md`](docs/EVALUATION.md)) · cost-aware routing, three-provider failover, money in code |
+| **Technical Implementation** | About 9,500 lines of typed Python · **57 backend tests** and **476 frontend tests**, including one that checks the matcher against all 576 invoices and contract tests that pin the hard-control text the app parses, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · three reproducible evaluations ([`docs/EVALUATION.md`](docs/EVALUATION.md)) · cost-aware routing, three-provider failover, money in code |
 | **User Experience** | Every recommendation explains itself with cited precedents and a calibrated confidence · one-click approve, or correct it with a reason · a beliefs timeline and a vendor wiki · a queue sortable by MSME deadline · live updates over SSE · instant demo acts and memory switch · invoice photo capture · push notifications |
 | **Real-world Impact** | Solves an everyday finance problem that companies already pay to fix · about **$17 per 1,000 exceptions** in AI and memory costs · keeps institutional knowledge when staff leave · catches duplicates and bank-detail fraud · protects MSME tax deductions · a natural path to adoption as an ERP add-on for shared-services finance teams |
 
@@ -382,8 +382,8 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 
 | Command | What it does |
 |---|---|
-| `uv run pytest` | Runs the 54 backend tests (no network, no cost) |
-| `npm test` (in `frontend/`) | Runs the frontend unit tests |
+| `uv run pytest` | Runs the 57 backend tests (no network, no cost) |
+| `npm test` · `npm run e2e` (in `frontend/`) | Runs the 476 frontend unit tests and the Playwright walk through the demo |
 | `uv run python -m scripts.smoke --days 10` | A live smoke test against Hindsight and the LLMs |
 | `uv run python -m scripts.build_demo` | Rebuilds every demo snapshot and the memory ON/OFF evaluation (about 20 minutes, live APIs) |
 | `uv run python -m scripts.ablation` | Runs the ablation study in its own database and memory bank (about 15 minutes) |
@@ -452,7 +452,7 @@ backend/
     services/     case lifecycle, simulator, demo stages, metrics, capture, compliance, risk, push
     api/          FastAPI routes
   scripts/        demo builder, ablation, capture eval, BPI calibration, charts, mocks, smoke test
-  tests/          54 offline tests with a fake memory and fake LLM
+  tests/          57 offline tests with a fake memory and fake LLM
   data/           demo snapshots, BPI calibration + evaluation results
 frontend/         the app: React 19 PWA, "Case Law" design, fixture mode for offline demos
 docs/             Hindsight write-up, evaluation, API contract, frontend guide, mocks, charts, sample invoices
@@ -473,7 +473,7 @@ For reference, here's everything we built Precedent with, and why we chose it.
 | **Machine learning and statistics** | scikit-learn IsolationForest · SciPy | Per-vendor anomaly scores; exact Clopper–Pearson bounds for the autonomy certificate |
 | **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications |
 | **Notifications** | Web Push (VAPID) | Alerts for blocked and auto-resolved invoices |
-| **Quality** | pytest · ruff · Vitest · Playwright · API contract generated from the Pydantic models | 54 backend tests and the frontend's own unit tests; the frontend's types come straight from the backend |
+| **Quality** | pytest · ruff · Vitest · Playwright · API contract generated from the Pydantic models | 57 backend tests, 476 frontend unit tests and a Playwright demo walk; the frontend's types come straight from the backend |
 
 ## What's next
 

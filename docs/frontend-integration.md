@@ -256,4 +256,12 @@ Afterwards, `POST /api/demo/reset` puts everything back to Day 1.
 - `sim.changed` always sends a `DemoState`.
 - MSME risk figures skip duplicates, which are never paid.
 
+Round 2, after `NOTE-FOR-BACKEND.md`:
+
+- `/api/health` only reports `hindsight: "up"` when Hindsight accepts an authenticated call. A bad key now reads
+  `down` (checked live with a wrong key).
+- `VendorProfile.memory` is new: `"ok" | "unavailable"`. It is optional in the OpenAPI types (default `"ok"`), so
+  nothing breaks before `npm run gen:api`. The vendor-profile mocks carry `"memory": "ok"`.
+- `compliance.msme` is now only set while a case is open, the same rule as `msme_days_left`.
+
 If anything in the contract is unclear or missing, ask the backend owner; `docs/` changes only when we both agree.
