@@ -26,3 +26,25 @@ test('command palette offers to ask Precedent', async ({ page }) => {
   await page.getByPlaceholder(/Search cases/).fill('what is our freight policy?')
   await expect(page.getByText(/Ask Precedent:/)).toBeVisible()
 })
+
+test('risk page ranks every vendor', async ({ page }) => {
+  await page.goto('/risk')
+  await expect(page.getByRole('heading', { name: 'Where to look twice.' })).toBeVisible()
+  // Week 3 fixtures: no vendor has a signal yet, so the ranking is one quiet list
+  await expect(page.getByText('Shree Balaji Steel Traders Pvt Ltd').first()).toBeVisible()
+})
+
+test('the certificate chip leads to trust you can check', async ({ page }) => {
+  await page.goto('/trust')
+  await page.getByRole('link', { name: /Collecting evidence|Certified|Auto-pay paused/ }).click()
+  await expect(page).toHaveURL(/\/learning#trust$/)
+  await expect(page.getByText('Trust you can check')).toBeInViewport()
+})
+
+test('a sample invoice with no IRN is held by the e-invoice control', async ({ page }) => {
+  await page.goto('/capture')
+  await page.getByRole('button', { name: /No IRN/ }).click()
+  await expect(page.getByText('Held: no e-invoice IRN.', { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: /Open case/ }).click()
+  await expect(page.getByText('Action forced to hold.')).toBeVisible()
+})
