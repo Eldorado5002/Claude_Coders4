@@ -157,9 +157,13 @@ def grn_for(session: Session, inv: Invoice) -> GoodsReceipt | None:
     return session.exec(select(GoodsReceipt).where(GoodsReceipt.po_number == inv.po_number)).first()
 
 
-def case_msme(session: Session, v: Vendor, inv: Invoice, today) -> MsmeStatus | None:
-    if not (v.profile or {}).get("msme"):
+def case_msme(session: Session, case: ExceptionCase, today) -> MsmeStatus | None:
+    """The Section 43B(h) payment deadline for this case. None for non-MSME vendors, and for duplicates: a
+    duplicate is rejected, never paid, so no payment deadline (and no tax deduction) is at stake."""
+    v = session.get(Vendor, case.vendor_id)
+    if not (v.profile or {}).get("msme") or ExceptionType.DUPLICATE_INVOICE.value in case.issue_types:
         return None
+    inv = session.get(Invoice, case.invoice_id)
     grn = grn_for(session, inv)
     return msme_status(v.profile, row_dict(inv), row_dict(grn) if grn else None, today, v.payment_terms_days)
 
@@ -177,7 +181,7 @@ def summary(session: Session, case: ExceptionCase, mem_on: bool | None = None) -
     auto = session.get(Autonomy, f"{case.vendor_id}:{case.primary_type}")
     rec = current_rec(case, mem_on)
     level = AutonomyLevel(auto.level) if auto else (AutonomyLevel.LOCKED if case.blocking else AutonomyLevel.SUGGEST)
-    msme = case_msme(session, v, inv, sim_date(session)) if case.status == CaseStatus.OPEN else None
+    msme = case_msme(session, case, sim_date(session)) if case.status == CaseStatus.OPEN else None
     return ExceptionSummary(
         id=case.id,
         status=CaseStatus(case.status),
@@ -216,7 +220,7 @@ def detail(session: Session, case: ExceptionCase) -> ExceptionDetail:
         resolution=Resolution(**case.resolution) if case.resolution else None,
         autonomy=to_state(auto, v.name),
         compliance=Compliance(
-            msme=case_msme(session, v, inv, sim_date(session)),
+            msme=case_msme(session, case, sim_date(session)),
             e_invoice=einvoice_status(v.profile, row_dict(inv)),
         ),
     )
@@ -377,7 +381,7 @@ class CaseService:
             anomaly=score,
             typical_total=typical,
             history_count=len(history),
-            extra={"msme": case_msme(session, v, inv, inv.arrival_date)},
+            extra={"msme": case_msme(session, case, inv.arrival_date)},
         )
 
     async def recommend_case(self, case_id: str, *, force: bool = False, mem_on: bool | None = None) -> Recommendation:

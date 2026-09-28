@@ -110,7 +110,7 @@ Tip: on any event, `queryClient.invalidateQueries()` for the affected keys is en
 
 - `Resolution.redacted`: kinds of personal data removed from the clerk's reason before storage (e.g. `["phone"]`). Show a small "PII redacted" badge. `Resolution.revoked_at/by/revoke_reason` are set when a lesson is revoked.
 - `Kpis.citation_relevance`: share of cited memories that refer to the same vendor or exception type. `Kpis.lessons_revoked`: count of revoked lessons.
-- `ExceptionSummary.msme_days_left`: days before the Section 43B(h) payment deadline (MSME vendors only; negative = breached). `ExceptionDetail.compliance`: `{msme: MsmeStatus | null, e_invoice: {required, irn_present}}`.
+- `ExceptionSummary.msme_days_left`: days before the Section 43B(h) payment deadline (MSME vendors only; negative = breached; `null` for duplicates, which are never paid). `ExceptionDetail.compliance`: `{msme: MsmeStatus | null, e_invoice: {required, irn_present}}`.
 - `InvoiceDoc.supplier_gstin` / `InvoiceDoc.irn`: the GSTIN printed on the invoice and its e-invoice IRN (64 hex characters) when there is one.
 - `VendorSummary.msme_category`, `e_invoice_required`, `risk_score`, `risk_level`; `VendorProfile.risk` (score, level, reasons, the vendor's Benford result) and `udyam`.
 - `Recommendation.route`, `calibrated_confidence` (how often past recommendations at this stated confidence were right) and `cost_usd` (what producing it cost).

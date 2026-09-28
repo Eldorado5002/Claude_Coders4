@@ -105,7 +105,7 @@ def open_msme_at_risk(session: Session, cases: list[ExceptionCase]) -> list:
     for c in cases:
         if c.status != "open":
             continue
-        m = case_msme(session, session.get(Vendor, c.vendor_id), session.get(Invoice, c.invoice_id), today)
+        m = case_msme(session, c, today)
         if m and m.status != "ok":
             out.append(m)
     return out

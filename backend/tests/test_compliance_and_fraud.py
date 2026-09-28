@@ -229,3 +229,29 @@ def test_captured_dates_are_parsed_with_the_locale():
     assert parse_invoice_date("25/03/26", "2026-03-25", day_first=False) == date(2026, 3, 25)  # unambiguous
     assert parse_invoice_date("4 Nov 2026", "2026-11-04") == date(2026, 11, 4)  # words: trust the model
     assert parse_invoice_date(None, "not a date") is None
+
+
+def test_duplicates_carry_no_msme_deadline(env):
+    from sqlmodel import Session, select
+
+    from app.db import get_engine
+    from app.models import ExceptionCase, Vendor
+    from app.services.cases import case_msme, get_cases, sim_date
+
+    svc = get_cases()
+    with Session(get_engine()) as s:
+        msme_vendors = {v.id for v in s.exec(select(Vendor)).all() if (v.profile or {}).get("msme")}
+    case_id = None
+    for day in range(1, 60):
+        for cid in svc.process_arrivals(day):
+            with Session(get_engine()) as s:
+                c = s.get(ExceptionCase, cid)
+                if c.vendor_id in msme_vendors and "duplicate_invoice" not in c.issue_types:
+                    case_id = cid
+        if case_id:
+            break
+    with Session(get_engine()) as s:
+        case = s.get(ExceptionCase, case_id)
+        assert case_msme(s, case, sim_date(s)) is not None  # a payable MSME invoice has a deadline
+        case.issue_types = [*case.issue_types, "duplicate_invoice"]
+        assert case_msme(s, case, sim_date(s)) is None  # a duplicate will never be paid: nothing at stake

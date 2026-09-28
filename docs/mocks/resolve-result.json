@@ -136,7 +136,7 @@
       "reason": "Called the vendor on the number in our master record: they never changed banks.",
       "adjusted_amount": null,
       "resolved_by": "Priya",
-      "resolved_at": "2026-04-27T09:44:00",
+      "resolved_at": "2026-04-27T09:48:00",
       "agent_action": "reject",
       "agreed_with_agent": true,
       "redacted": [],
@@ -154,20 +154,10 @@
       "accepted": 1,
       "overruled": 0,
       "auto_resolved": 0,
-      "updated_at": "2026-04-27T09:44:00"
+      "updated_at": "2026-04-27T09:48:00"
     },
     "compliance": {
-      "msme": {
-        "category": "small",
-        "udyam": "UDYAM-TS-02-0048812",
-        "limit_days": 45,
-        "accepted_on": "2026-02-28",
-        "deadline": "2026-04-14",
-        "days_left": -13,
-        "status": "breached",
-        "tax_at_risk": 11302.83,
-        "terms_exceed_limit": false
-      },
+      "msme": null,
       "e_invoice": {
         "required": false,
         "irn_present": false
@@ -186,7 +176,7 @@
     "accepted": 1,
     "overruled": 0,
     "auto_resolved": 0,
-    "updated_at": "2026-04-27T09:44:00"
+    "updated_at": "2026-04-27T09:48:00"
   },
   "promoted": false,
   "demoted": false

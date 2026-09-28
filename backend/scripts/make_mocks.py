@@ -3,19 +3,24 @@
 It drives the real FastAPI app in-process against the demo database and Hindsight banks that
 scripts/build_demo.py builds. Read-only endpoints are captured at the Week 8 stage (a rich,
 mid-story state). Endpoints that change state are exercised at the Twist stage, and the Day 1
-snapshot is restored afterwards. The one exception is revoking a lesson: that would delete a
-memory from a demo bank, so its mock is assembled from real lesson and autonomy objects.
+snapshot is restored afterwards, and any lesson those calls wrote into the Twist bank is deleted
+again, so the demo bank stays exactly as build_demo left it. Revoking a lesson would delete a
+memory from a demo bank, so that one mock is assembled from real lesson and autonomy objects.
 
 Costs a few cents (one copilot answer, one invoice capture).
 Run (after build_demo): uv run python -m scripts.make_mocks
 """
 
+import asyncio
 import json
+import time
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.memory.store import get_memory
+from app.services.demo import stage_bank
 
 OUT = Path(__file__).resolve().parents[2] / "docs" / "mocks"
 SAMPLE = Path(__file__).resolve().parents[2] / "docs" / "samples" / "invoice-balaji-freight.png"
@@ -116,10 +121,9 @@ def main() -> None:
             ),
         )
         with SAMPLE.open("rb") as f:
-            write(
-                "capture-result.json",
-                ok(c.post("/api/invoices/capture", files={"file": (SAMPLE.name, f, "image/png")})),
-            )
+            captured = ok(c.post("/api/invoices/capture", files={"file": (SAMPLE.name, f, "image/png")}))
+        write("capture-result.json", captured)
+        touched = [blocked["id"], captured.get("exception_id")]
         write(
             "events.json",
             [
@@ -131,9 +135,19 @@ def main() -> None:
                 {"event": "memory.revoked", "data": {**lesson, "revoked": True, "revoked_by": "Meera (AP lead)"}},
             ],
         )
+        time.sleep(10)  # let the background memory writes land, so we can remove them
         ok(c.post("/api/demo/reset"))
         ok(c.patch("/api/settings", json={"memory_enabled": True}))
+    asyncio.run(forget(stage_bank("twist"), [t for t in touched if t]))
     print(f"mocks written to {OUT}; demo reset to Day 1")
+
+
+async def forget(bank: str, case_ids: list[str]) -> None:
+    """Remove the lessons this script taught the Twist bank (a missing document is fine)."""
+    mem = get_memory()
+    for cid in case_ids:
+        await mem.delete_document(bank, cid)
+    await mem.close()
 
 
 if __name__ == "__main__":
