@@ -178,8 +178,9 @@ export function eceText(ece: number | null | undefined): string | null {
   return ece == null ? null : `Expected calibration error ${ece.toFixed(2)}`
 }
 
-/** "Right 90% of the time across 123 scored recommendations" */
-export function calibrationSummary(c: Calibration): string {
+/** "Right 90% of the time across 123 scored recommendations"; null before anything is scored (the API's smoothed 50%). */
+export function calibrationSummary(c: Calibration): string | null {
+  if (c.n <= 0) return null
   return `Right ${pct(c.pooled_accuracy)} of the time across ${c.n} scored ${plural(c.n, 'recommendation', 'recommendations')}`
 }
 

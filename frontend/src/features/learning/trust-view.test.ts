@@ -195,6 +195,9 @@ describe('calibration text', () => {
       'Right 100% of the time across 1 scored recommendation',
     )
   })
+  it('says nothing before any recommendation is scored (Day 1), instead of a smoothed 50% over none', () => {
+    expect(calibrationSummary({ n: 0, ece: null, pooled_accuracy: 0.5, bins: [] })).toBeNull()
+  })
 })
 
 describe('cost and speed formatting', () => {

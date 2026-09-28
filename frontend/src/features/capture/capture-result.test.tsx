@@ -1,19 +1,49 @@
 import { queryOptions } from '@tanstack/react-query'
 import { cleanup, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { CaptureResult, VendorSummary } from '@/api/types'
+import type { CaptureResult, ExceptionDetail, VendorSummary } from '@/api/types'
 import captureMock from '@mocks/capture-result.json'
 import badGstinMock from '@mocks/twist/capture-bad-gstin.json'
 import freightMock from '@mocks/twist/capture-freight.json'
 import noIrnMock from '@mocks/twist/capture-no-irn.json'
 import vendorsMock from '@mocks/vendors.json'
+import badGstinCaseMock from '@mocks/twist/capture-case-bad-gstin.json'
+import freightCaseMock from '@mocks/twist/capture-case-freight.json'
+import noIrnCaseMock from '@mocks/twist/capture-case-no-irn.json'
 import { renderApp } from '@/test/render'
 import { CaptureResultView } from './capture-result'
 
-// the vendor list says whether the vendor must e-invoice (VendorRef doesn't)
+const freightCase = freightCaseMock as unknown as ExceptionDetail
+// freight captured a second time: the duplicate control rejects it (as the backend did at the Twist, EXC-0046)
+const dupCase: ExceptionDetail = {
+  ...freightCase,
+  id: 'EXC-0046',
+  status: 'open',
+  blocking: true,
+  issues: [{ type: 'duplicate_invoice', message: 'Invoice SBST/2627/0612 was already submitted.', blocking: true }],
+  recommendation: { ...freightCase.recommendation!, action: 'reject', source: 'guardrail' },
+}
+const CASES: Record<string, ExceptionDetail> = {
+  'EXC-0043': freightCase,
+  'EXC-0044': noIrnCaseMock as unknown as ExceptionDetail,
+  'EXC-0045': badGstinCaseMock as unknown as ExceptionDetail,
+  'EXC-0046': dupCase,
+}
+
+// the vendor list says whether the vendor must e-invoice (VendorRef doesn't); the opened case says what happened
 vi.mock('@/api/queries', async (orig) => ({
   ...(await orig<typeof import('@/api/queries')>()),
   vendorsQ: () => queryOptions({ queryKey: ['vendors'], queryFn: async () => vendorsMock as unknown as VendorSummary[] }),
+  settingsQ: () => queryOptions({ queryKey: ['settings'], queryFn: async () => ({ memory_enabled: true }) }),
+  exceptionQ: (id: string, memOn: boolean) =>
+    queryOptions({
+      queryKey: ['exception', id, memOn],
+      queryFn: async () => {
+        if (!CASES[id]) throw new Error('not found')
+        return CASES[id]
+      },
+      retry: false,
+    }),
 }))
 
 const result = captureMock as unknown as CaptureResult
@@ -64,7 +94,7 @@ describe('CaptureResultView', () => {
 })
 
 describe('CaptureResultView: GSTIN, IRN and hard controls', () => {
-  it('freight: the IRN shortened like a hash, the GSTIN matching the master, and the generic case line', () => {
+  it('freight: the IRN shortened like a hash, the GSTIN matching the master, and the case it opened', () => {
     renderApp(<CaptureResultView result={freight} onReset={() => {}} />)
     // the full IRN is one hover away
     expect(screen.getByText('2c7f2257…c6ac5c').closest('abbr')).toHaveAttribute('title', freight.extracted.irn)
@@ -107,5 +137,27 @@ describe('CaptureResultView: GSTIN, IRN and hard controls', () => {
     renderApp(<CaptureResultView result={{ ...freight, extracted: { ...freight.extracted, supplier_gstin: null } }} onReset={() => {}} />)
     expect(screen.getByText('Not printed')).toBeInTheDocument()
     expect(screen.getByText(freight.vendor!.gstin)).toBeInTheDocument()
+  })
+})
+
+describe('CaptureResultView: what the opened case says happened', () => {
+  it('freight at the Twist reads as auto-resolved under earned autonomy, not held', async () => {
+    renderApp(<CaptureResultView result={freight} onReset={() => {}} />)
+    expect(await screen.findByText('Auto-resolved under earned autonomy.')).toBeInTheDocument()
+    expect(screen.getByText('EXC-0043')).toBeInTheDocument()
+    expect(screen.queryByText(/something off/)).toBeNull()
+  })
+
+  it('freight captured twice is rejected by the duplicate control, which it names', async () => {
+    renderApp(<CaptureResultView result={{ ...freight, exception_id: 'EXC-0046' }} onReset={() => {}} />)
+    expect(await screen.findByText('Rejected: this invoice was already submitted.')).toBeInTheDocument()
+    expect(screen.getByText('Duplicate control')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /open case/i })).toHaveAttribute('href', '/exceptions/EXC-0046')
+  })
+
+  it('keeps what was read when the case can’t be loaded', async () => {
+    renderApp(<CaptureResultView result={{ ...freight, exception_id: 'EXC-9999' }} onReset={() => {}} />)
+    expect(await screen.findByText('EXC-9999')).toBeInTheDocument()
+    expect(screen.getByText(/something off/)).toBeInTheDocument()
   })
 })

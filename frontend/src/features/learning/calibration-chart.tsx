@@ -130,6 +130,7 @@ export function CalibrationChart({ cal }: { cal: Calibration }) {
   const points = calibrationPoints(cal.bins)
   // an error figure next to "not enough to check" would contradict it
   const ece = points.length ? eceText(cal.ece) : null
+  const summary = calibrationSummary(cal)
 
   return (
     <figure className="min-w-0 space-y-3" aria-labelledby="calibration-title">
@@ -143,10 +144,12 @@ export function CalibrationChart({ cal }: { cal: Calibration }) {
         </p>
       </figcaption>
 
-      <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-        {ece && <span className="font-medium">{ece}</span>}
-        <span className="text-muted-foreground">{calibrationSummary(cal)}</span>
-      </p>
+      {(ece || summary) && (
+        <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+          {ece && <span className="font-medium">{ece}</span>}
+          {summary && <span className="text-muted-foreground">{summary}</span>}
+        </p>
+      )}
 
       {points.length === 0 ? (
         <p className="flex h-40 items-center justify-center border-y border-rule px-4 text-center text-sm text-pretty text-muted-foreground">

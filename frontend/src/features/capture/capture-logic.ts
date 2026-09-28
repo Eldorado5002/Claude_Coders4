@@ -1,6 +1,7 @@
 import { ApiError } from '@/api/client'
-import type { CaptureResult, ExceptionType, VendorSummary } from '@/api/types'
+import type { CaptureResult, ExceptionDetail, ExceptionType, Issue, VendorSummary } from '@/api/types'
 import { inr } from '@/lib/format'
+import { TYPE_LABEL } from '@/lib/labels'
 
 /** Same limits the backend enforces (415 / 413). */
 export const MAX_BYTES = 12 * 1024 * 1024
@@ -133,9 +134,11 @@ export const needsEInvoiceFlag = (r: CaptureResult) => r.status === 'exception' 
 
 // ---------------------------------------------------------------- outcome
 
+type ControlAction = 'hold' | 'escalate' | 'reject'
+
 export type CaptureControl = {
-  type: Extract<ExceptionType, 'invalid_gstin' | 'einvoice_missing'>
-  action: 'hold' | 'escalate'
+  type: ExceptionType
+  action: ControlAction
   /** "GSTIN control" */
   label: string
   /** "Escalated: the GSTIN doesn't match the vendor master." */
@@ -144,35 +147,66 @@ export type CaptureControl = {
   detail: string
 }
 
+const VERB: Record<ControlAction, string> = { hold: 'Held', escalate: 'Escalated', reject: 'Rejected' }
+const isControlAction = (a: string | null | undefined): a is ControlAction => a === 'hold' || a === 'escalate' || a === 'reject'
+
+/** The controls a capture demo can trip, told in plain words, with the action the backend forces. */
+const CONTROL_COPY: Partial<
+  Record<ExceptionType, { action: ControlAction; label: string; headline: (r: CaptureResult) => string; detail: string }>
+> = {
+  invalid_gstin: {
+    action: 'escalate',
+    label: 'GSTIN control',
+    headline: () => 'Escalated: the GSTIN doesn’t match the vendor master.',
+    detail: 'That can mean someone is posing as the vendor, so a hard control escalates it. Past decisions can’t override it.',
+  },
+  einvoice_missing: {
+    action: 'hold',
+    label: 'E-invoice control',
+    headline: (r) => (shortIrn(r.extracted.irn) ? 'Held: the e-invoice IRN isn’t valid.' : 'Held: no e-invoice IRN.'),
+    detail:
+      'This vendor must issue e-invoices, so without a valid IRN it isn’t a valid tax invoice. A hard control holds it; past decisions can’t override it.',
+  },
+  duplicate_invoice: {
+    action: 'reject',
+    label: 'Duplicate control',
+    headline: () => 'Rejected: this invoice was already submitted.',
+    detail: 'Paying it again would pay the vendor twice, so a hard control rejects it. Past decisions can’t override it.',
+  },
+}
+
+/** A named control, in the backend's action when it has one (the verb in the headline must match it). */
+function control(r: CaptureResult, type: ExceptionType, issue?: Issue, action?: ControlAction): CaptureControl {
+  const copy = CONTROL_COPY[type]
+  const act = action ?? copy?.action ?? 'escalate'
+  if (copy && copy.action === act) return { type, action: act, label: copy.label, headline: copy.headline(r), detail: copy.detail }
+  return {
+    type,
+    action: act,
+    label: copy?.label ?? `${TYPE_LABEL[type] ?? type} control`,
+    headline: `${VERB[act]} by a hard control.`,
+    detail: issue?.message ?? copy?.detail ?? '',
+  }
+}
+
 /**
- * Which hard control fired, told from what was read. CaptureResult carries no issue list, so this only names the two
- * controls the extraction itself proves (GSTIN first, as the backend orders them); anything else stays generic.
+ * Which hard control fired, told from what was read, for the moment before the opened case loads. CaptureResult
+ * carries no issue list, so this only names the two controls the extraction itself proves (GSTIN first, as the
+ * backend orders them); caseOutcome then tells the rest from the case.
  */
 export function captureControl(r: CaptureResult, ctx: { eInvoiceRequired?: boolean } = {}): CaptureControl | null {
   if (r.status !== 'exception' || !r.vendor) return null
-  if (gstinCheck(r.extracted.supplier_gstin, r.vendor.gstin) === 'mismatch')
-    return {
-      type: 'invalid_gstin',
-      action: 'escalate',
-      label: 'GSTIN control',
-      headline: 'Escalated: the GSTIN doesn’t match the vendor master.',
-      detail: 'That can mean someone is posing as the vendor, so a hard control escalates it. Past decisions can’t override it.',
-    }
-  if (ctx.eInvoiceRequired && !irnValid(r.extracted.irn))
-    return {
-      type: 'einvoice_missing',
-      action: 'hold',
-      label: 'E-invoice control',
-      headline: shortIrn(r.extracted.irn) ? 'Held: the e-invoice IRN isn’t valid.' : 'Held: no e-invoice IRN.',
-      detail:
-        'This vendor must issue e-invoices, so without a valid IRN it isn’t a valid tax invoice. A hard control holds it; past decisions can’t override it.',
-    }
+  if (gstinCheck(r.extracted.supplier_gstin, r.vendor.gstin) === 'mismatch') return control(r, 'invalid_gstin')
+  if (ctx.eInvoiceRequired && !irnValid(r.extracted.irn)) return control(r, 'einvoice_missing')
   return null
 }
 
 export type OutcomeTone = 'approve' | 'hold' | 'reject' | 'escalate'
 export type Outcome = {
   tone: OutcomeTone
+  /** The banner's main line; null = "Opened EXC-…" (or the title when no case opened). */
+  headline: string | null
+  /** The whole outcome in one line, for screen readers. */
   title: string
   body: string
   caseId: string | null
@@ -185,6 +219,7 @@ export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>
     case 'matched':
       return {
         tone: 'approve',
+        headline: null,
         title: 'Clean 3-way match. Queued for payment.',
         body: 'Invoice, purchase order and goods receipt agree, so no case was opened.',
         caseId: null,
@@ -195,6 +230,7 @@ export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>
       if (control)
         return {
           tone: control.action,
+          headline: control.headline,
           title: id ? `${control.headline} Opened ${id}.` : control.headline,
           body: control.detail,
           caseId: id,
@@ -202,6 +238,7 @@ export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>
         }
       return {
         tone: 'hold',
+        headline: null,
         title: id ? `Opened ${id}` : 'Opened a case',
         body: 'The 3-way match found something off. Precedent has written its opinion on the case.',
         caseId: id,
@@ -211,12 +248,39 @@ export function captureOutcome(r: Pick<CaptureResult, 'status' | 'exception_id'>
     case 'unknown_vendor':
       return {
         tone: 'reject',
+        headline: null,
         title: 'This vendor isn’t in the vendor master. Onboard them before paying.',
         body: 'The invoice wasn’t filed, so nothing will be paid.',
         caseId: null,
         control: null,
       }
   }
+}
+
+const AUTO_RESOLVED = 'Auto-resolved under earned autonomy.'
+
+/**
+ * What the opened case says happened, from the backend's own status, verdict and blocking issue: auto-resolved
+ * freight reads as paid, a duplicate as rejected. null = nothing more to say than "Opened EXC-…".
+ */
+export function caseOutcome(
+  r: CaptureResult,
+  c: Pick<ExceptionDetail, 'id' | 'status' | 'issues' | 'recommendation'>,
+): Outcome | null {
+  if (c.status === 'auto_resolved')
+    return {
+      tone: 'approve',
+      headline: AUTO_RESOLVED,
+      title: `${AUTO_RESOLVED} Opened ${c.id}.`,
+      body: 'Precedent has earned autonomy for this vendor and exception type, so it approved the invoice itself. The case stays on file.',
+      caseId: c.id,
+      control: null,
+    }
+  const issue = c.issues.find((i) => i.blocking)
+  if (!issue) return null
+  const action = c.recommendation?.action
+  const ctl = control(r, issue.type, issue, isControlAction(action) ? action : undefined)
+  return captureOutcome({ status: 'exception', exception_id: c.id }, ctl)
 }
 
 /** Timed captions while the request runs (the API doesn't stream progress). */

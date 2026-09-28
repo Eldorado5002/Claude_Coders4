@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError } from '@/api/client'
-import type { CaptureResult, VendorSummary } from '@/api/types'
+import type { CaptureResult, ExceptionDetail, VendorSummary } from '@/api/types'
 import vendorsMock from '@mocks/vendors.json'
 import badGstinMock from '@mocks/twist/capture-bad-gstin.json'
 import freightMock from '@mocks/twist/capture-freight.json'
 import noIrnMock from '@mocks/twist/capture-no-irn.json'
+import freightCaseMock from '@mocks/twist/capture-case-freight.json'
+import noIrnCaseMock from '@mocks/twist/capture-case-no-irn.json'
+import badGstinCaseMock from '@mocks/twist/capture-case-bad-gstin.json'
 import {
   MAX_BYTES,
   PROCESS_STEPS,
@@ -12,6 +15,7 @@ import {
   captureControl,
   captureErrorView,
   captureOutcome,
+  caseOutcome,
   eInvoiceRequiredFor,
   formatBytes,
   gstinCheck,
@@ -294,5 +298,64 @@ describe('small formatters', () => {
   it('rupees: whole rupees without paise, otherwise two decimals', () => {
     expect(rupees(58000)).toBe('₹58,000')
     expect(rupees(3850.5)).toBe('₹3,850.50')
+  })
+})
+
+describe('caseOutcome (what the opened case says happened)', () => {
+  const freightCase = freightCaseMock as unknown as ExceptionDetail
+  const noIrnCase = noIrnCaseMock as unknown as ExceptionDetail
+  const badGstinCase = badGstinCaseMock as unknown as ExceptionDetail
+
+  it('freight at the Twist: auto-resolved under earned autonomy, in the approve tone', () => {
+    expect(caseOutcome(freight, freightCase)).toMatchObject({
+      tone: 'approve',
+      headline: 'Auto-resolved under earned autonomy.',
+      caseId: 'EXC-0043',
+      control: null,
+    })
+  })
+
+  it('freight captured twice: the duplicate control rejects it, and says so', () => {
+    const dup: ExceptionDetail = {
+      ...freightCase,
+      id: 'EXC-0046',
+      status: 'open',
+      blocking: true,
+      issues: [{ type: 'duplicate_invoice', message: 'Invoice SBST/2627/0612 was already submitted.', blocking: true }, ...freightCase.issues],
+      recommendation: { ...freightCase.recommendation!, action: 'reject', source: 'guardrail' },
+    }
+    expect(caseOutcome({ ...freight, exception_id: 'EXC-0046' }, dup)).toMatchObject({
+      tone: 'reject',
+      headline: 'Rejected: this invoice was already submitted.',
+      caseId: 'EXC-0046',
+      control: { type: 'duplicate_invoice', label: 'Duplicate control', action: 'reject' },
+    })
+  })
+
+  it('names the e-invoice and GSTIN controls from the case’s own issues, with the backend’s verdict', () => {
+    expect(caseOutcome(noIrn, noIrnCase)).toMatchObject({
+      tone: 'hold',
+      control: { type: 'einvoice_missing', label: 'E-invoice control', headline: 'Held: no e-invoice IRN.' },
+    })
+    expect(caseOutcome(badGstin, badGstinCase)).toMatchObject({
+      tone: 'escalate',
+      control: { type: 'invalid_gstin', label: 'GSTIN control' },
+    })
+  })
+
+  it('any other hard control is still named, with its message as the detail', () => {
+    const bank: ExceptionDetail = {
+      ...noIrnCase,
+      issues: [{ type: 'bank_details_changed', message: 'Pay-to account differs from vendor master.', blocking: true }],
+      recommendation: { ...noIrnCase.recommendation!, action: 'escalate' },
+    }
+    expect(caseOutcome(noIrn, bank)).toMatchObject({
+      tone: 'escalate',
+      control: { type: 'bank_details_changed', label: 'Bank change control', detail: 'Pay-to account differs from vendor master.' },
+    })
+  })
+
+  it('an open case with no hard control leaves the generic line (null)', () => {
+    expect(caseOutcome(freight, { ...freightCase, status: 'open' })).toBeNull()
   })
 })

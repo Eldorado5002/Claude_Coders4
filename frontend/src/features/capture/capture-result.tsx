@@ -31,8 +31,8 @@ function OutcomeBanner({ o }: { o: Outcome }) {
         <div className="min-w-0 space-y-1">
           {c && <ControlChip label={c.label} />}
           <p className="font-serif text-[1.35rem] leading-snug text-balance text-foreground">
-            {c ? (
-              c.headline
+            {o.headline ? (
+              o.headline
             ) : o.caseId ? (
               <>
                 Opened <Mono className="text-[0.8em] tracking-normal">{o.caseId}</Mono>
@@ -42,12 +42,12 @@ function OutcomeBanner({ o }: { o: Outcome }) {
             )}
           </p>
           <p className="text-sm text-pretty text-muted-foreground">
-            {c && o.caseId && (
+            {o.headline && o.caseId && (
               <>
                 Opened <Mono className="text-foreground">{o.caseId}</Mono>.{' '}
               </>
             )}
-            {o.tone === 'hold' && !c && <AgentMark className="mr-1.5 text-foreground" />}
+            {o.tone === 'hold' && !o.headline && <AgentMark className="mr-1.5 text-foreground" />}
             {o.body}
           </p>
         </div>
