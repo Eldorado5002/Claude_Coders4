@@ -319,6 +319,27 @@ describe('Vendor file', () => {
     }
   })
 
+  it('opens the risk signals from the keyboard, so Tab reaches "All vendors by risk"', async () => {
+    const user = userEvent.setup()
+    mockApi({ vendor: () => ok(twistProfile) })
+    renderAt('/vendors/V001')
+    const trigger = await screen.findByRole('button', { name: /58 high risk/i })
+    trigger.focus()
+    await user.keyboard('{Enter}')
+    expect(await screen.findByText('Risk signals')).toBeInTheDocument()
+    await user.tab()
+    expect(screen.getByRole('link', { name: /all vendors by risk/i })).toHaveFocus()
+  })
+
+  it('describes the risk figure to screen readers with the reasons and the first-digit test', async () => {
+    mockApi({ vendor: () => ok(twistProfile) })
+    renderAt('/vendors/V001')
+    const trigger = await screen.findByRole('button', { name: /58 high risk/i })
+    const description = document.getElementById(trigger.getAttribute('aria-describedby') ?? '')
+    expect(description).toHaveTextContent(/pay a different bank account/)
+    expect(description).toHaveTextContent(/First digits \(Benford\)/)
+  })
+
   it('hides risk when the profile has none, and shows MSME, Udyam and e-invoicing facts', async () => {
     mockApi({
       vendor: () =>

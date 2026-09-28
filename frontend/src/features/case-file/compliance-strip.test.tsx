@@ -33,12 +33,36 @@ describe('ComplianceStrip', () => {
     expect(item(/^GSTIN/)).toHaveTextContent('on invoice matches master')
   })
 
-  it('explains 43B(h) in one sentence on hover or focus', async () => {
+  it('explains 43B(h) in one sentence on hover', async () => {
     const user = userEvent.setup()
     renderApp(<ComplianceStrip c={msme} />)
     await user.hover(screen.getByRole('button', { name: /5 days to the 43B\(h\) deadline/ }))
-    const tip = await screen.findByRole('tooltip')
+    const tip = await screen.findByRole('dialog')
     expect(tip).toHaveTextContent(/within 15 days of accepting the goods, or 45 with a written agreement/)
+  })
+
+  it('explains 43B(h) on a tap too, where there is no hover, with the goods-accepted date and the limit', async () => {
+    const real = window.matchMedia
+    window.matchMedia = ((media: string) => ({
+      media,
+      matches: false,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia
+    try {
+      const user = userEvent.setup()
+      renderApp(<ComplianceStrip c={msme} />)
+      await user.click(screen.getByRole('button', { name: /5 days to the 43B\(h\) deadline/ }))
+      const tip = await screen.findByRole('dialog')
+      expect(tip).toHaveTextContent(/Section 43B\(h\)/)
+      expect(tip).toHaveTextContent('Goods accepted 18 Mar · 45-day limit')
+    } finally {
+      window.matchMedia = real
+    }
   })
 
   it('drops the countdown once the case is decided: the invoice no longer waits on anyone', () => {

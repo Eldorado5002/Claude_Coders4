@@ -1,15 +1,12 @@
 import { useId, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import type { VendorProfile } from '@/api/types'
-import { AgentMark, Eyebrow, Mono } from '@/components/precedent'
+import { AgentMark, Eyebrow, InfoPop, Mono } from '@/components/precedent'
 import { Button } from '@/components/ui/button'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Skeleton } from '@/components/ui/skeleton'
 import { pct } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useUi } from '@/stores/ui'
-import { useCanHover } from './use-can-hover'
 import type { Phase } from './vendor-sections'
 import { benfordLine, categoryLabel, msmeLabel, profileRisk, RISK_TEXT, riskReason, type ProfileRisk } from './vendors-view'
 
@@ -83,7 +80,6 @@ function RiskValue({ risk, interactive }: { risk: ProfileRisk; interactive?: boo
 }
 
 function RiskFigure({ risk }: { risk: ProfileRisk }) {
-  const canHover = useCanHover()
   const describedBy = useId()
   // While the profile loads we only have the index row's score: nothing to explain yet.
   const explained = risk.reasons.length > 0 || risk.benford != null
@@ -92,7 +88,7 @@ function RiskFigure({ risk }: { risk: ProfileRisk }) {
     <button
       type="button"
       className="-m-1 cursor-help rounded-sm p-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-      aria-describedby={canHover ? describedBy : undefined}
+      aria-describedby={describedBy}
     >
       <RiskValue risk={risk} interactive />
       <span className="sr-only"> risk. Show the signals behind it.</span>
@@ -105,26 +101,17 @@ function RiskFigure({ risk }: { risk: ProfileRisk }) {
       <dd>
         {!explained ? (
           <RiskValue risk={risk} />
-        ) : canHover ? (
+        ) : (
           <>
-            <HoverCard openDelay={120} closeDelay={80}>
-              <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
-              <HoverCardContent align="end" className="w-80">
-                <RiskSignals risk={risk} />
-              </HoverCardContent>
-            </HoverCard>
-            {/* the hover card isn't announced; screen readers get the same signals as a description */}
+            {/* hover, tap or Enter; its link is reachable with Tab once open */}
+            <InfoPop trigger={trigger} align="end" className="w-[min(20rem,calc(100vw-2rem))]">
+              <RiskSignals risk={risk} />
+            </InfoPop>
+            {/* read with the figure, before anyone opens it */}
             <span id={describedBy} className="sr-only">
-              {risk.reasons.map(riskReason).join('. ')}
+              {[...risk.reasons.map(riskReason), benfordLine(risk.benford)].filter(Boolean).join('. ')}
             </span>
           </>
-        ) : (
-          <Popover>
-            <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-            <PopoverContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
-              <RiskSignals risk={risk} />
-            </PopoverContent>
-          </Popover>
         )}
       </dd>
     </div>

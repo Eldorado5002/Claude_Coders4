@@ -1,8 +1,7 @@
 import { Check, Clock, Lock, Minus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { ExceptionDetail } from '@/api/types'
-import { Mono } from '@/components/precedent'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { InfoPop, Mono } from '@/components/precedent'
 import { cn } from '@/lib/utils'
 import { MSME_43BH_TIP, eInvoiceCheck, gstinCheck, msmeLine, type StatusTone } from './compliance'
 
@@ -51,8 +50,10 @@ function Msme({ c }: { c: ExceptionDetail }) {
     <Item tone={l.tone} icon={<Clock strokeWidth={2.25} aria-hidden />} label="MSME">
       {l.category}
       <Sep />
-      <Tooltip>
-        <TooltipTrigger asChild>
+      {/* hover, tap or Enter: the goods-accepted date and the limit live only in here */}
+      <InfoPop
+        className="w-[min(22rem,calc(100vw-2rem))] gap-1.5 text-xs text-pretty"
+        trigger={
           <button
             type="button"
             className={cn(
@@ -63,12 +64,11 @@ function Msme({ c }: { c: ExceptionDetail }) {
             {l.strong && <span className="font-semibold">{l.strong}</span>}
             {l.rest}
           </button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="start" className="flex-col items-start gap-1 text-pretty">
-          <span>{MSME_43BH_TIP}</span>
-          <span className="opacity-70">{l.detail}</span>
-        </TooltipContent>
-      </Tooltip>
+        }
+      >
+        <span>{MSME_43BH_TIP}</span>
+        <span className="text-muted-foreground">{l.detail}</span>
+      </InfoPop>
       {l.tax && (
         <>
           <Sep />
