@@ -124,7 +124,7 @@ describe('conversationReducer', () => {
       status: 'answered',
       answer: answer.answer,
       citations: answer.citations,
-      latency_ms: 3120,
+      latency_ms: answer.latency_ms,
     })
     expect(hasPending(s)).toBe(false)
   })

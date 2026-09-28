@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ACTION_META, KIND_META, TYPE_LABEL, confidenceBand, isHardControl, isPendingContent } from './labels'
+import { ACTION_META, KIND_META, ROUTE_LABEL, TYPE_LABEL, confidenceBand, isHardControl, isPendingContent } from './labels'
 
 describe('labels', () => {
   it('names exception types for humans', () => {
@@ -42,5 +42,20 @@ describe('isPendingContent', () => {
   })
   it('keeps real markdown', () => {
     expect(isPendingContent('### Balaji playbook\n- Freight under ₹5,000')).toBe(false)
+  })
+})
+
+describe('round-2 labels', () => {
+  it('knows the two India compliance hard controls', () => {
+    expect(TYPE_LABEL.einvoice_missing).toBe('E-invoice (IRN)')
+    expect(TYPE_LABEL.invalid_gstin).toBe('GSTIN')
+    expect(isHardControl('einvoice_missing')).toBe(true)
+    expect(isHardControl('invalid_gstin')).toBe(true)
+  })
+  it('names each recommendation route for the cost story', () => {
+    expect(ROUTE_LABEL.fast).toBe('Fast path')
+    expect(ROUTE_LABEL.reflect).toBe('Deep reasoning')
+    expect(ROUTE_LABEL.guardrail).toBe('Hard control')
+    expect(ROUTE_LABEL.no_memory).toBe('No memory')
   })
 })

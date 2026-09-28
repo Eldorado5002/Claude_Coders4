@@ -1,18 +1,39 @@
 import { describe, expect, it } from 'vitest'
 import { ApiError } from '@/api/client'
+import type { CaptureResult, ExceptionDetail, VendorSummary } from '@/api/types'
+import vendorsMock from '@mocks/vendors.json'
+import badGstinMock from '@mocks/twist/capture-bad-gstin.json'
+import freightMock from '@mocks/twist/capture-freight.json'
+import noIrnMock from '@mocks/twist/capture-no-irn.json'
+import freightCaseMock from '@mocks/twist/capture-case-freight.json'
+import noIrnCaseMock from '@mocks/twist/capture-case-no-irn.json'
+import badGstinCaseMock from '@mocks/twist/capture-case-bad-gstin.json'
 import {
   MAX_BYTES,
   PROCESS_STEPS,
+  SAMPLES,
+  captureControl,
   captureErrorView,
   captureOutcome,
+  caseOutcome,
+  eInvoiceRequiredFor,
   formatBytes,
+  gstinCheck,
   isPdf,
+  needsEInvoiceFlag,
   qtyText,
   rejectionSummary,
   rupees,
+  sampleUrl,
+  shortIrn,
   stepAt,
   validateFile,
 } from './capture-logic'
+
+const freight = freightMock as unknown as CaptureResult
+const noIrn = noIrnMock as unknown as CaptureResult
+const badGstin = badGstinMock as unknown as CaptureResult
+const vendors = vendorsMock as unknown as VendorSummary[]
 
 const file = (name: string, type: string, size = 1000) => ({ name, type, size })
 
@@ -114,6 +135,139 @@ describe('captureOutcome', () => {
   })
 })
 
+describe('SAMPLES', () => {
+  it('offers the three bundled Balaji invoices, each saying what it shows', () => {
+    expect(SAMPLES.map((s) => s.file)).toEqual([
+      'invoice-balaji-freight.png',
+      'invoice-balaji-no-irn.png',
+      'invoice-balaji-bad-gstin.png',
+    ])
+    expect(SAMPLES.map((s) => `${s.label} · ${s.shows}`)).toEqual([
+      'Freight · within the agreed cap',
+      'No IRN · e-invoice control',
+      'Bad GSTIN · GSTIN control',
+    ])
+    // the two that trip a hard control get the lock
+    expect(SAMPLES.map((s) => s.hard)).toEqual([false, true, true])
+  })
+  it('serves them from public/samples under the app base', () => {
+    expect(sampleUrl('invoice-balaji-no-irn.png')).toBe(`${import.meta.env.BASE_URL}samples/invoice-balaji-no-irn.png`)
+    for (const s of SAMPLES) expect(s.url).toBe(sampleUrl(s.file))
+  })
+})
+
+describe('shortIrn', () => {
+  it('keeps the first 8 and last 6 characters, like a hash', () => {
+    expect(shortIrn(freight.extracted.irn)).toBe('2c7f2257…c6ac5c')
+  })
+  it('leaves short values whole and trims spaces', () => {
+    expect(shortIrn(' ABC123 ')).toBe('ABC123')
+    expect(shortIrn('0123456789abcdef')).toBe('0123456789abcdef')
+  })
+  it('is null when no IRN was printed', () => {
+    expect(shortIrn(null)).toBeNull()
+    expect(shortIrn(undefined)).toBeNull()
+    expect(shortIrn('  ')).toBeNull()
+  })
+})
+
+describe('gstinCheck', () => {
+  it('matches the vendor master, ignoring case and stray spaces', () => {
+    expect(gstinCheck('36ASICS1238O1ZX', '36ASICS1238O1ZX')).toBe('match')
+    expect(gstinCheck(' 36asics1238o1zx', '36ASICS1238O1ZX')).toBe('match')
+  })
+  it('flags a GSTIN that differs from the master', () => {
+    expect(gstinCheck(badGstin.extracted.supplier_gstin, badGstin.vendor!.gstin)).toBe('mismatch')
+  })
+  it('has nothing to compare when either side is missing', () => {
+    expect(gstinCheck(null, '36ASICS1238O1ZX')).toBeNull()
+    expect(gstinCheck(undefined, '36ASICS1238O1ZX')).toBeNull()
+    expect(gstinCheck('36ASICS1238O1ZX', null)).toBeNull()
+  })
+})
+
+describe('e-invoice flag lookup', () => {
+  it('reads e_invoice_required for the matched vendor from the vendor list', () => {
+    expect(eInvoiceRequiredFor(vendors, 'V001')).toBe(true)
+    expect(eInvoiceRequiredFor(vendors, 'V005')).toBe(false)
+    expect(eInvoiceRequiredFor(vendors, 'V999')).toBeUndefined()
+    expect(eInvoiceRequiredFor(undefined, 'V001')).toBeUndefined()
+  })
+  it('is only needed when a known vendor’s invoice opened a case without a valid IRN', () => {
+    expect(needsEInvoiceFlag(noIrn)).toBe(true)
+    expect(needsEInvoiceFlag({ ...freight, extracted: { ...freight.extracted, irn: 'not-an-irn' } })).toBe(true)
+    expect(needsEInvoiceFlag(freight)).toBe(false)
+    expect(needsEInvoiceFlag({ ...noIrn, status: 'matched', exception_id: null })).toBe(false)
+    expect(needsEInvoiceFlag({ ...noIrn, status: 'unknown_vendor', vendor: null, exception_id: null })).toBe(false)
+  })
+})
+
+describe('captureControl (which hard control fired, from what was read)', () => {
+  it('none for the freight sample: GSTIN matches and the IRN is valid', () => {
+    expect(captureControl(freight, { eInvoiceRequired: true })).toBeNull()
+  })
+  it('GSTIN control when the printed GSTIN differs from the vendor master: escalated', () => {
+    expect(captureControl(badGstin, {})).toMatchObject({
+      type: 'invalid_gstin',
+      action: 'escalate',
+      label: 'GSTIN control',
+      headline: 'Escalated: the GSTIN doesn’t match the vendor master.',
+    })
+  })
+  it('e-invoice control when the vendor must e-invoice and no IRN was printed: held', () => {
+    expect(captureControl(noIrn, { eInvoiceRequired: true })).toMatchObject({
+      type: 'einvoice_missing',
+      action: 'hold',
+      label: 'E-invoice control',
+      headline: 'Held: no e-invoice IRN.',
+    })
+  })
+  it('an IRN that isn’t 64 hex characters doesn’t count as one', () => {
+    const bad = { ...freight, extracted: { ...freight.extracted, irn: 'IRN-12345' } }
+    expect(captureControl(bad, { eInvoiceRequired: true })).toMatchObject({
+      type: 'einvoice_missing',
+      headline: 'Held: the e-invoice IRN isn’t valid.',
+    })
+  })
+  it('makes no e-invoice claim when the vendor doesn’t e-invoice, or when that isn’t known yet', () => {
+    expect(captureControl(noIrn, { eInvoiceRequired: false })).toBeNull()
+    expect(captureControl(noIrn, {})).toBeNull()
+    expect(captureControl(noIrn)).toBeNull()
+  })
+  it('GSTIN wins when both fire, as the backend checks it first', () => {
+    const both = { ...badGstin, extracted: { ...badGstin.extracted, irn: null } }
+    expect(captureControl(both, { eInvoiceRequired: true })?.type).toBe('invalid_gstin')
+  })
+  it('no GSTIN claim when no GSTIN could be read', () => {
+    const unread = { ...badGstin, extracted: { ...badGstin.extracted, supplier_gstin: null } }
+    expect(captureControl(unread, {})).toBeNull()
+  })
+  it('only for an opened case with a known vendor', () => {
+    expect(captureControl({ ...badGstin, status: 'matched', exception_id: null }, {})).toBeNull()
+    expect(captureControl({ ...noIrn, status: 'unknown_vendor', vendor: null, exception_id: null }, { eInvoiceRequired: true })).toBeNull()
+  })
+})
+
+describe('captureOutcome with a hard control', () => {
+  it('held by the e-invoice control: hold tone, says why, then which case it opened', () => {
+    const o = captureOutcome(noIrn, captureControl(noIrn, { eInvoiceRequired: true }))
+    expect(o).toMatchObject({ tone: 'hold', title: 'Held: no e-invoice IRN. Opened EXC-0044.', caseId: 'EXC-0044' })
+    expect(o.control?.type).toBe('einvoice_missing')
+  })
+  it('escalated by the GSTIN control: escalate tone', () => {
+    const o = captureOutcome(badGstin, captureControl(badGstin, {}))
+    expect(o).toMatchObject({
+      tone: 'escalate',
+      title: 'Escalated: the GSTIN doesn’t match the vendor master. Opened EXC-0045.',
+      caseId: 'EXC-0045',
+    })
+  })
+  it('keeps the generic line when no control can be told from what was read', () => {
+    expect(captureOutcome(freight, null)).toMatchObject({ tone: 'hold', title: 'Opened EXC-0043', control: null })
+    expect(captureOutcome(freight)).toMatchObject({ title: 'Opened EXC-0043', control: null })
+  })
+})
+
 describe('stepAt', () => {
   it('starts by reading, then runs the match once enough time has passed', () => {
     expect(PROCESS_STEPS[0].label).toBe('Reading the invoice…')
@@ -144,5 +298,64 @@ describe('small formatters', () => {
   it('rupees: whole rupees without paise, otherwise two decimals', () => {
     expect(rupees(58000)).toBe('₹58,000')
     expect(rupees(3850.5)).toBe('₹3,850.50')
+  })
+})
+
+describe('caseOutcome (what the opened case says happened)', () => {
+  const freightCase = freightCaseMock as unknown as ExceptionDetail
+  const noIrnCase = noIrnCaseMock as unknown as ExceptionDetail
+  const badGstinCase = badGstinCaseMock as unknown as ExceptionDetail
+
+  it('freight at the Twist: auto-resolved under earned autonomy, in the approve tone', () => {
+    expect(caseOutcome(freight, freightCase)).toMatchObject({
+      tone: 'approve',
+      headline: 'Auto-resolved under earned autonomy.',
+      caseId: 'EXC-0043',
+      control: null,
+    })
+  })
+
+  it('freight captured twice: the duplicate control rejects it, and says so', () => {
+    const dup: ExceptionDetail = {
+      ...freightCase,
+      id: 'EXC-0046',
+      status: 'open',
+      blocking: true,
+      issues: [{ type: 'duplicate_invoice', message: 'Invoice SBST/2627/0612 was already submitted.', blocking: true }, ...freightCase.issues],
+      recommendation: { ...freightCase.recommendation!, action: 'reject', source: 'guardrail' },
+    }
+    expect(caseOutcome({ ...freight, exception_id: 'EXC-0046' }, dup)).toMatchObject({
+      tone: 'reject',
+      headline: 'Rejected: this invoice was already submitted.',
+      caseId: 'EXC-0046',
+      control: { type: 'duplicate_invoice', label: 'Duplicate control', action: 'reject' },
+    })
+  })
+
+  it('names the e-invoice and GSTIN controls from the case’s own issues, with the backend’s verdict', () => {
+    expect(caseOutcome(noIrn, noIrnCase)).toMatchObject({
+      tone: 'hold',
+      control: { type: 'einvoice_missing', label: 'E-invoice control', headline: 'Held: no e-invoice IRN.' },
+    })
+    expect(caseOutcome(badGstin, badGstinCase)).toMatchObject({
+      tone: 'escalate',
+      control: { type: 'invalid_gstin', label: 'GSTIN control' },
+    })
+  })
+
+  it('any other hard control is still named, with its message as the detail', () => {
+    const bank: ExceptionDetail = {
+      ...noIrnCase,
+      issues: [{ type: 'bank_details_changed', message: 'Pay-to account differs from vendor master.', blocking: true }],
+      recommendation: { ...noIrnCase.recommendation!, action: 'escalate' },
+    }
+    expect(caseOutcome(noIrn, bank)).toMatchObject({
+      tone: 'escalate',
+      control: { type: 'bank_details_changed', label: 'Bank change control', detail: 'Pay-to account differs from vendor master.' },
+    })
+  })
+
+  it('an open case with no hard control leaves the generic line (null)', () => {
+    expect(caseOutcome(freight, { ...freightCase, status: 'open' })).toBeNull()
   })
 })

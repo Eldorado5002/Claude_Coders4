@@ -1,31 +1,27 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { ApiError } from '@/api/client'
 import { useCapture } from '@/api/mutations'
+import { vendorsQ } from '@/api/queries'
 import { PageHeader } from '@/components/precedent'
 import { CaptureInput } from './capture-input'
-import {
-  ACCEPT,
-  MAX_BYTES,
-  SAMPLE_NAME,
-  SAMPLE_URL,
-  captureErrorView,
-  captureOutcome,
-  rejectionSummary,
-  validateFile,
-} from './capture-logic'
+import { ACCEPT, MAX_BYTES, captureErrorView, rejectionSummary, validateFile, type Sample } from './capture-logic'
 import { CapturePreview, ProcessingSteps } from './capture-preview'
 import { CaptureResultView } from './capture-result'
 import { CaptureErrorPanel, RejectionNotice, WhatHappens } from './capture-states'
+import { useCaptureOutcome } from './use-capture-outcome'
 import { useObjectUrl } from './use-object-url'
 
 type Notice = { name: string | null; reasons: string[] }
 
 export default function CapturePage() {
   const capture = useCapture()
+  const queryClient = useQueryClient()
+  const outcome = useCaptureOutcome(capture.data)
   const [file, setFile] = useState<File | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
-  const [sampleLoading, setSampleLoading] = useState(false)
+  const [sampleLoading, setSampleLoading] = useState<string | null>(null)
   const [previewUrl, setPreviewFile] = useObjectUrl()
   const cameraRef = useRef<HTMLInputElement>(null)
   const outcomeRef = useRef<HTMLDivElement>(null)
@@ -36,6 +32,8 @@ export default function CapturePage() {
     setFile(f)
     setPreviewFile(f)
     capture.mutate(f)
+    // while Gemini reads: the vendor list says who must e-invoice, so the result can name that control at once
+    void queryClient.prefetchQuery(vendorsQ())
   }
 
   const reset = () => {
@@ -53,7 +51,7 @@ export default function CapturePage() {
     maxFiles: 1,
     noClick: true,
     noKeyboard: true,
-    disabled: pending || sampleLoading,
+    disabled: pending || sampleLoading !== null,
     onDropAccepted: (files) => {
       if (files[0]) submit(files[0])
     },
@@ -70,18 +68,18 @@ export default function CapturePage() {
     else submit(f)
   }
 
-  const loadSample = async () => {
+  const loadSample = async (s: Sample) => {
     setNotice(null)
-    setSampleLoading(true)
+    setSampleLoading(s.file)
     try {
-      const res = await fetch(SAMPLE_URL)
+      const res = await fetch(s.url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const blob = await res.blob()
-      submit(new File([blob], SAMPLE_NAME, { type: blob.type || 'image/png' }))
+      submit(new File([blob], s.file, { type: blob.type || 'image/png' }))
     } catch {
       setNotice({ name: null, reasons: ['Couldn’t load the sample invoice. Choose a file instead.'] })
     } finally {
-      setSampleLoading(false)
+      setSampleLoading(null)
     }
   }
 
@@ -94,7 +92,7 @@ export default function CapturePage() {
   }, [capture.status])
 
   const errorView = capture.isError ? captureErrorView(capture.error) : null
-  const announce = pending ? 'Reading the invoice.' : capture.data ? captureOutcome(capture.data).title : ''
+  const announce = pending ? 'Reading the invoice.' : (outcome?.title ?? '')
 
   return (
     <div className="mx-auto w-full max-w-[1240px] px-5 py-8 md:px-10">
@@ -127,7 +125,7 @@ export default function CapturePage() {
             <CaptureInput
               onChoose={dz.open}
               onCamera={() => cameraRef.current?.click()}
-              onSample={() => void loadSample()}
+              onSample={(s) => void loadSample(s)}
               sampleLoading={sampleLoading}
               dragActive={dz.isDragActive}
               dragReject={dz.isDragReject}

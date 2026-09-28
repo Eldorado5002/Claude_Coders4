@@ -4,16 +4,19 @@ import { useEffect } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { ApiError } from '@/api/client'
 import { qk } from '@/api/keys'
-import { settingsQ, vendorQ } from '@/api/queries'
+import { beliefsQ, settingsQ, vendorQ } from '@/api/queries'
 import type { VendorSummary } from '@/api/types'
 import { EmptyState } from '@/components/precedent'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Beliefs } from './vendor-beliefs'
 import { VendorHeader } from './vendor-header'
-import { Learned, Lessons, Playbook, RecentCases, Trust, type Phase } from './vendor-sections'
+import { Learned, Lessons, RecentCases, Trust, VendorWiki, type Phase } from './vendor-sections'
 import { placeholderProfile } from './vendors-view'
 
 const is404 = (e: unknown) => e instanceof ApiError && e.status === 404
+/** The profile swallows Hindsight failures (learned: [], playbook: null); the beliefs call's 503 is how we know. */
+const hindsightDown = (e: unknown) => e instanceof ApiError && e.status === 503
 
 function unavailableCopy(e: unknown): string {
   if (e instanceof ApiError && e.status === 503)
@@ -59,6 +62,10 @@ export default function VendorPage() {
   useEffect(() => {
     document.getElementById('main')?.scrollTo({ top: 0 })
   }, [id])
+
+  // Beliefs are a second Hindsight call (~1.5 s): start it alongside the profile, not after the header paints.
+  const beliefs = useQuery(beliefsQ(id))
+  const memoryDown = hindsightDown(beliefs.error)
 
   const backLink = (
     <Link to={back} className="mb-5 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
@@ -127,12 +134,18 @@ export default function VendorPage() {
 
           <div className="mt-8 grid gap-10 @min-[880px]:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] @min-[880px]:gap-12">
             <div className="min-w-0 space-y-10">
-              <Learned items={v.learned} phase={phase} />
-              <Playbook
+              <Beliefs vendorId={v.id} />
+              <Learned items={v.learned} phase={phase} memoryDown={memoryDown} />
+              <VendorWiki
                 text={v.playbook}
                 phase={phase}
-                retrying={q.isFetching && !q.isPlaceholderData}
-                onRetry={() => q.refetch()}
+                memoryDown={memoryDown}
+                hasExceptions={v.exceptions_count > 0}
+                retrying={(q.isFetching && !q.isPlaceholderData) || beliefs.isFetching}
+                onRetry={() => {
+                  void q.refetch()
+                  if (memoryDown) void beliefs.refetch()
+                }}
               />
             </div>
             <div className="min-w-0 space-y-10">

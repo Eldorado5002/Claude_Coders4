@@ -5,6 +5,7 @@ import { CaseId, Eyebrow, Money, Mono, TrustDots } from '@/components/precedent'
 import { inr, simDate } from '@/lib/format'
 import { TYPE_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import { ComplianceStrip } from './compliance-strip'
 
 const STATUS_LABEL = { open: 'Awaiting decision', auto_resolved: 'Auto-resolved', resolved: 'Resolved' } as const
 
@@ -59,33 +60,36 @@ export function CaseHeader({ c }: { c: ExceptionDetail }) {
           </div>
         </div>
       </div>
-      <ul className="space-y-1.5" aria-label="Issues found by the 3-way match">
-        {c.issues.map((i, n) => (
-          <li
-            key={n}
-            className={cn(
-              'flex items-start gap-3 px-3 py-2 text-sm',
-              i.blocking ? 'bg-foreground text-background' : 'bg-hold-soft',
-            )}
-          >
-            {i.blocking ? (
-              <Lock className="mt-0.5 size-4 shrink-0" strokeWidth={2.25} aria-label="Hard control" />
-            ) : (
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-hold" strokeWidth={2.25} aria-hidden />
-            )}
-            <span className="min-w-0 flex-1 text-pretty">
-              <span className="mr-2 text-[11px] font-semibold tracking-[0.1em] uppercase">{TYPE_LABEL[i.type]}</span>
-              {i.message}
-            </span>
-            {i.variance_amount != null && !i.blocking && (
-              <span className="shrink-0 text-xs font-medium tabular-nums">
-                {inr(i.variance_amount)}
-                {i.variance_pct != null && <span className="text-muted-foreground"> · {i.variance_pct.toFixed(1)}%</span>}
+      <div className="space-y-2">
+        <ul className="space-y-1.5" aria-label="Issues found by the 3-way match">
+          {c.issues.map((i, n) => (
+            <li
+              key={n}
+              className={cn(
+                'flex items-start gap-3 px-3 py-2 text-sm',
+                i.blocking ? 'bg-foreground text-background' : 'bg-hold-soft',
+              )}
+            >
+              {i.blocking ? (
+                <Lock className="mt-0.5 size-4 shrink-0" strokeWidth={2.25} aria-label="Hard control" />
+              ) : (
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-hold" strokeWidth={2.25} aria-hidden />
+              )}
+              <span className="min-w-0 flex-1 text-pretty">
+                <span className="mr-2 text-[11px] font-semibold tracking-[0.1em] uppercase">{TYPE_LABEL[i.type]}</span>
+                {i.message}
               </span>
-            )}
-          </li>
-        ))}
-      </ul>
+              {i.variance_amount != null && !i.blocking && (
+                <span className="shrink-0 text-xs font-medium tabular-nums">
+                  {inr(i.variance_amount)}
+                  {i.variance_pct != null && <span className="text-muted-foreground"> · {i.variance_pct.toFixed(1)}%</span>}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        <ComplianceStrip c={c} />
+      </div>
     </header>
   )
 }

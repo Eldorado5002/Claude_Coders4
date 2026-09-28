@@ -9,6 +9,7 @@ import {
   MessageSquareQuote,
   Moon,
   Presentation,
+  ShieldAlert,
   Sun,
   TrendingUp,
   type LucideIcon,
@@ -51,6 +52,7 @@ const NAV: { to: string; label: string; icon: LucideIcon; hint: string }[] = [
   { to: '/trust', label: 'Trust map', icon: Grid3x3, hint: 'Where the agent has earned autonomy' },
   { to: '/vendors', label: 'Vendors', icon: Building2, hint: 'What the agent knows about each vendor' },
   { to: '/learning', label: 'Learning', icon: TrendingUp, hint: 'With memory vs without' },
+  { to: '/risk', label: 'Risk', icon: ShieldAlert, hint: 'Vendor risk and Benford analysis' },
   { to: '/memory', label: 'Memory', icon: Library, hint: 'Lessons, team policy, raw memories' },
 ]
 

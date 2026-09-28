@@ -36,3 +36,32 @@ describe('eventInvalidations', () => {
     expect(eventInvalidations('something.else', {})).toEqual([])
   })
 })
+
+describe('round-2 invalidations', () => {
+  it('refreshes the autonomy certificate when decisions or trust change', () => {
+    for (const e of ['exception.updated', 'autonomy.changed', 'memory.revoked'])
+      expect(eventInvalidations(e, { id: 'EXC-1', vendor_id: 'V001' })).toEqual(expect.arrayContaining([['certificate']]))
+  })
+  it('refreshes that vendor’s beliefs when a lesson is retained', () => {
+    expect(eventInvalidations('memory.retained', { vendor_id: 'V001' })).toEqual(expect.arrayContaining([['beliefs', 'V001']]))
+  })
+  it('refreshes vendor risk when a new exception arrives', () => {
+    expect(eventInvalidations('exception.created', { id: 'EXC-9' })).toEqual(expect.arrayContaining([['risk']]))
+  })
+  it('a new or changed case refreshes Benford and that vendor’s file (its risk figure lives there)', () => {
+    const summary = { id: 'EXC-9', vendor: { id: 'V007', name: 'X' } }
+    for (const e of ['exception.created', 'exception.updated']) {
+      const keys = eventInvalidations(e, summary)
+      expect(keys).toEqual(expect.arrayContaining([['benford'], ['vendor', 'V007']]))
+    }
+    expect(eventInvalidations('exception.updated', summary)).toEqual(expect.arrayContaining([['risk']]))
+  })
+  it('a revoked lesson refreshes that vendor’s beliefs and file', () => {
+    const lesson = { case_id: 'EXC-3', vendor: { id: 'V002', name: 'Y' } }
+    expect(eventInvalidations('memory.revoked', lesson)).toEqual(expect.arrayContaining([['beliefs', 'V002'], ['vendor', 'V002']]))
+  })
+  it('never makes a vendor key out of a payload without a vendor', () => {
+    const keys = eventInvalidations('exception.created', { id: 'EXC-9' }) as unknown[][]
+    expect(keys.some((k) => k[0] === 'vendor')).toBe(false)
+  })
+})

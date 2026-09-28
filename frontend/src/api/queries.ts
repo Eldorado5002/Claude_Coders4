@@ -23,7 +23,7 @@ export const exceptionsQ = (f: ExceptionFilters) =>
     queryFn: () =>
       unwrap(
         api.GET('/api/exceptions', {
-          params: { query: { status: f.status ?? 'open', vendor_id: f.vendor_id, type: f.type, limit: 300 } },
+          params: { query: { status: f.status ?? 'open', vendor_id: f.vendor_id, type: f.type, sort: f.sort ?? 'newest', limit: 300 } },
         }),
       ),
     placeholderData: keepPreviousData,
@@ -74,3 +74,34 @@ export const policyQ = () =>
     // Hindsight writes the policy in the background; look again while it's pending
     refetchInterval: (q) => (q.state.data && !isPendingContent(q.state.data.content) ? false : 15_000),
   })
+
+// ---------------------------------------------------------------- round 2
+// Beliefs, risk and Benford go through Hindsight or scoring: never poll faster than every 15 s (backend guide §5).
+
+export const certificateQ = () =>
+  queryOptions({ queryKey: qk.certificate, queryFn: () => unwrap(api.GET('/api/autonomy/certificate')) })
+
+export const beliefsQ = (vendorId: string) =>
+  queryOptions({
+    queryKey: qk.beliefs(vendorId),
+    queryFn: () => unwrap(api.GET('/api/vendors/{vendor_id}/beliefs', { params: { path: { vendor_id: vendorId } } })),
+    staleTime: 60_000,
+    retry: false,
+  })
+
+export const riskQ = () => queryOptions({ queryKey: qk.risk, queryFn: () => unwrap(api.GET('/api/risk')), staleTime: 60_000 })
+
+export const benfordQ = () =>
+  queryOptions({ queryKey: qk.benford, queryFn: () => unwrap(api.GET('/api/benford')), staleTime: 60_000 })
+
+export const knowledgeQ = () =>
+  queryOptions({ queryKey: qk.knowledge, queryFn: () => unwrap(api.GET('/api/knowledge')), staleTime: 60_000, retry: false })
+
+export const knowledgePageQ = (id: string) =>
+  queryOptions({
+    queryKey: qk.knowledgePage(id),
+    queryFn: () => unwrap(api.GET('/api/knowledge/{page_id}', { params: { path: { page_id: id } } })),
+    staleTime: 60_000,
+    retry: false,
+  })
+

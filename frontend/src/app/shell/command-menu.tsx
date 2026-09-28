@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Building2, Camera, FileText, Grid3x3, Inbox, Library, MessageSquareQuote, Moon, Presentation, ToggleRight, TrendingUp } from 'lucide-react'
+import { Building2, Camera, FileText, Grid3x3, Inbox, Library, MessageSquareQuote, Moon, Presentation, ShieldAlert, ToggleRight, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useNavigate } from 'react-router'
@@ -26,6 +26,7 @@ const PAGES = [
   { to: '/trust', label: 'Trust map', icon: Grid3x3 },
   { to: '/vendors', label: 'Vendors', icon: Building2 },
   { to: '/learning', label: 'Learning', icon: TrendingUp },
+  { to: '/risk', label: 'Risk', icon: ShieldAlert },
   { to: '/memory', label: 'Memory', icon: Library },
   { to: '/capture', label: 'Capture invoice', icon: Camera },
 ]

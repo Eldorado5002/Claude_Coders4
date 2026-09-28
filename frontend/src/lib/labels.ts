@@ -1,4 +1,4 @@
-import type { Action, AutonomyLevel, CitationKind, ExceptionType, RecSource } from '@/api/types'
+import type { Action, AutonomyLevel, CitationKind, ExceptionType, RecRoute, RecSource } from '@/api/types'
 
 export type Tone = 'approve' | 'adjusted' | 'hold' | 'reject' | 'escalate'
 
@@ -13,6 +13,8 @@ export const TYPE_LABEL: Record<ExceptionType, string> = {
   bank_details_changed: 'Bank change',
   new_vendor: 'New vendor',
   over_threshold: 'Over ₹5L',
+  einvoice_missing: 'E-invoice (IRN)',
+  invalid_gstin: 'GSTIN',
 }
 
 export const HARD_CONTROLS: readonly ExceptionType[] = [
@@ -20,6 +22,8 @@ export const HARD_CONTROLS: readonly ExceptionType[] = [
   'bank_details_changed',
   'new_vendor',
   'over_threshold',
+  'einvoice_missing',
+  'invalid_gstin',
 ]
 export const SOFT_TYPES: readonly ExceptionType[] = [
   'freight_charge',
@@ -61,6 +65,14 @@ export const SOURCE_LABEL: Record<RecSource, string> = {
   memory: 'Grounded in precedent',
   no_memory: 'No precedent',
   guardrail: 'Hard control',
+}
+
+/** How a recommendation was produced: the cost story (routine cases take the fast path). */
+export const ROUTE_LABEL: Record<RecRoute, string> = {
+  fast: 'Fast path',
+  reflect: 'Deep reasoning',
+  guardrail: 'Hard control',
+  no_memory: 'No memory',
 }
 
 export const LEVEL_LABEL: Record<AutonomyLevel, string> = {

@@ -1,8 +1,11 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { queryOptions } from '@tanstack/react-query'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/client'
-import type { CaptureResult } from '@/api/types'
+import type { CaptureResult, VendorSummary } from '@/api/types'
 import captureMock from '@mocks/capture-result.json'
+import noIrnMock from '@mocks/twist/capture-no-irn.json'
+import vendorsMock from '@mocks/vendors.json'
 import { renderApp } from '@/test/render'
 import CapturePage from './capture-page'
 
@@ -12,10 +15,16 @@ vi.mock('@/api/mutations', async () => {
   const { useMutation } = await import('@tanstack/react-query')
   return { useCapture: () => useMutation({ mutationFn: (f: File) => mutationFn(f) }) }
 })
+// the page warms the vendor list while Gemini reads (it says which vendors must e-invoice)
+vi.mock('@/api/queries', async (orig) => ({
+  ...(await orig<typeof import('@/api/queries')>()),
+  vendorsQ: () => queryOptions({ queryKey: ['vendors'], queryFn: async () => vendorsMock as unknown as VendorSummary[] }),
+}))
 
 afterEach(() => {
   cleanup()
   mutationFn.mockReset()
+  vi.unstubAllGlobals()
 })
 
 function snap(container: HTMLElement, file: File) {
@@ -26,12 +35,44 @@ function snap(container: HTMLElement, file: File) {
 const png = () => new File([new Uint8Array(2048)], 'invoice.png', { type: 'image/png' })
 
 describe('CapturePage', () => {
-  it('offers the camera, a file picker and a clearly labelled sample', () => {
+  it('offers the camera, a file picker and clearly labelled samples', () => {
     renderApp(<CapturePage />)
     expect(screen.getByRole('heading', { name: 'Snap an invoice. Precedent does the rest.' })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /take photo/i }).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('button', { name: /choose file/i }).length).toBeGreaterThan(0)
-    expect(screen.getByRole('button', { name: /use sample invoice/i })).toBeInTheDocument()
+    const picker = screen.getByRole('group', { name: /use a sample invoice/i })
+    expect(within(picker).getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Freight · within the agreed cap',
+      'No IRN · e-invoice control',
+      'Bad GSTIN · GSTIN control',
+    ])
+    expect(picker).toHaveTextContent(/freight one twice/i)
+  })
+
+  it('a sample is fetched from /samples, captured as that file, and its control named', async () => {
+    const fetchMock = vi.fn(async (_url: string) => ({
+      ok: true,
+      status: 200,
+      blob: async () => new Blob([new Uint8Array(2048)], { type: 'image/png' }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+    mutationFn.mockResolvedValue(noIrnMock as unknown as CaptureResult)
+    renderApp(<CapturePage />)
+    fireEvent.click(screen.getByRole('button', { name: 'No IRN · e-invoice control' }))
+    expect(await screen.findByRole('button', { name: /capture another/i })).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith('/samples/invoice-balaji-no-irn.png')
+    const sent = mutationFn.mock.calls[0][0]
+    expect(sent).toBeInstanceOf(File)
+    expect(sent.name).toBe('invoice-balaji-no-irn.png')
+    expect(await screen.findAllByText('Held: no e-invoice IRN.')).not.toHaveLength(0)
+  })
+
+  it('says so when a sample can’t be loaded', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 404, blob: async () => new Blob() })))
+    renderApp(<CapturePage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Bad GSTIN · GSTIN control' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t load the sample invoice. Choose a file instead.')
+    expect(mutationFn).not.toHaveBeenCalled()
   })
 
   it('refuses a HEIC photo in the browser, before uploading anything', () => {
@@ -49,7 +90,7 @@ describe('CapturePage', () => {
     expect(await screen.findByText('Reading the invoice…')).toBeInTheDocument()
     expect(screen.getByText('invoice.png')).toBeInTheDocument()
     finish(captureMock as unknown as CaptureResult)
-    expect(await screen.findByRole('link', { name: /open case/i })).toHaveAttribute('href', '/exceptions/EXC-0140')
+    expect(await screen.findByRole('link', { name: /open case/i })).toHaveAttribute('href', `/exceptions/${captureMock.exception_id}`)
   })
 
   it('413: plain message and no retry with the same file', async () => {

@@ -18,9 +18,48 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { categoryLabel, matchesVendor, touchlessWidth } from './vendors-view'
+import { categoryLabel, complianceBadges, matchesVendor, RISK_TEXT, riskFigure, riskSortValue, touchlessWidth } from './vendors-view'
 
 const col = createColumnHelper<VendorSummary>()
+
+const Dash = ({ sr }: { sr: string }) => (
+  <span className="text-muted-foreground">
+    <span aria-hidden>—</span>
+    <span className="sr-only">{sr}</span>
+  </span>
+)
+
+/** "58 High": score and word in the level's tone. The word column has a fixed width so scores line up. */
+function Risk({ v }: { v: VendorSummary }) {
+  const r = riskFigure(v.risk_score, v.risk_level)
+  if (!r) return <Dash sr="No risk score yet" />
+  return (
+    <span className={cn('inline-flex items-baseline justify-end gap-2', RISK_TEXT[r.tone])}>
+      <span className={cn('tabular-nums', r.tone !== 'muted' && 'font-semibold')}>{r.score}</span>
+      <span className="w-12 text-left text-[10px] font-semibold tracking-[0.1em] uppercase">{r.label}</span>
+    </span>
+  )
+}
+
+/** MSME and e-invoicing as quiet outlined chips: facts, not warnings. */
+function Compliance({ v }: { v: VendorSummary }) {
+  const badges = complianceBadges(v)
+  if (!badges.length) return <Dash sr="No MSME or e-invoicing requirement" />
+  return (
+    <span className="flex flex-wrap gap-1">
+      {badges.map((b) => (
+        <span
+          key={b.id}
+          title={b.hint}
+          className="rounded-[2px] border border-rule px-1.5 py-px text-[10px] font-semibold tracking-[0.08em] whitespace-nowrap text-muted-foreground uppercase"
+        >
+          {b.label}
+          <span className="sr-only">. {b.hint}</span>
+        </span>
+      ))}
+    </span>
+  )
+}
 
 const Count = ({ n, strong }: { n: number; strong?: boolean }) => (
   <span className={cn('tabular-nums', n === 0 ? 'text-muted-foreground' : strong && 'font-semibold')}>{n}</span>
@@ -28,13 +67,7 @@ const Count = ({ n, strong }: { n: number; strong?: boolean }) => (
 
 function Touchless({ rate }: { rate: number | null | undefined }) {
   const w = touchlessWidth(rate)
-  if (w === null)
-    return (
-      <span className="text-muted-foreground">
-        <span aria-hidden>—</span>
-        <span className="sr-only">No touchless rate yet</span>
-      </span>
-    )
+  if (w === null) return <Dash sr="No touchless rate yet" />
   return (
     <span className="inline-flex items-center justify-end gap-2">
       <span className="relative hidden h-1 w-14 bg-rule sm:block" aria-hidden>
@@ -101,15 +134,29 @@ const columns = [
     sortUndefined: 'last',
     cell: ({ row }) => <Touchless rate={row.original.touchless_rate} />,
   }),
+  col.accessor(riskSortValue, {
+    id: 'risk',
+    header: 'Risk',
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    cell: ({ row }) => <Risk v={row.original} />,
+  }),
+  col.display({
+    id: 'compliance',
+    header: 'Compliance',
+    enableSorting: false,
+    cell: ({ row }) => <Compliance v={row.original} />,
+  }),
 ]
 
-const NUMERIC = new Set(['terms', 'invoices', 'exceptions', 'open', 'touchless'])
+const NUMERIC = new Set(['terms', 'invoices', 'exceptions', 'open', 'touchless', 'risk'])
 /** Columns that step aside on narrow screens (the table still scrolls sideways if it must). */
 const RESPONSIVE: Record<string, string> = {
-  gstin: 'hidden lg:table-cell',
-  terms: 'hidden md:table-cell',
+  gstin: 'hidden xl:table-cell',
+  terms: 'hidden lg:table-cell',
   invoices: 'hidden md:table-cell',
   exceptions: 'hidden sm:table-cell',
+  compliance: 'hidden md:table-cell',
 }
 
 const ARIA_SORT = { asc: 'ascending', desc: 'descending' } as const
@@ -167,6 +214,12 @@ export function VendorTable({ data, sorting, onSortingChange, search, empty }: P
             {hg.headers.map((h) => {
               const dir = h.column.getIsSorted()
               const numeric = NUMERIC.has(h.column.id)
+              if (!h.column.getCanSort())
+                return (
+                  <TableHead key={h.id} className={cn('h-10 text-[11px] tracking-wider uppercase', RESPONSIVE[h.column.id])}>
+                    {flexRender(h.column.columnDef.header, h.getContext())}
+                  </TableHead>
+                )
               return (
                 <TableHead
                   key={h.id}
@@ -234,6 +287,8 @@ export function VendorTableSkeleton() {
           <Skeleton className="hidden h-3 w-14 md:block" />
           <Skeleton className="h-3 w-8" />
           <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-14" />
+          <Skeleton className="hidden h-3 w-24 md:block" />
         </div>
       ))}
     </div>

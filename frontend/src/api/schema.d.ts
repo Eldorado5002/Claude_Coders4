@@ -141,6 +141,123 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/vendors/{vendor_id}/beliefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vendor Beliefs
+         * @description What the agent believes about this vendor, how many memories back each belief, and how it changed.
+         */
+        get: operations["vendor_beliefs_api_vendors__vendor_id__beliefs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/knowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Knowledge Pages
+         * @description The vendor wiki: Hindsight Knowledge Pages that rewrite themselves as the team learns.
+         */
+        get: operations["knowledge_pages_api_knowledge_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/knowledge/{page_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Knowledge Page */
+        get: operations["knowledge_page_api_knowledge__page_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/risk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Risk Ranking
+         * @description Vendors ranked by fraud and control risk.
+         */
+        get: operations["risk_ranking_api_risk_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/benford": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Benford Portfolio
+         * @description Benford first-digit test over every line amount received so far.
+         */
+        get: operations["benford_portfolio_api_benford_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/autonomy/certificate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Autonomy Certificate
+         * @description Statistical guarantee behind auto-approval (Clopper-Pearson bound on the wrong-payment rate).
+         */
+        get: operations["autonomy_certificate_api_autonomy_certificate_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/autonomy": {
         parameters: {
             query?: never;
@@ -396,6 +513,39 @@ export interface components {
              */
             stage: "day1" | "week3" | "week8" | "twist";
         };
+        /** AutonomyCertificate */
+        AutonomyCertificate: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "collecting" | "certified" | "paused";
+            /** Target Error */
+            target_error: number;
+            /** Confidence Level */
+            confidence_level: number;
+            /**
+             * Threshold
+             * @description Minimum confidence for auto-approval (None when paused)
+             */
+            threshold: number | null;
+            /** Decisions */
+            decisions: number;
+            /** Errors */
+            errors: number;
+            /** Error Upper Bound */
+            error_upper_bound: number;
+            /** Auto Resolutions */
+            auto_resolutions: number;
+            /** Auto Errors */
+            auto_errors: number;
+            /** Auto Error Upper Bound */
+            auto_error_upper_bound: number;
+            /** Table */
+            table: components["schemas"]["CertificateRow"][];
+            /** Explanation */
+            explanation: string;
+        };
         /**
          * AutonomyLevel
          * @enum {string}
@@ -437,10 +587,98 @@ export interface components {
             /** Ifsc */
             ifsc: string;
         };
+        /**
+         * Belief
+         * @description A consolidated Hindsight observation, with how it evolved.
+         */
+        Belief: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+            /**
+             * Evidence Count
+             * @description Memories that support this belief
+             */
+            evidence_count: number;
+            /** First Seen */
+            first_seen?: string | null;
+            /** Last Updated */
+            last_updated?: string | null;
+            /**
+             * Versions
+             * @description Earlier versions, oldest first
+             */
+            versions: components["schemas"]["BeliefVersion"][];
+        };
+        /** BeliefVersion */
+        BeliefVersion: {
+            /**
+             * Text
+             * @description What the agent believed before this change
+             */
+            text: string;
+            /**
+             * As Of
+             * @description Simulated date that version reflects
+             */
+            as_of?: string | null;
+            /**
+             * New Evidence
+             * @description The new facts that changed it
+             */
+            new_evidence: string[];
+        };
+        /** BenfordResult */
+        BenfordResult: {
+            /** N */
+            n: number;
+            /**
+             * Mad
+             * @description Mean absolute deviation from Benford's first-digit law
+             */
+            mad?: number | null;
+            /**
+             * Conformity
+             * @description close / acceptable / marginal / nonconformity / insufficient data
+             */
+            conformity: string;
+            /** Observed */
+            observed: number[];
+            /** Expected */
+            expected: number[];
+        };
         /** Body_capture_api_invoices_capture_post */
         Body_capture_api_invoices_capture_post: {
             /** File */
             file: string;
+        };
+        /** Calibration */
+        Calibration: {
+            /** N */
+            n: number;
+            /**
+             * Ece
+             * @description Expected calibration error of stated confidence
+             */
+            ece: number | null;
+            /** Pooled Accuracy */
+            pooled_accuracy: number;
+            /** Bins */
+            bins: components["schemas"]["CalibrationBin"][];
+        };
+        /** CalibrationBin */
+        CalibrationBin: {
+            /** Low */
+            low: number;
+            /** High */
+            high: number;
+            /** N */
+            n: number;
+            /** Stated */
+            stated?: number | null;
+            /** Actual */
+            actual?: number | null;
         };
         /** CaptureResult */
         CaptureResult: {
@@ -459,6 +697,22 @@ export interface components {
          * @enum {string}
          */
         CaseStatus: "open" | "auto_resolved" | "resolved";
+        /** CertificateRow */
+        CertificateRow: {
+            /** Threshold */
+            threshold: number;
+            /** Decisions */
+            decisions: number;
+            /** Errors */
+            errors: number;
+            /**
+             * Upper Bound
+             * @description 95% Clopper-Pearson upper bound on the wrong-payment rate
+             */
+            upper_bound: number;
+            /** Certified */
+            certified: boolean;
+        };
         /** Citation */
         Citation: {
             /** Id */
@@ -479,6 +733,11 @@ export interface components {
          * @enum {string}
          */
         CitationKind: "world" | "experience" | "observation" | "mental_model" | "directive";
+        /** Compliance */
+        Compliance: {
+            msme?: components["schemas"]["MsmeStatus"] | null;
+            e_invoice: components["schemas"]["EInvoiceStatus"];
+        };
         /** CopilotAnswer */
         CopilotAnswer: {
             /**
@@ -534,6 +793,16 @@ export interface components {
             /** Stages */
             stages: components["schemas"]["DemoStage"][];
         };
+        /** EInvoiceStatus */
+        EInvoiceStatus: {
+            /**
+             * Required
+             * @description Supplier turnover above Rs 5 crore: B2B invoices need an IRN
+             */
+            required: boolean;
+            /** Irn Present */
+            irn_present: boolean;
+        };
         /** ExceptionDetail */
         ExceptionDetail: {
             /** Id */
@@ -566,6 +835,11 @@ export interface components {
              * @description At least one hard control fired
              */
             blocking: boolean;
+            /**
+             * Msme Days Left
+             * @description Days left before the MSME 43B(h) deadline, if MSME
+             */
+            msme_days_left?: number | null;
             invoice: components["schemas"]["InvoiceDoc"];
             purchase_order?: components["schemas"]["PurchaseOrderDoc"] | null;
             goods_receipt?: components["schemas"]["GoodsReceiptDoc"] | null;
@@ -575,6 +849,7 @@ export interface components {
             recommendation?: components["schemas"]["Recommendation"] | null;
             resolution?: components["schemas"]["Resolution"] | null;
             autonomy: components["schemas"]["AutonomyState"];
+            compliance: components["schemas"]["Compliance"];
         };
         /** ExceptionSummary */
         ExceptionSummary: {
@@ -608,12 +883,17 @@ export interface components {
              * @description At least one hard control fired
              */
             blocking: boolean;
+            /**
+             * Msme Days Left
+             * @description Days left before the MSME 43B(h) deadline, if MSME
+             */
+            msme_days_left?: number | null;
         };
         /**
          * ExceptionType
          * @enum {string}
          */
-        ExceptionType: "price_variance" | "quantity_variance" | "freight_charge" | "tax_mismatch" | "rounding_difference" | "missing_po" | "duplicate_invoice" | "bank_details_changed" | "new_vendor" | "over_threshold";
+        ExceptionType: "price_variance" | "quantity_variance" | "freight_charge" | "tax_mismatch" | "rounding_difference" | "missing_po" | "duplicate_invoice" | "bank_details_changed" | "new_vendor" | "over_threshold" | "einvoice_missing" | "invalid_gstin";
         /** GoodsReceiptDoc */
         GoodsReceiptDoc: {
             /** Grn Number */
@@ -702,6 +982,16 @@ export interface components {
             currency: "INR";
             bank_account: components["schemas"]["BankAccount"];
             /**
+             * Supplier Gstin
+             * @description GSTIN printed on the invoice
+             */
+            supplier_gstin?: string | null;
+            /**
+             * Irn
+             * @description GST e-invoice reference number (64 hex chars), when e-invoiced
+             */
+            irn?: string | null;
+            /**
              * Source
              * @default erp
              * @enum {string}
@@ -728,6 +1018,33 @@ export interface components {
              * @description True for hard controls
              */
             blocking: boolean;
+        };
+        /** KnowledgePage */
+        KnowledgePage: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Vendor Id */
+            vendor_id?: string | null;
+            /** Stale */
+            stale?: boolean | null;
+            /**
+             * Markdown
+             * @description None while Hindsight is still writing it
+             */
+            markdown?: string | null;
+        };
+        /** KnowledgePageSummary */
+        KnowledgePageSummary: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Vendor Id */
+            vendor_id?: string | null;
+            /** Stale */
+            stale?: boolean | null;
         };
         /** Kpis */
         Kpis: {
@@ -760,6 +1077,18 @@ export interface components {
              * @default 0
              */
             lessons_revoked: number;
+            /**
+             * Msme Open At Risk
+             * @description Open MSME cases due within 7 days or already past 43B(h)
+             * @default 0
+             */
+            msme_open_at_risk: number;
+            /**
+             * Msme Tax At Risk
+             * @description Estimated tax at risk on those cases
+             * @default 0
+             */
+            msme_tax_at_risk: number;
         };
         /**
          * Lesson
@@ -846,6 +1175,52 @@ export interface components {
             by_type: components["schemas"]["TypeBreakdown"][];
             /** Assumptions */
             assumptions: string[];
+            certificate?: components["schemas"]["AutonomyCertificate"] | null;
+            calibration?: components["schemas"]["Calibration"] | null;
+            performance?: components["schemas"]["Performance"] | null;
+        };
+        /**
+         * MsmeStatus
+         * @description Income Tax Act Section 43B(h): pay micro/small suppliers within 15 days (45 with a written agreement)
+         *     of accepting the goods, or the expense is disallowed as a deduction for the year.
+         */
+        MsmeStatus: {
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "micro" | "small";
+            /** Udyam */
+            udyam: string;
+            /** Limit Days */
+            limit_days: number;
+            /**
+             * Accepted On
+             * Format: date
+             */
+            accepted_on: string;
+            /**
+             * Deadline
+             * Format: date
+             */
+            deadline: string;
+            /** Days Left */
+            days_left: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "due_soon" | "breached";
+            /**
+             * Tax At Risk
+             * @description Estimated tax cost if the deduction is disallowed (25.17% rate)
+             */
+            tax_at_risk: number;
+            /**
+             * Terms Exceed Limit
+             * @description Vendor payment terms are longer than the statutory limit
+             */
+            terms_exceed_limit: boolean;
         };
         /** Page[ExceptionSummary] */
         Page_ExceptionSummary_: {
@@ -853,6 +1228,24 @@ export interface components {
             items: components["schemas"]["ExceptionSummary"][];
             /** Total */
             total: number;
+        };
+        /** Performance */
+        Performance: {
+            /** Recommendations */
+            recommendations: number;
+            /**
+             * Fast Share
+             * @description Share of recommendations served by the fast path
+             */
+            fast_share: number;
+            /** Latency P50 Ms */
+            latency_p50_ms?: number | null;
+            /** Latency P95 Ms */
+            latency_p95_ms?: number | null;
+            /** Avg Cost Usd */
+            avg_cost_usd?: number | null;
+            /** Cost Per 1000 Exceptions Usd */
+            cost_per_1000_exceptions_usd?: number | null;
         };
         /** PolicyDoc */
         PolicyDoc: {
@@ -934,6 +1327,23 @@ export interface components {
              * Format: date-time
              */
             generated_at: string;
+            /**
+             * Route
+             * @description reflect = deep Hindsight reasoning; fast = recall + LLM for routine cases
+             * @default reflect
+             * @enum {string}
+             */
+            route: "reflect" | "fast" | "guardrail" | "no_memory";
+            /**
+             * Calibrated Confidence
+             * @description How often past recommendations at this stated confidence were right
+             */
+            calibrated_confidence?: number | null;
+            /**
+             * Cost Usd
+             * @description What this recommendation cost to produce
+             */
+            cost_usd?: number | null;
         };
         /** Resolution */
         Resolution: {
@@ -1093,6 +1503,17 @@ export interface components {
             open_exceptions: number;
             /** Touchless Rate */
             touchless_rate?: number | null;
+            /** Msme Category */
+            msme_category?: ("micro" | "small") | null;
+            /**
+             * E Invoice Required
+             * @default false
+             */
+            e_invoice_required: boolean;
+            /** Risk Score */
+            risk_score?: number | null;
+            /** Risk Level */
+            risk_level?: ("low" | "medium" | "high") | null;
             bank_account: components["schemas"]["BankAccount"];
             /**
              * Learned
@@ -1108,6 +1529,9 @@ export interface components {
             recent: components["schemas"]["ExceptionSummary"][];
             /** Autonomy */
             autonomy: components["schemas"]["AutonomyState"][];
+            risk?: components["schemas"]["VendorRisk"] | null;
+            /** Udyam */
+            udyam?: string | null;
         };
         /** VendorRef */
         VendorRef: {
@@ -1121,6 +1545,24 @@ export interface components {
             city: string;
             /** Category */
             category: string;
+        };
+        /** VendorRisk */
+        VendorRisk: {
+            /** Score */
+            score: number;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "low" | "medium" | "high";
+            /** Reasons */
+            reasons: string[];
+            benford: components["schemas"]["BenfordResult"];
+        };
+        /** VendorRiskRow */
+        VendorRiskRow: {
+            vendor: components["schemas"]["VendorRef"];
+            risk: components["schemas"]["VendorRisk"];
         };
         /** VendorSummary */
         VendorSummary: {
@@ -1146,6 +1588,17 @@ export interface components {
             open_exceptions: number;
             /** Touchless Rate */
             touchless_rate?: number | null;
+            /** Msme Category */
+            msme_category?: ("micro" | "small") | null;
+            /**
+             * E Invoice Required
+             * @default false
+             */
+            e_invoice_required: boolean;
+            /** Risk Score */
+            risk_score?: number | null;
+            /** Risk Level */
+            risk_level?: ("low" | "medium" | "high") | null;
         };
         /** WeeklyPoint */
         WeeklyPoint: {
@@ -1249,6 +1702,7 @@ export interface operations {
                 status?: string;
                 vendor_id?: string | null;
                 type?: components["schemas"]["ExceptionType"] | null;
+                sort?: string;
                 limit?: number;
                 offset?: number;
             };
@@ -1422,6 +1876,148 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    vendor_beliefs_api_vendors__vendor_id__beliefs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vendor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Belief"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    knowledge_pages_api_knowledge_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgePageSummary"][];
+                };
+            };
+        };
+    };
+    knowledge_page_api_knowledge__page_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    risk_ranking_api_risk_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VendorRiskRow"][];
+                };
+            };
+        };
+    };
+    benford_portfolio_api_benford_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenfordResult"];
+                };
+            };
+        };
+    };
+    autonomy_certificate_api_autonomy_certificate_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutonomyCertificate"];
                 };
             };
         };

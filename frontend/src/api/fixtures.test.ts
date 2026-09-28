@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { fixtureResponse, resetFixtureState } from './fixtures'
-import type { ExceptionDetail, ExceptionPage, Settings } from './types'
+import type { Belief, CaptureResult, ExceptionDetail, ExceptionPage, Settings, VendorProfile } from './types'
 
 describe('fixture mode', () => {
   beforeEach(() => resetFixtureState())
@@ -29,5 +29,63 @@ describe('fixture mode', () => {
 
   it('answers unknown routes with null (404)', async () => {
     expect(await fixtureResponse('GET', '/api/nope')).toBeNull()
+  })
+})
+
+describe('round-2 fixture endpoints', () => {
+  beforeEach(() => resetFixtureState())
+  it('answers risk, Benford, certificate, beliefs and knowledge pages', async () => {
+    expect(((await fixtureResponse('GET', '/api/risk')) as unknown[]).length).toBeGreaterThan(0)
+    expect(await fixtureResponse('GET', '/api/benford')).toMatchObject({ conformity: expect.any(String) })
+    expect(await fixtureResponse('GET', '/api/autonomy/certificate')).toMatchObject({ status: expect.any(String) })
+    expect(((await fixtureResponse('GET', '/api/vendors/V001/beliefs')) as unknown[]).length).toBeGreaterThan(0)
+    const pages = (await fixtureResponse('GET', '/api/knowledge')) as { id: string }[]
+    expect(await fixtureResponse('GET', `/api/knowledge/${pages[0].id}`)).toMatchObject({ id: pages[0].id })
+  })
+  it('sorts the docket by amount at risk when asked', async () => {
+    const page = (await fixtureResponse('GET', '/api/exceptions', { status: 'all', sort: 'amount' })) as ExceptionPage
+    const amounts = page.items.map((c) => c.amount_at_risk)
+    expect(amounts).toEqual([...amounts].sort((a, b) => b - a))
+  })
+  it('shows the real memory-off verdict of the open case when memory is switched off', async () => {
+    await fixtureResponse('PATCH', '/api/settings', undefined, { memory_enabled: false })
+    const d = (await fixtureResponse('GET', '/api/exceptions/EXC-0010')) as ExceptionDetail
+    expect(d.recommendation?.source).toBe('no_memory')
+    expect(d.recommendation?.action).toBe('hold')
+  })
+  it('captures each sample invoice as the backend reads it, and opens that case', async () => {
+    const capture = (filename: string) =>
+      fixtureResponse('POST', '/api/invoices/capture', undefined, { filename }) as Promise<CaptureResult>
+    const noIrn = await capture('invoice-balaji-no-irn.png')
+    expect(noIrn.exception_id).toBe('EXC-0044')
+    const opened = (await fixtureResponse('GET', `/api/exceptions/${noIrn.exception_id}`)) as ExceptionDetail
+    expect(opened.primary_type).toBe('einvoice_missing')
+    expect(opened.blocking).toBe(true)
+    expect((await capture('invoice-balaji-bad-gstin.png')).exception_id).toBe('EXC-0045')
+    expect((await capture('invoice-balaji-freight.png')).exception_id).toBe('EXC-0043')
+    expect((await capture('scan.jpg')).exception_id).toBe('EXC-0011')
+  })
+  it('the same freight invoice captured twice is caught by the duplicate control', async () => {
+    const capture = () =>
+      fixtureResponse('POST', '/api/invoices/capture', undefined, { filename: 'invoice-balaji-freight.png' }) as Promise<CaptureResult>
+    expect((await capture()).exception_id).toBe('EXC-0043')
+    const again = await capture()
+    expect(again.exception_id).toBe('EXC-0046')
+    const dup = (await fixtureResponse('GET', '/api/exceptions/EXC-0046')) as ExceptionDetail
+    expect(dup).toMatchObject({ primary_type: 'duplicate_invoice', blocking: true, status: 'open' })
+    expect(dup.issues[0]).toMatchObject({ type: 'duplicate_invoice', blocking: true })
+    expect(dup.recommendation).toMatchObject({ action: 'reject', source: 'guardrail' })
+    expect(dup.recommendation!.rationale).toMatch(/^Hard control: .+ Action forced to reject\./)
+  })
+  it('keeps Balaji’s beliefs and risk signals on Balaji: other vendors get their own (or none)', async () => {
+    expect(((await fixtureResponse('GET', '/api/vendors/V001/beliefs')) as Belief[]).length).toBeGreaterThan(0)
+    expect(await fixtureResponse('GET', '/api/vendors/V002/beliefs')).toEqual([])
+    const [balaji, other] = (await Promise.all([
+      fixtureResponse('GET', '/api/vendors/V001'),
+      fixtureResponse('GET', '/api/vendors/V002'),
+    ])) as VendorProfile[]
+    expect(other.risk?.reasons).toEqual([])
+    expect(other.risk?.benford.n).toBe(0)
+    expect(other.risk?.benford).not.toEqual(balaji.risk?.benford)
   })
 })

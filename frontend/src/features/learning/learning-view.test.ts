@@ -22,6 +22,8 @@ const base = (over: Partial<Metrics> = {}): Metrics => ({
     minutes_saved: 120,
     citation_relevance: 0.9,
     lessons_revoked: 0,
+    msme_open_at_risk: 0,
+    msme_tax_at_risk: 0,
   },
   touchless_by_week: [],
   acceptance_by_week: [],
@@ -37,9 +39,9 @@ describe('findReplaySummary', () => {
       index: 4,
       from: 5,
       to: 6,
-      correctOn: 96,
-      correctOff: 35,
-      touchlessOn: 55,
+      correctOn: 98,
+      correctOff: 50,
+      touchlessOn: 54,
       touchlessOff: 0,
       falseApprovals: 0,
     })
@@ -62,7 +64,7 @@ describe('findReplaySummary', () => {
 describe('headline', () => {
   it('prefers the replay summary sentence from the assumptions', () => {
     expect(headline(metricsMock as Metrics)).toBe(
-      'In months 5–6, Precedent was right 96% of the time with memory, 35% without. It resolved 55% of exceptions on its own, with zero false approvals.',
+      'In months 5–6, Precedent was right 98% of the time with memory, 50% without. It resolved 54% of exceptions on its own, with zero false approvals.',
     )
   })
 

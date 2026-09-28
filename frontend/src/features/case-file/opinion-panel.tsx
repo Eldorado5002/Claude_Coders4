@@ -7,13 +7,14 @@ import type { ExceptionDetail, Recommendation, ResolveResult } from '@/api/types
 import { AgentMark, Confidence, DecisionChip, Money, SourceChip } from '@/components/precedent'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
-import { simTime } from '@/lib/format'
 import { ACTION_META } from '@/lib/labels'
 import { memoryCount, usableCitations } from '@/lib/citations'
 import { enterBelongsToTarget, insideDialogOrForm } from '@/lib/hotkeys'
 import { parseRationale } from '@/lib/parse-rationale'
 import { firstSentence } from '@/lib/text'
+import { cn } from '@/lib/utils'
 import { Citations, FootnoteMarker, NoPrecedent } from './citations'
+import { calibratedCopy, opinionMeta } from './opinion-meta'
 import { LessonCard, ResolutionCard } from './outcome'
 import { ResolveForm, type Preset } from './resolve-form'
 import { ReasoningState, VerdictDiff } from './verdict-parts'
@@ -27,6 +28,8 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
   const guard = rec.source === 'guardrail'
   const cites = usableCitations(rec.citations)
   const memoryCites = memoryCount(rec.citations)
+  const calibrated = calibratedCopy(rec.calibrated_confidence)
+  const meta = opinionMeta(rec)
 
   return (
     <>
@@ -53,7 +56,10 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
       <div className="space-y-5 px-5 py-5">
         <div className="flex items-start justify-between gap-4">
           <DecisionChip action={rec.action} size="lg" />
-          <Confidence value={rec.confidence} className="w-24 pt-1" />
+          <div className="w-36 space-y-1.5 pt-1">
+            <Confidence value={rec.confidence} className="w-full" />
+            {calibrated && <p className="text-[11px] leading-snug text-pretty text-muted-foreground">{calibrated}</p>}
+          </div>
         </div>
 
         {rec.adjusted_amount != null && (
@@ -87,9 +93,19 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
         {cites.length > 0 && <Citations cites={cites} />}
 
         <div className="flex items-center justify-between gap-3 border-t border-rule pt-3 text-[11px] text-muted-foreground">
-          <span className="font-mono">
-            {rec.provider} · {(rec.latency_ms / 1000).toFixed(1)} s · {simTime(rec.generated_at)}
-          </span>
+          <div className="min-w-0 space-y-0.5">
+            <p className="tabular-nums">
+              {meta.map((part, i) => (
+                <span key={i}>
+                  {i > 0 && <span aria-hidden className="mx-1 text-muted-foreground/60">·</span>}
+                  <span className={cn(i === 0 && rec.route && 'font-medium text-foreground')}>{part}</span>
+                </span>
+              ))}
+            </p>
+            <p className="truncate font-mono" title={rec.provider}>
+              {rec.provider}
+            </p>
+          </div>
           {c.status === 'open' && (
             <Button
               variant="ghost"
