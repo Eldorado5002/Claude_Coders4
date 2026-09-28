@@ -491,10 +491,10 @@ We're **Claude_Coders4**, building for HackwithHyderabad 3.0.
 
 | Member | Role | GitHub |
 |---|---|---|
-| **Nagashivashankar Kaki** | Team Leader · Backend, AI & Memory | [@Eldorado5002](https://github.com/Eldorado5002) |
-| **Rupesh Seku** | Frontend (PWA) | [@srupesh08](https://github.com/srupesh08) |
-| **Sameeksha Kasha** | Testing & Documentation | [@Sameeksha270905](https://github.com/Sameeksha270905) |
-| **Vyshnavi Kolipyaka** | Demo Video & Content | [@vyshu2202](https://github.com/vyshu2202) |
+| **Nagashivashankar Kaki** | Team Leader · Backend, AI & Memory | [Eldorado5002](https://github.com/Eldorado5002) |
+| **Rupesh Seku** | Frontend (PWA) | [srupesh08](https://github.com/srupesh08) |
+| **Sameeksha Kasha** | Testing & Documentation | [Sameeksha270905](https://github.com/Sameeksha270905) |
+| **Vyshnavi Kolipyaka** | Demo Video & Content | [vyshu2202](https://github.com/vyshu2202) |
 
 <div align="center">
 <br/>
