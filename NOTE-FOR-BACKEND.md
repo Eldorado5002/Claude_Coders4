@@ -77,3 +77,10 @@ One UX suggestion from the live run: on the vendor file, "What Precedent believe
 show the same sentence, because both come from the same Hindsight observation. Merging them (beliefs, with the
 evidence count and history, are the richer view) would read better.
 
+One more from the screenshots for the README: on a 390 px phone, the case file shows a horizontal scrollbar at the
+bottom (something is a few pixels wider than the screen). Small, but visible on the phone screenshot.
+
+**Hosting:** the app now runs on Google Cloud Run at https://precedent-1058141277368.us-central1.run.app, one
+container serving your built app (with `VITE_API_BASE_URL=/`) and the API. See `docs/DEPLOY.md`. Nothing in
+`frontend/` was changed for this.
+
