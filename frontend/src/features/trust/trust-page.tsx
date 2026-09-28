@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { simDay } from '@/lib/format'
 import { TYPE_LABEL, isHardControl } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import { CertificateBadge } from './certificate-badge'
 import { buildTrustMatrix, nextStepCopy } from './trust-matrix'
 
 const cellLink = (a: AutonomyState) => `/exceptions?status=all&vendor=${a.vendor_id}&type=${a.exception_type}`
@@ -146,6 +147,7 @@ export default function TrustPage() {
         <span className="flex items-center gap-2">
           <Lock className="size-3.5" /> <span className="font-semibold tabular-nums">{m.counts.locked}</span> locked
         </span>
+        <CertificateBadge />
         <span className="ml-auto">
           <HowTrustWorks />
         </span>
