@@ -9,7 +9,7 @@
 
 ### The accounts-payable agent that learns from every invoice exception it resolves
 
-*Built on **Hindsight** agent memory · HackwithHyderabad 3.0 · Team **Claude_Coders4***
+*Built on **Hindsight** agent memory · Team **Claude_Coders4***
 
 **With memory, its recommendations match the AP clerk 98% of the time. Without memory, 50%.**
 
@@ -523,7 +523,7 @@ For reference, here's everything we built Precedent with, and why we chose it.
 
 ## What's next
 
-If we keep building after the hackathon, this is where we'd take Precedent:
+If we keep building, this is where we'd take Precedent:
 
 - **ERP connectors** (Tally, SAP, Zoho Books), so invoices, POs and goods receipts flow in automatically
 - **Four-eyes approval for lessons**, so a high-impact lesson needs an AP lead's sign-off before it becomes memory
@@ -532,7 +532,7 @@ If we keep building after the hackathon, this is where we'd take Precedent:
 
 ## Team
 
-We're **Claude_Coders4**, building for HackwithHyderabad 3.0.
+We're **Claude_Coders4**.
 
 | Member | Role | GitHub |
 |---|---|---|
