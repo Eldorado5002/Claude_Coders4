@@ -13,7 +13,6 @@ import {
   calibrationPoints,
   calibrationSummary,
   certificateProgress,
-  decisionsNeeded,
   eceText,
   hasTrustData,
   ladderRows,
@@ -106,16 +105,6 @@ describe('certificate headline', () => {
     expect(plain(autoRecord(certified))).toBe('46 paid automatically · 0 wrong')
     expect(plain(autoRecord({ ...certified, auto_resolutions: 1, auto_errors: 0 }))).toBe('1 paid automatically · 0 wrong')
     expect(plain(autoRecord(collecting))).toBe('Nothing paid automatically yet')
-  })
-})
-
-describe('decisionsNeeded', () => {
-  it('matches the one-sided Clopper-Pearson sample sizes', () => {
-    // with no errors: the smallest n where 0.95^n ≤ 0.05
-    expect(decisionsNeeded(0, 0.05, 0.95)).toBe(59)
-    expect(decisionsNeeded(1, 0.05, 0.95)).toBe(93)
-    expect(decisionsNeeded(2, 0.05, 0.95)).toBe(124)
-    expect(decisionsNeeded(0, 0.05, 0.99)).toBe(90)
   })
 })
 
@@ -212,10 +201,11 @@ describe('cost and speed formatting', () => {
     expect(usdDigits(0.45)).toBe(2)
     expect(usdPer1000(0.45)).toBe('$0.45')
   })
-  it('shows per-recommendation cost to three decimals, floored at < $0.001', () => {
+  it('shows per-recommendation cost like the case file does (the shared rule in lib/format)', () => {
     expect(usdPerRec(0.0173)).toBe('$0.017')
     expect(usdPerRec(0.04503)).toBe('$0.045')
-    expect(usdPerRec(0.000986)).toBe('< $0.001')
+    expect(usdPerRec(0.000986)).toBe('$0.001')
+    expect(usdPerRec(0.0004)).toBe('< $0.001')
     expect(usdPerRec(null)).toBe('—')
   })
   it('turns milliseconds into readable seconds', () => {

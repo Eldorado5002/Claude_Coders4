@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inr, inrCompact, pct, simDate, simRelative, simTime } from './format'
+import { inr, inrCompact, pct, simDate, simRelative, simTime, usdSmall } from './format'
 
 describe('inr', () => {
   it('formats rupees with Indian digit grouping and paise', () => {
@@ -44,5 +44,24 @@ describe('sim clock', () => {
     expect(simRelative('2026-03-18T09:30:00', '2026-03-18')).toBe('Today, 09:30')
     expect(simRelative('2026-03-17T16:15:00', '2026-03-18')).toBe('Yesterday, 16:15')
     expect(simRelative('2026-03-02T10:05:00', '2026-03-18')).toBe('2 Mar')
+  })
+})
+
+describe('usdSmall (one rule for a model cost, on every screen)', () => {
+  it('shows three decimals, rounding the fast path’s $0.000986 to $0.001', () => {
+    expect(usdSmall(0.034)).toBe('$0.034')
+    expect(usdSmall(0.000986)).toBe('$0.001')
+    expect(usdSmall(1.2345)).toBe('$1.234')
+  })
+  it('says "< $0.001" only when three decimals would read zero', () => {
+    expect(usdSmall(0.0004)).toBe('< $0.001')
+  })
+  it('reads a free recommendation (no model call) as $0, not $0.000', () => {
+    expect(usdSmall(0)).toBe('$0')
+  })
+  it('has nothing to say without a number', () => {
+    expect(usdSmall(null)).toBeNull()
+    expect(usdSmall(undefined)).toBeNull()
+    expect(usdSmall(Number.NaN)).toBeNull()
   })
 })

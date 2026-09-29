@@ -1,7 +1,10 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { useBootSplashDone } from './boot-splash'
 
 export function RouteError() {
+  // an error can be the first screen: it must never sit under the splash
+  useBootSplashDone()
   const err = useRouteError()
   const notFound = isRouteErrorResponse(err) && err.status === 404
   const detail = isRouteErrorResponse(err) ? err.statusText : err instanceof Error ? err.message : String(err)

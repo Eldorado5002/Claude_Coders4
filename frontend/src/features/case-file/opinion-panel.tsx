@@ -1,5 +1,6 @@
 import { Lock, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
+import { useChangeCount } from '@/hooks/use-change-count'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { toast } from 'sonner'
 import { useRecommend } from '@/api/mutations'
@@ -17,10 +18,30 @@ import { Citations, FootnoteMarker, NoPrecedent } from './citations'
 import { calibratedCopy, opinionMeta } from './opinion-meta'
 import { LessonCard, ResolutionCard } from './outcome'
 import { ResolveForm, type Preset } from './resolve-form'
-import { ReasoningState, VerdictDiff } from './verdict-parts'
+import { ReasoningState, Rerunning, VerdictDiff } from './verdict-parts'
 
-function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommendation; other?: ExceptionDetail | null; memOn: boolean }) {
+const AFTER = (ms: number) => ({ animationDelay: `${ms}ms` })
+
+/**
+ * `enter`: the verdict just arrived while the reader watched it being written. A verdict that changes in place
+ * (memory switched) animates the same way; one already written when the case opens simply shows.
+ */
+function Verdict({
+  c,
+  rec,
+  other,
+  memOn,
+  enter = false,
+}: {
+  c: ExceptionDetail
+  rec: Recommendation
+  other?: ExceptionDetail | null
+  memOn: boolean
+  enter?: boolean
+}) {
   const recommend = useRecommend(c.id)
+  const changes = useChangeCount(`${rec.action}|${rec.confidence}|${rec.generated_at}`)
+  const live = enter || changes > 0
   const p = parseRationale(
     rec.rationale,
     c.issues.filter((i) => i.blocking).map((i) => i.message),
@@ -34,7 +55,7 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
   return (
     <>
       {guard && p.control && (
-        <div className="space-y-2 bg-foreground px-5 py-4 text-background">
+        <div className={cn('space-y-2 bg-foreground px-5 py-4 text-background', live && 'animate-rise')}>
           <div className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase">
             <Lock className="size-3.5" strokeWidth={2.5} /> Hard control
           </div>
@@ -53,11 +74,12 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
         </div>
       )}
 
-      <div className="space-y-5 px-5 py-5">
+      <div className="space-y-5 px-5 py-5" data-enter={live || undefined}>
         <div className="flex items-start justify-between gap-4">
-          <DecisionChip action={rec.action} size="lg" />
+          {/* a new decision replaces the old one; the score and meter beside it morph instead of remounting */}
+          <DecisionChip key={rec.action} action={rec.action} size="lg" className={cn(live && 'animate-rise')} />
           <div className="w-36 space-y-1.5 pt-1">
-            <Confidence value={rec.confidence} className="w-full" />
+            <Confidence value={rec.confidence} className="w-full" animated />
             {calibrated && <p className="text-[11px] leading-snug text-pretty text-muted-foreground">{calibrated}</p>}
           </div>
         </div>
@@ -70,7 +92,11 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
         )}
 
         {p.body && (
-          <p className="font-serif text-[1.15rem] leading-[1.55] text-pretty">
+          <p
+            key={`body-${changes}`}
+            className={cn('font-serif text-[1.15rem] leading-[1.55] text-pretty', live && 'animate-rise')}
+            style={live ? AFTER(60) : undefined}
+          >
             {p.body}
             {cites.map((ct, i) => (
               <span key={ct.id}>
@@ -90,7 +116,7 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
         <VerdictDiff c={c} other={other} memOn={memOn} />
 
         {memoryCites === 0 && !guard && <NoPrecedent vendor={c.vendor.name} memoryOn={memOn} />}
-        {cites.length > 0 && <Citations cites={cites} />}
+        {cites.length > 0 && <Citations key={`cites-${changes}`} cites={cites} enter={live} after={120} />}
 
         <div className="flex items-center justify-between gap-3 border-t border-rule pt-3 text-[11px] text-muted-foreground">
           <div className="min-w-0 space-y-0.5">
@@ -124,13 +150,32 @@ function Verdict({ c, rec, other, memOn }: { c: ExceptionDetail; rec: Recommenda
 }
 
 /** Precedent's opinion + the human decision flow. */
-export function OpinionPanel({ c, other, memOn = true }: { c: ExceptionDetail; other?: ExceptionDetail | null; memOn?: boolean }) {
+export function OpinionPanel({
+  c,
+  other,
+  memOn = true,
+  rerunning = false,
+}: {
+  c: ExceptionDetail
+  other?: ExceptionDetail | null
+  memOn?: boolean
+  /** memory was just switched: `c` is the previous verdict, shown dimmed until the new one lands */
+  rerunning?: boolean
+}) {
   const [form, setForm] = useState<Preset | null>(null)
   const [result, setResult] = useState<ResolveResult | null>(null)
   const rec = c.recommendation
   const writing = c.status === 'open' && !rec
   const canDecide = (c.status === 'open' && !!rec) || c.status === 'auto_resolved'
-  const idle = canDecide && !form
+  const idle = canDecide && !form && !rerunning
+  // a verdict that lands while the reader watches it being written rises in. Keeping the previous state in state
+  // (React's pattern for adjusting on a prop change) keeps the render pure.
+  const [wasWriting, setWasWriting] = useState(writing)
+  const [arrived, setArrived] = useState(false)
+  if (wasWriting !== writing) {
+    setWasWriting(writing)
+    if (!writing && rec) setArrived(true)
+  }
 
   const accept = () =>
     rec &&
@@ -162,7 +207,15 @@ export function OpinionPanel({ c, other, memOn = true }: { c: ExceptionDetail; o
       {writing ? (
         <ReasoningState vendor={c.vendor.name} />
       ) : rec ? (
-        <Verdict c={c} rec={rec} other={other} memOn={memOn} />
+        <>
+          {rerunning && <Rerunning memOn={memOn} />}
+          <div
+            aria-busy={rerunning || undefined}
+            className={cn('transition-opacity duration-200 ease-out', rerunning && 'pointer-events-none opacity-45')}
+          >
+            <Verdict c={c} rec={rec} other={other} memOn={memOn} enter={arrived} />
+          </div>
+        </>
       ) : (
         <p className="px-5 py-6 text-sm text-muted-foreground">No opinion was recorded for this case.</p>
       )}

@@ -96,11 +96,12 @@ function Failed({ error, onRetry, busy }: { error: string; onRetry: () => void; 
   )
 }
 
+/** An answer always lands after "Reflecting on memory…": it rises in, then its sources follow one after another. */
 function Answer({ t }: { t: Turn }) {
   const cites = usableCitations(t.citations ?? [])
   const text = t.answer?.trim()
   return (
-    <div className="space-y-5">
+    <div className="animate-rise space-y-5" data-enter="true">
       <div className="space-y-2">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           <AgentMark className="text-foreground" /> Precedent
@@ -118,7 +119,7 @@ function Answer({ t }: { t: Turn }) {
         )}
       </div>
       {cites.length > 0 ? (
-        <Citations cites={cites} />
+        <Citations cites={cites} enter after={120} />
       ) : (
         <p className="border border-dashed border-rule px-3 py-2 text-xs text-muted-foreground">
           No precedents cited. Nothing in memory backs this answer.

@@ -4,6 +4,8 @@ import type { Citation } from '@/api/types'
 import { KindBadge, RedactedText, Section } from '@/components/precedent'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { simDay } from '@/lib/format'
+import { stagger } from '@/lib/motion'
+import { cn } from '@/lib/utils'
 
 /** ¹ — a footnote marker in the opinion, with the cited memory on hover. */
 export function FootnoteMarker({ n, cite }: { n: number; cite: Citation }) {
@@ -31,12 +33,18 @@ export function FootnoteMarker({ n, cite }: { n: number; cite: Citation }) {
   )
 }
 
-export function Citations({ cites }: { cites: Citation[] }) {
+/** `enter`: the list arrives with a fresh verdict or answer, one precedent after another (after `after` ms). */
+export function Citations({ cites, enter = false, after = 0 }: { cites: Citation[]; enter?: boolean; after?: number }) {
   return (
     <Section title="Precedents cited" aside={`${cites.length} from Hindsight memory`}>
       <ol className="space-y-4">
         {cites.map((c, i) => (
-          <li key={c.id} id={`cite-${i + 1}`} className="grid scroll-mt-6 grid-cols-[1.25rem_1fr] gap-x-2">
+          <li
+            key={c.id}
+            id={`cite-${i + 1}`}
+            className={cn('grid scroll-mt-6 grid-cols-[1.25rem_1fr] gap-x-2', enter && 'animate-rise')}
+            style={enter ? { animationDelay: `${stagger(i, { after })}ms` } : undefined}
+          >
             <span className="serif-display pt-0.5 text-lg leading-none text-muted-foreground">{i + 1}</span>
             <div className="min-w-0 space-y-1">
               <div className="flex items-center justify-between gap-3">

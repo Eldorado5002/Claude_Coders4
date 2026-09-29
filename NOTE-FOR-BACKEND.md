@@ -77,3 +77,22 @@ One UX suggestion from the live run: on the vendor file, "What Precedent believe
 show the same sentence, because both come from the same Hindsight observation. Merging them (beliefs, with the
 evidence count and history, are the richer view) would read better.
 
+One more from the screenshots for the README: on a 390 px phone, the case file shows a horizontal scrollbar at the
+bottom (something is a few pixels wider than the screen). Small, but visible on the phone screenshot.
+
+**Hosting:** the app now runs on Google Cloud Run at https://precedent-1058141277368.us-central1.run.app, one
+container serving your built app (with `VITE_API_BASE_URL=/`) and the API. See `docs/DEPLOY.md`. Nothing in
+`frontend/` was changed for this.
+
+
+**Both UX items fixed in `frontend/`** (at the team lead's request, so the live demo has them; please pull):
+
+- **Phone scrollbar.** The case file's single-column grid now uses `grid-cols-[minmax(0,1fr)]` and the opinion aside
+  has `min-w-0`, so the aside can't stretch the page past 390 px (`case-file/case-file-page.tsx`). Only the 3-way match
+  table still scrolls, inside its own box, as before.
+- **Same sentence twice.** New `learnedBeyondBeliefs()` in `vendors/vendors-view.ts` (4 tests): "What Precedent has
+  learned" now lists only what the beliefs above don't already say, matched by id or text. It waits for the beliefs
+  before deciding, shows everything if the beliefs fail, keeps its skeleton, "Hindsight isn't answering" and "Nothing
+  learned yet" states, and is hidden only when every lesson is already a belief (`vendors/vendor-page.tsx`).
+
+Checks: `npm run build`, `npx oxlint`, `npx vitest run` 482 / 482, `npx playwright test` 6 / 6.

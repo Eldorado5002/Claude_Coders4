@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { simDate, simDay } from '@/lib/format'
+import { connectorDelay } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import { useLive } from '@/stores/live'
 
@@ -30,10 +31,18 @@ export function StageRail({ className, compact }: { className?: string; compact?
   const busy = useLive((s) => s.simBusy) || !!demo.data?.busy
   const target = useLive((s) => s.simTarget)
   const [confirm, setConfirm] = useState<DemoStage | 'reset' | null>(null)
+  const current = demo.data?.stage
+  const at = demo.data ? demo.data.stages.findIndex((s) => s.id === current) : -1
+  // where the rail was before the latest stage change: lines between the two draw (or undraw) in order
+  const [shownAt, setShownAt] = useState(at)
+  const [from, setFrom] = useState(at)
+  if (at !== shownAt) {
+    setFrom(shownAt)
+    setShownAt(at)
+  }
 
   if (!demo.data) return <div className={cn('h-8 w-[26rem]', className)} aria-hidden />
-  const { stages, stage: current } = demo.data
-  const at = stages.findIndex((s) => s.id === current)
+  const { stages } = demo.data
 
   const go = (id: DemoStageId) =>
     advance.mutate(id, {
@@ -50,10 +59,18 @@ export function StageRail({ className, compact }: { className?: string; compact?
           return (
             <li key={s.id} className="flex items-center">
               {i > 0 && (
-                <span
-                  aria-hidden
-                  className={cn('mx-1.5 h-px w-6 xl:w-9', i <= at ? 'bg-foreground' : 'bg-border')}
-                />
+                // the line into a stage draws left to right as the demo reaches it (400 ms, ease-in-out)
+                <span aria-hidden className="relative mx-1.5 h-px w-6 bg-border xl:w-9">
+                  <span
+                    data-connector
+                    data-reached={i <= at || undefined}
+                    className="absolute inset-0 origin-left bg-foreground transition-transform duration-400 ease-in-out"
+                    style={{
+                      transform: `scaleX(${i <= at ? 1 : 0})`,
+                      transitionDelay: `${connectorDelay(i, from, at)}ms`,
+                    }}
+                  />
+                </span>
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -75,6 +92,8 @@ export function StageRail({ className, compact }: { className?: string; compact?
                         isCurrent && 'ring-2 ring-foreground/15 ring-offset-2 ring-offset-background',
                         busy && target === s.id && 'animate-pulse',
                       )}
+                      // moving ahead, a stage's dot fills as its line arrives
+                      style={at > from && i > from && i <= at ? { transitionDelay: `${connectorDelay(i, from, at) + 250}ms` } : undefined}
                     />
                     <span className={cn('whitespace-nowrap', compact && !isCurrent && 'sr-only')}>{s.label}</span>
                   </button>

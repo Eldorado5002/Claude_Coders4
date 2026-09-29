@@ -1,5 +1,6 @@
 import type { EInvoiceStatus, MsmeStatus } from '@/api/types'
 import { inrCompact, simDay } from '@/lib/format'
+import { gstinMatch, shortIrn } from '@/lib/gst'
 
 /** Section 43B(h) in one sentence, for the hover on the MSME line. */
 export const MSME_43BH_TIP =
@@ -8,12 +9,6 @@ export const MSME_43BH_TIP =
 export type StatusTone = 'neutral' | 'hold' | 'reject'
 
 const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`
-
-/** A 64-hex GST e-invoice reference shown like a hash: "1a9d7bc4…fbac44". */
-export function shortIrn(irn: string): string {
-  const s = irn.trim()
-  return s.length <= 16 ? s : `${s.slice(0, 8)}…${s.slice(-6)}`
-}
 
 export type MsmeLine = {
   tone: StatusTone
@@ -74,11 +69,9 @@ export function eInvoiceCheck(e: EInvoiceStatus | null | undefined, irn: string 
 
 export type GstinCheck = { status: 'match' | 'mismatch' | 'missing'; onInvoice: string | null; master: string }
 
-const norm = (g: string) => g.replace(/\s+/g, '').toUpperCase()
-
 /** The GSTIN printed on the invoice against the vendor master. */
 export function gstinCheck(onInvoice: string | null | undefined, master: string): GstinCheck {
   const printed = onInvoice?.trim() ? onInvoice.trim() : null
   if (!printed) return { status: 'missing', onInvoice: null, master }
-  return { status: norm(printed) === norm(master) ? 'match' : 'mismatch', onInvoice: printed, master }
+  return { status: gstinMatch(printed, master) ?? 'mismatch', onInvoice: printed, master }
 }

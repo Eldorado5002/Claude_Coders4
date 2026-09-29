@@ -1,18 +1,7 @@
 import type { AutonomyCertificate } from '@/api/types'
+import { decisionsNeeded } from '@/lib/certificate'
 
 export type ChipTone = 'certified' | 'collecting' | 'paused'
-
-/**
- * Verified pay decisions needed before certification. Prefer the backend's own number
- * ("…takes 59 of them…"); with zero errors the 95% Clopper–Pearson upper bound is
- * 1 − (1 − conf)^(1/n), so n is the smallest count that pushes it under the target.
- */
-export function decisionsNeeded(c: AutonomyCertificate): number | null {
-  const stated = c.explanation.match(/takes (\d+)/)
-  if (stated) return Number(stated[1])
-  if (c.errors !== 0) return null
-  return Math.ceil(Math.log(1 - c.confidence_level) / Math.log(1 - c.target_error))
-}
 
 /** The Trust map header chip: one line on whether auto-pay is statistically earned. */
 export function certificateChip(c: AutonomyCertificate): { label: string; detail: string; tone: ChipTone } {

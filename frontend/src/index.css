@@ -168,6 +168,8 @@
   --animate-rise: rise 220ms var(--ease-out) both;
   --animate-stamp: stamp 520ms var(--ease-out) both;
   --animate-arrive: rise 220ms var(--ease-out) both, fresh 1800ms ease-out both;
+  /* a trust dot just earned: fills in place, after its card has landed */
+  --animate-fill-in: fill-in 180ms var(--ease-out) 200ms both;
 
   @keyframes shimmer {
     from {
@@ -193,6 +195,21 @@
     }
     to {
       background-color: transparent;
+    }
+  }
+  @keyframes fill-in {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
     }
   }
   @keyframes stamp {
@@ -309,5 +326,11 @@
   .writing-rule {
     animation: none;
     background-image: none;
+  }
+  /* entrances stay, gentler: a short fade with no movement (beats the 1ms rule above on specificity) */
+  .animate-rise,
+  .animate-stamp,
+  .animate-fill-in {
+    animation: fade 150ms ease-out both !important;
   }
 }

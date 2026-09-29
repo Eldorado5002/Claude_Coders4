@@ -2,6 +2,7 @@ import { Outlet } from 'react-router'
 import AskSheet from '@/features/ask/ask-sheet'
 import { PwaRuntime } from '@/features/pwa/pwa'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { useBootSplashDone } from '@/app/boot-splash'
 import { useServerEvents } from '@/hooks/use-server-events'
 import { AppSidebar } from './app-sidebar'
 import { CommandMenu } from './command-menu'
@@ -12,6 +13,7 @@ import { Banners } from './status'
 import { TopBar } from './top-bar'
 
 export function AppShell() {
+  useBootSplashDone()
   useServerEvents()
   useShellShortcuts()
   useLiveMoments()

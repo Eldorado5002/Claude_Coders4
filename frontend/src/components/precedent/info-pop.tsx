@@ -27,6 +27,7 @@ export function InfoPop({
   const canHover = useCanHover()
   const [open, setOpen] = useState(false)
   const byHover = useRef(false)
+  const content = useRef<HTMLDivElement>(null)
   const timer = useRef<number | undefined>(undefined)
   const cancel = () => window.clearTimeout(timer.current)
   useEffect(() => cancel, [])
@@ -59,17 +60,20 @@ export function InfoPop({
         onPointerEnter={openSoon}
         onPointerLeave={closeSoon}
         onClick={(e) => {
-          // hover already opened it: the click pins it instead of closing it
+          // hover already opened it: a click or Enter pins it instead of closing it, and moves focus in
+          // (as opening it that way would have), so Tab reaches its links
           if (open && byHover.current) {
             e.preventDefault()
             cancel()
             byHover.current = false
+            content.current?.focus()
           }
         }}
       >
         {trigger}
       </PopoverTrigger>
       <PopoverContent
+        ref={content}
         align={align}
         side={side}
         className={className}

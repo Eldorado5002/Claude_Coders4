@@ -1,6 +1,7 @@
 import type { SortingState } from '@tanstack/react-table'
-import type { AutonomyLevel, AutonomyState, BenfordResult, Lesson, VendorProfile, VendorSummary } from '@/api/types'
+import type { AutonomyLevel, AutonomyState, Belief, BenfordResult, Citation, Lesson, VendorProfile, VendorSummary } from '@/api/types'
 import { TYPE_LABEL } from '@/lib/labels'
+import { tidyReason } from '@/lib/risk'
 
 /** Column ids the vendor table can sort by (and the only ones the URL may name). */
 export const SORT_COLUMNS = ['name', 'gstin', 'terms', 'invoices', 'exceptions', 'open', 'touchless', 'risk'] as const
@@ -114,7 +115,8 @@ export function profileRisk(v: VendorProfile): ProfileRisk | null {
 }
 
 /** Reasons arrive as clauses ("exception rate 91% vs …"); in a list each starts with a capital. */
-export const riskReason = (r: string) => r.charAt(0).toUpperCase() + r.slice(1)
+/** The same sentence the /risk page shows: "1 request to pay…", capitalised. */
+export const riskReason = (r: string) => tidyReason(r)
 
 /** "First digits (Benford): marginal · MAD 0.0146 · 212 amounts" */
 export function benfordLine(b: BenfordResult | null | undefined): string | null {
@@ -163,3 +165,22 @@ export function sortLanes(rows: AutonomyState[]): AutonomyState[] {
       (TYPE_LABEL[a.exception_type] ?? a.exception_type).localeCompare(TYPE_LABEL[b.exception_type] ?? b.exception_type),
   )
 }
+
+const sameText = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase()
+
+/**
+ * "What Precedent has learned" minus what "What Precedent believes" already shows. Both come from the same
+ * Hindsight observations, so without this the vendor file says the same sentence twice. `null` while the beliefs
+ * are still loading (so the section doesn't flash and then vanish); the full list if the beliefs couldn't load.
+ */
+export function learnedBeyondBeliefs(
+  learned: Citation[],
+  beliefs: { data?: Belief[]; isPending: boolean; isError: boolean },
+): Citation[] | null {
+  if (beliefs.isError && !beliefs.data) return learned
+  if (beliefs.isPending || !beliefs.data) return null
+  const ids = new Set(beliefs.data.map((b) => b.id))
+  const texts = new Set(beliefs.data.map((b) => sameText(b.text)))
+  return learned.filter((c) => !ids.has(c.id) && !texts.has(sameText(c.text)))
+}
+

@@ -34,3 +34,6 @@ Thumbs.db
 
 # raw external datasets (downloaded by scripts)
 backend/data/external/
+
+# demo video script (local only)
+video/

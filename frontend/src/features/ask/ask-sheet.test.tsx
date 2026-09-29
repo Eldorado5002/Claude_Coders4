@@ -42,6 +42,24 @@ describe('AskSheet', () => {
     expect(screen.getByRole('button', { name: 'What did we decide about duplicate invoices?' })).toBeInTheDocument()
   })
 
+  it('the answer rises in as it lands, its sources following one after another', async () => {
+    const user = userEvent.setup()
+    let resolve!: (a: CopilotAnswer) => void
+    mutateAsync.mockReturnValue(new Promise<CopilotAnswer>((r) => (resolve = r)))
+    renderApp(<AskSheet />)
+    open({ vendorId: 'V001' })
+    await user.click(await screen.findByRole('button', { name: 'Has Shree Balaji Steel Traders ever changed bank details?' }))
+    await act(async () => resolve(answer))
+
+    const answerBlock = document.querySelector('[data-turn] [data-enter="true"]')
+    expect(answerBlock).not.toBeNull()
+    const sources = [...document.querySelectorAll<HTMLElement>('[id^="cite-"]')]
+    expect(sources.length).toBeGreaterThan(1)
+    const delays = sources.map((li) => parseInt(li.style.animationDelay, 10))
+    expect(delays).toEqual([...delays].sort((x, y) => x - y))
+    expect(delays[1]).toBeGreaterThan(delays[0])
+  })
+
   it('scopes to a vendor, then drops the scope with ×', async () => {
     const user = userEvent.setup()
     renderApp(<AskSheet />)

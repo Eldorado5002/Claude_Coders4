@@ -34,6 +34,18 @@ export function ReasoningState({ vendor }: { vendor: string }) {
   )
 }
 
+/** Memory was just switched: the verdict below is the previous one, dimmed, until the new one lands. */
+export function Rerunning({ memOn }: { memOn: boolean }) {
+  return (
+    <div className="space-y-2 border-b border-rule px-5 py-3" role="status" aria-live="polite">
+      <p className="flex items-center gap-2 font-serif text-[1.05rem]">
+        <AgentMark className="animate-pulse" /> Re-running with memory {memOn ? 'on' : 'off'}…
+      </p>
+      <div className="writing-rule" aria-hidden />
+    </div>
+  )
+}
+
 function Mini({ label, rec, withMemory }: { label: string; rec: Recommendation; withMemory: boolean }) {
   return (
     <div className="min-w-0 space-y-1.5">

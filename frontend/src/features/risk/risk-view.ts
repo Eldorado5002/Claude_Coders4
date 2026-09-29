@@ -1,5 +1,6 @@
 import { ApiError } from '@/api/client'
 import type { BenfordResult, VendorRisk, VendorRiskRow } from '@/api/types'
+import { tidyReason } from '@/lib/risk'
 
 // ── Vendor ranking ──────────────────────────────────────────────────────────
 
@@ -24,12 +25,7 @@ export function scoreWidth(score: number | null | undefined): number {
   return Math.min(100, Math.max(0, score))
 }
 
-/** "1 request(s) to pay…" → "1 request to pay…"; first letter capitalised. */
-export function tidyReason(reason: string): string {
-  const count = /^\s*(\d+)\b/.exec(reason)
-  const one = count != null && Number(count[1]) === 1
-  return capitalise(reason.trim().replace(/\(s\)/g, one ? '' : 's'))
-}
+export { tidyReason }
 
 // The backend says this when a vendor has no signals at all (backend/app/services/risk.py).
 const NO_SIGNALS = /^no .*signals/i
@@ -166,7 +162,5 @@ export function riskErrorCopy(error: unknown, what: keyof typeof WHAT): { title:
   const status = error instanceof ApiError ? error.status : undefined
   if (status === 0)
     return { title: 'Can’t reach the Precedent API.', body: 'Start the backend, or switch to sample data from the banner above.' }
-  if (status === 503)
-    return { title: 'Hindsight memory is unreachable.', body: 'Risk figures are paused until Hindsight is back.' }
   return { title: `${WHAT[what]} didn’t load.`, body: error instanceof Error ? error.message : String(error) }
 }

@@ -9,11 +9,15 @@
 
 ### The accounts-payable agent that learns from every invoice exception it resolves
 
-*Built on **Hindsight** agent memory · HackwithHyderabad 3.0 · Team **Claude_Coders4***
+*Built on **Hindsight** agent memory · Team **Claude_Coders4***
 
 **With memory, its recommendations match the AP clerk 98% of the time. Without memory, 50%.**
 
 **0 wrong payments** · **Certified autonomy** · **Built for Indian AP** · **$17 per 1,000 exceptions**
+
+### [Try the live demo →](https://precedent-1058141277368.us-central1.run.app)
+
+<sub>A shared demo on Google Cloud Run. The first visit can take about 20 seconds while it wakes up.</sub>
 
 </div>
 
@@ -45,12 +49,13 @@ We replayed 26 weeks of invoices. With memory, our agent matched the clerk's dec
 
 | The story | How it's built | Reference |
 |---|---|---|
-| 1. [The problem](#the-problem) | 7. [How it works](#how-it-works) | 12. [Run it yourself](#run-it-yourself) |
-| 2. [What Precedent does](#what-precedent-does) | 8. [Every Hindsight feature we use](#every-hindsight-feature-we-use) | 13. [Tech stack](#tech-stack) |
-| 3. [Memory is the star](#memory-is-the-star) | 9. [Safety and fraud](#safety-and-fraud) | 14. [What's next](#whats-next) |
-| 4. [Built for India](#built-for-india) | 10. [Highlights at a glance](#highlights-at-a-glance) | 15. [Team](#team) |
-| 5. [Results](#results) | 11. [Limitations](#limitations) | |
-| 6. [The demo in five acts](#the-demo-in-five-acts) | | |
+| 1. [The problem](#the-problem) | 8. [How it works](#how-it-works) | 13. [Run it yourself](#run-it-yourself) |
+| 2. [What Precedent does](#what-precedent-does) | 9. [Every Hindsight feature we use](#every-hindsight-feature-we-use) | 14. [Tech stack](#tech-stack) |
+| 3. [Memory is the star](#memory-is-the-star) | 10. [Safety and fraud](#safety-and-fraud) | 15. [What's next](#whats-next) |
+| 4. [Built for India](#built-for-india) | 11. [Highlights at a glance](#highlights-at-a-glance) | 16. [Team](#team) |
+| 5. [The app](#the-app) | 12. [Limitations](#limitations) | |
+| 6. [Results](#results) | | |
+| 7. [The demo in five acts](#the-demo-in-five-acts) | | |
 
 ---
 
@@ -153,6 +158,43 @@ AP in India has rules that generic tools ignore. We built them in from the start
 | **Personal data** | Aadhaar, PAN, UPI IDs and phone numbers are sensitive | Redacted from the clerk's notes before anything reaches memory | The lesson text stored in Hindsight |
 
 In the demo's Twist stage, sorting the queue by MSME deadline puts a micro supplier's invoice first: **5 days** from its 43B(h) deadline, with **₹46,476** of tax deduction at stake. The agent recommends paying it, because the ₹7 rounding difference is within the team's ₹10 tolerance.
+
+## The app
+
+Rupesh built the clerk's workspace as a **Progressive Web App**. It's desktop-first for a projector, installs like a native app, and works on a phone for capturing invoices and quick decisions.
+
+Its design language is **"Case Law"**. The agent writes *opinions* and cites past cases like footnotes, on paper-and-ink styling where colour only ever marks a decision. Anything Precedent wrote carries the ◆ mark, and hard controls are locked and hatched, so you can see at a glance what memory may decide and what it never will.
+
+<img src="docs/assets/screens/case-file.png" alt="Precedent's case file at Week 3: the docket on the left, and on the right the 3-way match, the compliance strip and Precedent's opinion, Approve with High 95 confidence, grounded in 8 precedents cited as footnotes." width="100%">
+
+**The case file.** Week 3 of the demo: a Balaji freight invoice, and Precedent's opinion grounded in eight precedents from Hindsight memory.
+
+| | |
+|---|---|
+| <img src="docs/assets/screens/hard-control.png" alt="The twist: a bank-change invoice for Balaji. The inverse hard-control panel says Action forced to escalate, and Memory alone would have said Approve, struck through." width="100%"><br/>**The twist.** A hard control overrides strong precedent, and says what memory alone would have done. | <img src="docs/assets/screens/vendor-file.png" alt="Balaji's vendor file: risk 58 high, two beliefs with the number of memories behind each, trust lanes and the lessons taught." width="100%"><br/>**Vendor file.** What the agent believes, the evidence behind each belief, risk and trust lanes. |
+| <img src="docs/assets/screens/trust-you-can-check.png" alt="Trust you can check: the autonomy certificate collecting evidence, 15 of 59 verified decisions, a calibration chart and cost and speed figures." width="100%"><br/>**Trust you can check.** The autonomy certificate, calibration, and cost and speed. | <img src="docs/assets/screens/trust-map.png" alt="The trust map at Week 8: three vendor and exception lanes on auto, the rest learning, with the certificate status in the header." width="100%"><br/>**Trust map.** Which vendor × exception lanes have earned autonomy. |
+| <img src="docs/assets/screens/risk.png" alt="The risk page: Balaji ranked first at 58 of 100, high, with the reasons listed." width="100%"><br/>**Risk.** Vendors ranked by fraud signals, each with its reasons. | <img src="docs/assets/screens/capture.png" alt="Capture: a photographed invoice without an e-invoice IRN, held by the e-invoice control, with every field read by Gemini." width="100%"><br/>**Capture.** A photo in, the invoice read and matched, and the right control applied. |
+| <img src="docs/assets/screens/learning.png" alt="The learning page: the headline 98 percent with memory versus 50 percent without, and the live figures, including one MSME invoice at risk worth 46,476 rupees." width="100%"><br/>**Learning.** The with/without-memory result, and live figures including MSME tax at risk. | <img src="docs/assets/screens/phone.png" alt="The same Week 3 case on a phone, with the bottom tabs and the capture button." width="46%"><br/>**On a phone.** The same case file, with one-tap capture in the tab bar. |
+
+| Screen | What it's for |
+|---|---|
+| **Docket** | The queue of open, auto-resolved and resolved cases. Hard controls come first; sort by MSME deadline; `J`/`K` move between cases |
+| **Case file** | The evidence (3-way match, bank check, anomaly, timeline), Precedent's opinion with footnoted precedents, and Accept `↵` · Overrule `O` · Hold `H` · Escalate `E`. The third accepted recommendation in a row stamps the **AUTO** seal |
+| **Trust map** | Every vendor × exception lane: learning, on auto, or always human, with the certificate's status |
+| **Vendors** | What the agent believes and why, the vendor wiki Hindsight writes, risk, trust lanes and lessons |
+| **Learning** | The memory ON vs OFF result and curves, then the certificate, calibration, cost and speed |
+| **Risk** | Vendors ranked by fraud and control signals, and Benford's law on every line amount |
+| **Memory** | Every lesson and who taught it, revoking a wrong one, the team policy, and the raw memories |
+| **Ask Precedent** (`⌘K`) | Questions answered from memory, with footnoted sources |
+| **Capture** | A photo or PDF in, the invoice read and matched; three sample invoices are built in |
+
+It is made for presenting as much as for daily use:
+
+- **Presenter mode** (`P`) enlarges the type, and `1`–`4` jump between the demo stages.
+- **Live updates** over server-sent events refresh every screen the moment a case arrives, auto-resolves or teaches a lesson.
+- **Install it** and get **push notifications** for blocked invoices and auto-resolutions. Each notification opens its case.
+- **Fixture mode** (`?fixtures=1`) runs the whole app from real recorded API responses, so the demo works even without a backend.
+- **476 unit tests** and a **Playwright walk** through the demo, with API types generated from the backend's OpenAPI.
 
 ## Results
 
@@ -332,7 +374,7 @@ If you only have a minute, here's how we'd sum up what we delivered in each area
 | **Innovation** | An agent that **earns autonomy** per vendor and exception type, and must **prove it statistically** before paying on its own · learns *limits*, not just approvals (the ₹7,400 auto-hold) · beliefs that show their evidence and a wiki that writes itself · **a photo of a paper invoice, auto-resolved in about 11 seconds** · built for Indian AP: MSME 43B(h) deadlines, e-invoice IRNs, GSTIN checks |
 | **Use of Hindsight Memory** | Memory *is* the product: **98% vs 50%** with and without it · **15 Hindsight features** across writing, reading, understanding and governing memory, from `reflect` with typed output and `based_on` citations to observation history, Knowledge Pages, time-anchored `recall`, directives, `clone_bank` and document deletion · an **ablation study** of which part of memory does the work · full write-up in [`docs/HINDSIGHT.md`](docs/HINDSIGHT.md) |
 | **Technical Implementation** | About 9,500 lines of typed Python · **57 backend tests** and **476 frontend tests**, including one that checks the matcher against all 576 invoices and contract tests that pin the hard-control text the app parses, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · three reproducible evaluations ([`docs/EVALUATION.md`](docs/EVALUATION.md)) · cost-aware routing, three-provider failover, money in code |
-| **User Experience** | Every recommendation explains itself with cited precedents and a calibrated confidence · one-click approve, or correct it with a reason · a beliefs timeline and a vendor wiki · a queue sortable by MSME deadline · live updates over SSE · instant demo acts and memory switch · invoice photo capture · push notifications |
+| **User Experience** | A **"Case Law"** interface: the agent writes opinions and cites precedents as footnotes, and colour only ever marks a decision · every recommendation shows its evidence and a calibrated confidence · one-click accept, or overrule with a reason · a beliefs timeline, a self-writing vendor wiki, a trust map and a risk page · presenter mode and keyboard shortcuts · an installable PWA with push notifications and photo capture · a [live demo](https://precedent-1058141277368.us-central1.run.app) |
 | **Real-world Impact** | Solves an everyday finance problem that companies already pay to fix · about **$17 per 1,000 exceptions** in AI and memory costs · keeps institutional knowledge when staff leave · catches duplicates and bank-detail fraud · protects MSME tax deductions · a natural path to adoption as an ERP add-on for shared-services finance teams |
 
 ## Limitations
@@ -347,7 +389,9 @@ We'd rather you hear these from us:
 
 ## Run it yourself
 
-Want to try it? Here's how to run Precedent on your own machine.
+The quickest way to try Precedent is the **[live demo](https://precedent-1058141277368.us-central1.run.app)**: move through the acts with the stage rail at the top, or press `P` for presenter mode. Everyone who opens the link shares one demo, so use Reset in the stage rail to start again at Day 1.
+
+To run it on your own machine:
 
 **You'll need:** Python 3.12, [uv](https://docs.astral.sh/uv/), Node 22+, a Hindsight Cloud API key, and at least one LLM key (Groq, Gemini or NVIDIA). Invoice capture needs Gemini.
 
@@ -393,6 +437,7 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 | `uv run python -m scripts.make_charts` | Redraws the learning-curve and ablation charts |
 | `uv run python -m scripts.make_diagrams` | Redraws the README diagrams |
 | `uv run python -m scripts.gen_vapid` | Creates push-notification keys |
+| `gcloud run deploy precedent --source .` (repository root) | Redeploys the hosted demo on Google Cloud Run; see [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 
 <details>
 <summary><b>API overview (29 endpoints)</b></summary>
@@ -471,13 +516,14 @@ For reference, here's everything we built Precedent with, and why we chose it.
 | **Language models** | Groq `openai/gpt-oss-120b` → Google Gemini `gemini-3.1-flash-lite` → NVIDIA `nemotron-3-super-120b-a12b` | One OpenAI-compatible router with automatic failover, so a rate limit never stops the agent |
 | **Vision** | Gemini `gemini-3.1-flash-lite` | Reads a photo or PDF of a paper invoice into a typed invoice in about 3 seconds |
 | **Machine learning and statistics** | scikit-learn IsolationForest · SciPy | Per-vendor anomaly scores; exact Clopper–Pearson bounds for the autonomy certificate |
-| **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications |
+| **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · TanStack Query · React Router 7 · Recharts · Zustand · vite-plugin-pwa | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications; its types are generated from the API |
 | **Notifications** | Web Push (VAPID) | Alerts for blocked and auto-resolved invoices |
+| **Hosting** | Google Cloud Run (one container serving the app and the API) · Secret Manager | Scales to zero when idle and costs nothing then; one command keeps it warm for a showcase; keys stay in Google's secret store |
 | **Quality** | pytest · ruff · Vitest · Playwright · API contract generated from the Pydantic models | 57 backend tests, 476 frontend unit tests and a Playwright demo walk; the frontend's types come straight from the backend |
 
 ## What's next
 
-If we keep building after the hackathon, this is where we'd take Precedent:
+If we keep building, this is where we'd take Precedent:
 
 - **ERP connectors** (Tally, SAP, Zoho Books), so invoices, POs and goods receipts flow in automatically
 - **Four-eyes approval for lessons**, so a high-impact lesson needs an AP lead's sign-off before it becomes memory
@@ -486,14 +532,14 @@ If we keep building after the hackathon, this is where we'd take Precedent:
 
 ## Team
 
-We're **Claude_Coders4**, building for HackwithHyderabad 3.0.
+We're **Claude_Coders4**.
 
 | Member | Role | GitHub |
 |---|---|---|
-| **Nagashivashankar Kaki** | Team Leader · Backend, AI & Memory | [@Eldorado5002](https://github.com/Eldorado5002) |
-| **Rupesh Seku** | Frontend (PWA) | [@srupesh08](https://github.com/srupesh08) |
-| **Sameeksha Kasha** | Testing & Documentation | [@Sameeksha270905](https://github.com/Sameeksha270905) |
-| **Vyshnavi Kolipyaka** | Demo Video & Content | [@vyshu2202](https://github.com/vyshu2202) |
+| **Nagashivashankar Kaki** | Team Leader · Backend, AI & Memory | [Eldorado5002](https://github.com/Eldorado5002) |
+| **Rupesh Seku** | Frontend (PWA) | [srupesh08](https://github.com/srupesh08) |
+| **Sameeksha Kasha** | Testing & Documentation | [Sameeksha270905](https://github.com/Sameeksha270905) |
+| **Vyshnavi Kolipyaka** | Demo Video & Content | [vyshu2202](https://github.com/vyshu2202) |
 
 <div align="center">
 <br/>

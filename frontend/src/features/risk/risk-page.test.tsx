@@ -118,12 +118,12 @@ describe('RiskPage', () => {
     expect(screen.getByLabelText('Loading the Benford test')).toHaveAttribute('aria-busy', 'true')
   })
 
-  it('explains an unreachable API and a Hindsight outage, each with a retry', async () => {
+  it('explains an unreachable API and a failed section, each with a retry', async () => {
     failure.risk = new ApiError(0, 'Cannot reach the Precedent API')
-    failure.benford = new ApiError(503, 'Hindsight unavailable')
+    failure.benford = new ApiError(503, 'Service unavailable')
     renderPage()
     expect(await screen.findByText('Can’t reach the Precedent API.')).toBeInTheDocument()
-    expect(await screen.findByText('Hindsight memory is unreachable.')).toBeInTheDocument()
+    expect(await screen.findByText('The Benford test didn’t load.')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Try again' })).toHaveLength(2)
   })
 })

@@ -290,7 +290,7 @@ describe('Vendor file', () => {
     expect(within(trigger).getByText('High').parentElement).toHaveClass('text-reject')
     await userEvent.hover(trigger)
     expect(await screen.findByText('Risk signals')).toBeInTheDocument()
-    expect(screen.getAllByText('1 request(s) to pay a different bank account').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('1 request to pay a different bank account').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Exception rate 91% vs 23% across all vendors', { exact: false }).length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: /all vendors by risk/i })).toHaveAttribute('href', '/risk')
   })
@@ -313,7 +313,7 @@ describe('Vendor file', () => {
       const trigger = await screen.findByRole('button', { name: /58 high risk/i })
       expect(trigger).toHaveAttribute('aria-haspopup', 'dialog')
       await userEvent.click(trigger)
-      expect(await screen.findByRole('dialog')).toHaveTextContent('1 duplicate invoice submission(s)')
+      expect(await screen.findByRole('dialog')).toHaveTextContent('1 duplicate invoice submission')
     } finally {
       window.matchMedia = real
     }
