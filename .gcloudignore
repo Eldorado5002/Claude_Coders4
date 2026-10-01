@@ -28,3 +28,6 @@ backend/data/external/
 docs/assets/
 docs/samples/
 video/
+# media that lives in the repo but never ships
+*.mp4
+*.wav
