@@ -67,9 +67,9 @@ export function HealthDot() {
           </span>
         </button>
       </HoverCardTrigger>
-      <HoverCardContent align="end" className="w-80 space-y-3 text-sm">
+      <HoverCardContent align="end" className="w-[min(27rem,calc(100vw-2rem))] space-y-3 text-sm">
         <Eyebrow>System</Eyebrow>
-        <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1.5 text-xs">
+        <dl className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-xs [&_dd]:min-w-0 [&_dd]:[overflow-wrap:anywhere]">
           <dt className="text-muted-foreground">Hindsight</dt>
           <dd className={cn('font-medium', up ? 'text-approve' : 'text-hold')}>
             {known ? (up ? 'Up' : 'Unreachable') : 'Checking…'}
@@ -81,7 +81,7 @@ export function HealthDot() {
           <dt className="text-muted-foreground">Model chain</dt>
           <dd className="space-y-0.5">
             {(settings.data?.llm_chain ?? []).map((m) => (
-              <Mono key={m} className="block truncate">
+              <Mono key={m} className="block">
                 {m}
               </Mono>
             ))}

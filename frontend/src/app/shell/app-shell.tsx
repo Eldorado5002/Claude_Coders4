@@ -10,6 +10,7 @@ import { useLiveMoments } from './live-moments'
 import { MobileTabs } from './mobile-tabs'
 import { PresenterHint, useShellShortcuts } from './presenter'
 import { Banners } from './status'
+import { useToastChime } from './toast-chime'
 import { TopBar } from './top-bar'
 
 export function AppShell() {
@@ -17,6 +18,7 @@ export function AppShell() {
   useServerEvents()
   useShellShortcuts()
   useLiveMoments()
+  useToastChime()
   return (
     <SidebarProvider>
       <AppSidebar />

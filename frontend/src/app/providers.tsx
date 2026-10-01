@@ -26,7 +26,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <TooltipProvider delayDuration={250}>
           <LazyMotion features={domAnimation}>
             {children}
-            <Toaster position="bottom-right" closeButton />
+            <Toaster position="top-right" offset={{ top: 72 }} mobileOffset={{ top: 108 }} closeButton />
           </LazyMotion>
         </TooltipProvider>
       </ThemeProvider>
