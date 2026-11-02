@@ -75,9 +75,10 @@ snapshots for free with `uv run python -m scripts.refresh_stage day1 week3 week8
 
 ## Hosting
 
-The demo runs on Google Cloud Run (project `claude-coders-4`, service `precedent`, `us-central1`): one container
-that serves the API and the built web app (`Dockerfile` at the root). Keys live in Secret Manager, never in git.
-Keep it at **one instance** (live state is in memory). Deploy, demo on/off and costs: `docs/DEPLOY.md`.
+The demo runs on Render's free plan (service `precedent-ap`, https://precedent-ap.onrender.com): one Docker container
+that serves the API and the built web app (`Dockerfile` at the root). Render redeploys on every push to `main`. Keys
+live in the service's Environment settings on Render, never in git. Keep it at **one instance** (live state is in
+memory). Settings, sleeping and costs: `docs/DEPLOY.md`.
 
 ## Conventions
 

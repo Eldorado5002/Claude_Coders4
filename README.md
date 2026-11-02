@@ -15,9 +15,9 @@
 
 **0 wrong payments** · **Certified autonomy** · **Built for Indian AP** · **$17 per 1,000 exceptions**
 
-### [Try the live demo →](https://precedent-1058141277368.us-central1.run.app)
+### [Try the live demo →](https://precedent-ap.onrender.com)
 
-<sub>A shared demo on Google Cloud Run. The first visit can take about 20 seconds while it wakes up.</sub>
+<sub>A shared demo on Render's free plan. It sleeps when nobody is using it, so the first visit can take about a minute while it wakes up.</sub>
 
 </div>
 
@@ -374,7 +374,7 @@ If you only have a minute, here's how we'd sum up what we delivered in each area
 | **Innovation** | An agent that **earns autonomy** per vendor and exception type, and must **prove it statistically** before paying on its own · learns *limits*, not just approvals (the ₹7,400 auto-hold) · beliefs that show their evidence and a wiki that writes itself · **a photo of a paper invoice, auto-resolved in about 11 seconds** · built for Indian AP: MSME 43B(h) deadlines, e-invoice IRNs, GSTIN checks |
 | **Use of Hindsight Memory** | Memory *is* the product: **98% vs 50%** with and without it · **15 Hindsight features** across writing, reading, understanding and governing memory, from `reflect` with typed output and `based_on` citations to observation history, Knowledge Pages, time-anchored `recall`, directives, `clone_bank` and document deletion · an **ablation study** of which part of memory does the work · full write-up in [`docs/HINDSIGHT.md`](docs/HINDSIGHT.md) |
 | **Technical Implementation** | About 9,500 lines of typed Python · **57 backend tests** and **476 frontend tests**, including one that checks the matcher against all 576 invoices and contract tests that pin the hard-control text the app parses, with a fake memory and LLM so tests cost nothing · data calibrated on a real 1.6-million-event purchase-to-pay log · three reproducible evaluations ([`docs/EVALUATION.md`](docs/EVALUATION.md)) · cost-aware routing, three-provider failover, money in code |
-| **User Experience** | A **"Case Law"** interface: the agent writes opinions and cites precedents as footnotes, and colour only ever marks a decision · every recommendation shows its evidence and a calibrated confidence · one-click accept, or overrule with a reason · a beliefs timeline, a self-writing vendor wiki, a trust map and a risk page · presenter mode and keyboard shortcuts · an installable PWA with push notifications and photo capture · a [live demo](https://precedent-1058141277368.us-central1.run.app) |
+| **User Experience** | A **"Case Law"** interface: the agent writes opinions and cites precedents as footnotes, and colour only ever marks a decision · every recommendation shows its evidence and a calibrated confidence · one-click accept, or overrule with a reason · a beliefs timeline, a self-writing vendor wiki, a trust map and a risk page · presenter mode and keyboard shortcuts · an installable PWA with push notifications and photo capture · a [live demo](https://precedent-ap.onrender.com) |
 | **Real-world Impact** | Solves an everyday finance problem that companies already pay to fix · about **$17 per 1,000 exceptions** in AI and memory costs · keeps institutional knowledge when staff leave · catches duplicates and bank-detail fraud · protects MSME tax deductions · a natural path to adoption as an ERP add-on for shared-services finance teams |
 
 ## Limitations
@@ -389,7 +389,7 @@ We'd rather you hear these from us:
 
 ## Run it yourself
 
-The quickest way to try Precedent is the **[live demo](https://precedent-1058141277368.us-central1.run.app)**: move through the acts with the stage rail at the top, or press `P` for presenter mode. Everyone who opens the link shares one demo, so use Reset in the stage rail to start again at Day 1.
+The quickest way to try Precedent is the **[live demo](https://precedent-ap.onrender.com)**: move through the acts with the stage rail at the top, or press `P` for presenter mode. Everyone who opens the link shares one demo, so use Reset in the stage rail to start again at Day 1.
 
 To run it on your own machine:
 
@@ -437,7 +437,7 @@ curl -X POST localhost:8000/api/demo/advance -H "content-type: application/json"
 | `uv run python -m scripts.make_charts` | Redraws the learning-curve and ablation charts |
 | `uv run python -m scripts.make_diagrams` | Redraws the README diagrams |
 | `uv run python -m scripts.gen_vapid` | Creates push-notification keys |
-| `gcloud run deploy precedent --source .` (repository root) | Redeploys the hosted demo on Google Cloud Run; see [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+| `git push` to `main` | Render rebuilds and redeploys the hosted demo by itself; see [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 
 <details>
 <summary><b>API overview (29 endpoints)</b></summary>
@@ -518,7 +518,7 @@ For reference, here's everything we built Precedent with, and why we chose it.
 | **Machine learning and statistics** | scikit-learn IsolationForest · SciPy | Per-vendor anomaly scores; exact Clopper–Pearson bounds for the autonomy certificate |
 | **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · TanStack Query · React Router 7 · Recharts · Zustand · vite-plugin-pwa | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications; its types are generated from the API |
 | **Notifications** | Web Push (VAPID) | Alerts for blocked and auto-resolved invoices |
-| **Hosting** | Google Cloud Run (one container serving the app and the API) · Secret Manager | Scales to zero when idle and costs nothing then; one command keeps it warm for a showcase; keys stay in Google's secret store |
+| **Hosting** | Render free web service (one Docker container serving the app and the API) | Costs nothing; sleeps when idle and wakes on the next visit; redeploys on every push to `main`; keys stay in Render's environment settings, never in git |
 | **Quality** | pytest · ruff · Vitest · Playwright · API contract generated from the Pydantic models | 57 backend tests, 476 frontend unit tests and a Playwright demo walk; the frontend's types come straight from the backend |
 
 ## What's next
