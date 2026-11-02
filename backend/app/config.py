@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-3.1-flash-lite"
     gemini_vision_model: str = "gemini-3.1-flash-lite"
     nvidia_api_key: str = ""
-    nvidia_model: str = "nvidia/nemotron-3-super-120b-a12b"
+    nvidia_model: str = "nvidia/nemotron-3.5-lightning-30b-a3b"
     llm_order: str = "groq,gemini,nvidia"
 
     # Web push

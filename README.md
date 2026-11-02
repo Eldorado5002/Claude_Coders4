@@ -296,7 +296,7 @@ And this is the path every invoice takes:
 |---|---|
 | **Plain code runs the workflow; AI only answers questions** | Matching, controls, autonomy, statistics and money arithmetic are deterministic and tested. The language models only ever return schema-validated JSON. |
 | **Three routes, cheapest first** | A hard control decides in code with no model call. A routine vendor × type pair takes the **fast path**: Hindsight `recall` anchored at the invoice date, then one LLM call (about $0.001). Everything else, and any fast answer that is ungrounded or unsure, goes to Hindsight `reflect` ($0.05). |
-| **Strict JSON, a repair retry, and three-provider failover** | Groq `gpt-oss-120b` → Gemini `3.1-flash-lite` → NVIDIA `nemotron-3-super`. Bad JSON gets one repair attempt; a rate limit or outage moves to the next provider. |
+| **Strict JSON, a repair retry, and three-provider failover** | Groq `gpt-oss-120b` → Gemini `3.1-flash-lite` → NVIDIA `nemotron-3.5-lightning`. Bad JSON gets one repair attempt; a rate limit or outage moves to the next provider. |
 | **Money is calculated in code, never by the model** | Corrected payable amounts come from the 3-way match. They match the clerk's amount within ₹1 on every adjusted case in our dataset. |
 | **Confidence is measured, not trusted** | Every recommendation shows its stated confidence and a calibrated one (how often past recommendations at that confidence were right). |
 | **The model reads, code decides** | Vision extracts the invoice date exactly as printed and code parses it with the locale; payable amounts, deadlines and checksums are all computed in code. |
@@ -513,7 +513,7 @@ For reference, here's everything we built Precedent with, and why we chose it.
 |---|---|---|
 | **Agent memory** | Hindsight Cloud (`hindsight-client`) | Retain, recall and reflect with tags, directives, observations, mental models and Knowledge Pages: the heart of the product |
 | **Backend** | Python 3.12 · FastAPI · Pydantic v2 · SQLModel + SQLite · uv | Typed end to end; FastAPI serves REST and live Server-Sent Events from one app |
-| **Language models** | Groq `openai/gpt-oss-120b` → Google Gemini `gemini-3.1-flash-lite` → NVIDIA `nemotron-3-super-120b-a12b` | One OpenAI-compatible router with automatic failover, so a rate limit never stops the agent |
+| **Language models** | Groq `openai/gpt-oss-120b` → Google Gemini `gemini-3.1-flash-lite` → NVIDIA `nemotron-3.5-lightning-30b-a3b` | One OpenAI-compatible router with automatic failover, so a rate limit never stops the agent |
 | **Vision** | Gemini `gemini-3.1-flash-lite` | Reads a photo or PDF of a paper invoice into a typed invoice in about 3 seconds |
 | **Machine learning and statistics** | scikit-learn IsolationForest · SciPy | Per-vendor anomaly scores; exact Clopper–Pearson bounds for the autonomy certificate |
 | **Frontend** | Progressive Web App: Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · TanStack Query · React Router 7 · Recharts · Zustand · vite-plugin-pwa | Installs like a native app, is designed desktop-first but works on mobile, and can receive push notifications; its types are generated from the API |

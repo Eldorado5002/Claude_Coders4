@@ -31,7 +31,7 @@ and earns autonomy per vendor × exception type. Hard financial controls never b
 - Python 3.12, **uv**, FastAPI (built-in SSE), Pydantic v2, SQLModel + SQLite.
 - Memory: Hindsight Cloud via `hindsight-client` (retain / recall / reflect, tags, directives, mental models).
 - LLM: `app/llm/router.py` — one OpenAI-compatible client, failover chain
-  Groq `openai/gpt-oss-120b` → Gemini `gemini-3.1-flash-lite` → NVIDIA `nvidia/nemotron-3-super-120b-a12b`.
+  Groq `openai/gpt-oss-120b` → Gemini `gemini-3.1-flash-lite` → NVIDIA `nvidia/nemotron-3.5-lightning-30b-a3b`.
   LLMs only return schema-validated JSON; plain Python drives control flow.
 - Deterministic guardrails run **before** any LLM: duplicate invoice (exact and fuzzy), bank-detail change,
   invalid or mismatched GSTIN, missing e-invoice IRN, first-time vendor, over ₹5,00,000.
